@@ -12,10 +12,10 @@ class TestPoolsetData(unittest.TestCase):
         assert hasattr(r, "median_headers")
 
     def test_read_data(self):
-        csv_file = "requirements_artifacts/PCAL001_P1_X1.csv"
-        r = poolset_data.read_data(csv_file)
+        csv_filepath = "requirements_artifacts/PCAL001_P1_X1.csv"
+        r = poolset_data.read_data(csv_filepath)
         assert r is not None
-        assert r.csv_file == csv_file, r.csv_file
+        assert r.csv_filepath == csv_filepath, r.csv_filepath
         assert r.median_headers is not None
         assert r.median_data is not None
         assert r.count_headers is not None

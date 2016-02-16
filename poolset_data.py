@@ -9,10 +9,10 @@ datatype_names = ["Median", "Count"]
 
 
 class PoolsetData(object):
-    def __init__(self, csv_file=None, median_headers=None, median_data=None,
+    def __init__(self, csv_filepath=None, median_headers=None, median_data=None,
         count_headers=None, count_data=None, poolset_id=None):
 
-        self.csv_file = csv_file
+        self.csv_filepath = csv_filepath
         self.median_headers = median_headers
         self.median_data = median_data
         self.count_headers = count_headers
@@ -36,8 +36,8 @@ def get_datatype_range(data, datatype_names):
     return r
 
 
-def read_data(csv_file):
-    f = open(csv_file)
+def read_data(csv_filepath):
+    f = open(csv_filepath)
     reader = csv.reader(f)
 
     data = list()
@@ -56,7 +56,7 @@ def read_data(csv_file):
     median_range = datatype_ranges[datatype_names[0]]
     count_range = datatype_ranges[datatype_names[1]]
 
-    pd = PoolsetData(csv_file=csv_file)
+    pd = PoolsetData(csv_filepath=csv_filepath)
     pd.median_headers = data[median_range[0]+1]
     pd.median_data = data[(median_range[0]+2):(median_range[1]-1)]
     logger.debug("first line of median data - pd.median_data[0]:  {}".format(pd.median_data[0]))
