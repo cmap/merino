@@ -11,9 +11,10 @@ _config_file_copy_column_section = "prism_cell copy column headers"
 
 
 class PrismCell(object):
-    def __init__(self, pool_id=None, analyte_id=None):
+    def __init__(self, pool_id=None, analyte_id=None, davepool_id=None):
         self.pool_id = pool_id
         self.analyte_id = analyte_id
+        self.davepool_id = davepool_id
 
     def __repr__(self):
         return " ".join(["{}:{}".format(str(k),str(v)) for (k,v) in self.__dict__.items()])

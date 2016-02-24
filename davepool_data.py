@@ -10,15 +10,17 @@ datatype_names = ["Median", "Count"]
 
 class DavepoolData(object):
     def __init__(self, csv_filepath=None, median_headers=None, median_data=None,
-        count_headers=None, count_data=None, poolset_id=None):
+        count_headers=None, count_data=None, davepool_id=None):
 
         self.csv_filepath = csv_filepath
         self.median_headers = median_headers
         self.median_data = median_data
         self.count_headers = count_headers
         self.count_data = count_data
-        self.davepool_id = poolset_id
+        self.davepool_id = davepool_id
 
+    def __repr__(self):
+        return " ".join(["{}:{}".format(k,v) for (k,v) in self.__dict__.items()])
 
 def get_datatype_range(data, datatype_names):
     datatype_indexes = [i for (i,row) in enumerate(data) if len(row) > 0 and row[0] == "DataType:"]
@@ -51,7 +53,7 @@ def read_data(csv_filepath):
 
     for dn in datatype_names:
         if datatype_ranges[dn][0] is None:
-            raise Exception("poolset_data read_data did not find expected DataType dn:  {}".format(dn))
+            raise Exception("davepool_data read_data did not find expected DataType dn:  {}".format(dn))
 
     median_range = datatype_ranges[datatype_names[0]]
     count_range = datatype_ranges[datatype_names[1]]
