@@ -8,7 +8,7 @@ logger = logging.getLogger(setup_logger.LOGGER_NAME)
 datatype_names = ["Median", "Count"]
 
 
-class PoolsetData(object):
+class DavepoolData(object):
     def __init__(self, csv_filepath=None, median_headers=None, median_data=None,
         count_headers=None, count_data=None, poolset_id=None):
 
@@ -56,7 +56,7 @@ def read_data(csv_filepath):
     median_range = datatype_ranges[datatype_names[0]]
     count_range = datatype_ranges[datatype_names[1]]
 
-    pd = PoolsetData(csv_filepath=csv_filepath)
+    pd = DavepoolData(csv_filepath=csv_filepath)
     pd.median_headers = data[median_range[0]+1]
     pd.median_data = data[(median_range[0]+2):(median_range[1]-1)]
     logger.debug("first line of median data - pd.median_data[0]:  {}".format(pd.median_data[0]))
