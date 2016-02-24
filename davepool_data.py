@@ -17,7 +17,7 @@ class DavepoolData(object):
         self.median_data = median_data
         self.count_headers = count_headers
         self.count_data = count_data
-        self.poolset_id = poolset_id
+        self.davepool_id = poolset_id
 
 
 def get_datatype_range(data, datatype_names):
