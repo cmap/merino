@@ -1,122 +1,286 @@
 import setup_logger
 import logging
-import poolset_data
+import davepool_data
 import csv
+import prism_metadata
+import collections
+import numpy
+import argparse
+import prism_pipeline
+import sys
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
+
+DataByCell = collections.namedtuple("DataByCell", "cell_data_map well_list")
+MatrixAndAnnots = collections.namedtuple("MatrixAndAnnots", "sorted_unique_cells sorted_unique_wells matrix")
+
+_gct_version = "#1.3"
+
+_null = "None"
+
+def build_parser():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
+    parser.add_argument("-config_filepath", help="path to the location of the configuration file", type=str,
+                        default=prism_pipeline.default_config_filepath)
+    parser.add_argument('prism_replicate_name', help='name of the prism replicate that is being processed', type=str)
+    parser.add_argument('davepool_id_csv_filepath_pairs',
+                        help='comma separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id',
+                        type=str)
+    parser.add_argument('plate_map_path', help='path to file containing plate map describing perturbagens used', type=str)
+    return parser
 
 
 def parse_location_to_well(location):
     split = location.split(",")
     right_paren_index = split[1].index(")")
-    return split[1][0:right_paren_index]
+    raw_well = split[1][0:right_paren_index]
+    row = raw_well[0]
+    raw_col = raw_well[1:]
+    col = raw_col.zfill(2)
+    return row + col
 
 
-def main():
-    # output_file = "requirements_artifacts/PCAL002_CS1_ASSEMBLE_MEDIAN.gct"
-    # inputs = [("requirements_artifacts/PCAL002_P1_X1.csv", "PS1"),
-    #     ("requirements_artifacts/PCAL002_P2_X1.csv", "PS2"),
-    #     ("requirements_artifacts/PCAL002_P3_X1.csv", "PS3")]
-    # output_file = "requirements_artifacts/PCAL001_CS1_ASSEMBLE_MEDIAN.gct"
-    # inputs = [("requirements_artifacts/PCAL001_P1_X1.csv", "PS1"),
-    #     ("requirements_artifacts/PCAL001_P2_X1.csv", "PS2"),
-    #     ("requirements_artifacts/PCAL001_P3_X1.csv", "PS3")]
-    # output_file = "requirements_artifacts/PCAL001_CS1_ASSEMBLE_MEDIAN_from_P7.gct"
-    # inputs = [("requirements_artifacts/PCAL001_P7_X1.csv", "PS7")]
-    output_file = "requirements_artifacts/PCAL003_CS1_ASSEMBLE_MEDIAN_from_P7.gct"
-    inputs = [("requirements_artifacts/PCAL003_P7_X1.csv", "PS7")]
+def read_davepool_data_objects(davepool_id_csv_list):
+    r = []
+    for (dp_id, csv_filepath) in davepool_id_csv_list:
+        pd = davepool_data.read_data(csv_filepath)
+        pd.davepool_id = dp_id
+        r.append(pd)
 
-    poolset_data_objects = []
-    for (csvfile, ps_id) in inputs:
-        pd = poolset_data.read_data(csvfile)
-        pd.poolset_id = ps_id
-        poolset_data_objects.append(pd)
+    return r
 
 
-    f = open("requirements_artifacts/CalicoTranche1PrimaryMetaData_01212016.txt")
-    cell_data = f.read().strip().split("\n")
+def build_davepool_id_to_cells_map(prism_cell_list):
+    r = {}
+    for pc in prism_cell_list:
+        if pc.davepool_id not in r:
+            r[pc.davepool_id] = []
+        r[pc.davepool_id].append(pc)
+
+    return r
+
+
+def build_data_by_cell(cells, davepool_data_obj):
+    cell_to_median_data_map = {}
+    median_wells = []
+    cell_to_count_data_map = {}
+    count_wells = []
+
+    l = [(cell_to_median_data_map, median_wells, davepool_data_obj.median_headers, davepool_data_obj.median_data),
+        (cell_to_count_data_map, count_wells, davepool_data_obj.count_headers, davepool_data_obj.count_data)]
+
+    for (cell_data_map, wells, headers, data) in l:
+        cell_header_map = {}
+        for c in cells:
+            cell_header_map[c] = headers.index(c.analyte_id)
+            cell_data_map[c] = []
+
+        for d in data:
+            wells.append(parse_location_to_well(d[0]))
+            for c in cells:
+                datum_index = cell_header_map[c]
+                datum = d[datum_index]
+                cell_data_map[c].append(datum)
+
+    return (DataByCell(cell_to_median_data_map, median_wells), DataByCell(cell_to_count_data_map, count_wells))
+
+
+def combine_maps_with_checks(source_map, dest_map):#TODO use this
+    source_keys = set(source_map.keys())
+    dest_keys = set(dest_map.keys())
+
+    common_keys = source_keys & dest_keys
+
+    if len(common_keys) > 0:
+        msg = "the source_map and dest_map had common_keys:  {}".format(common_keys)
+        logger.error(msg)
+        raise Exception("assemble combine_maps_with_checks " + msg)
+    else:
+        dest_map.update(source_map)
+
+
+def process_data(davepool_data_objects, davepool_id_to_cells_map):
+    logger.debug("davepool_id_to_cells_map.keys():  {}".format(davepool_id_to_cells_map.keys()))
+
+    all_median_data_by_cell = []
+    all_count_data_by_cell = []
+
+    for dd in davepool_data_objects:
+        cells = davepool_id_to_cells_map[dd.davepool_id]
+        logger.debug("pools:  {}".format(cells))
+
+        (median_data_by_cell), (count_data_by_cell) = build_data_by_cell(cells, dd)
+
+        all_median_data_by_cell.append(median_data_by_cell)
+        all_count_data_by_cell.append(count_data_by_cell)
+
+    return (all_median_data_by_cell, all_count_data_by_cell)
+
+
+def generate_sorted_unique_cells_and_wells(data_by_cells):
+    unique_cells = set()
+    unique_wells = set()
+    for dbc in data_by_cells:
+        unique_cells.update(dbc.cell_data_map.keys())
+        unique_wells.update(dbc.well_list)
+
+    sorted_unique_cells = list(unique_cells)
+
+    def try_float_id(id):
+        try:
+            return float(id)
+        except ValueError:
+            return id
+
+    sorted_unique_cells.sort(key=lambda c: try_float_id(c.id))
+
+    sorted_unique_wells = list(unique_wells)
+    sorted_unique_wells.sort()
+
+    return (sorted_unique_cells, sorted_unique_wells)
+
+
+def build_matrix_and_annotations(data_by_cells):
+    (sorted_unique_cells, sorted_unique_wells) = generate_sorted_unique_cells_and_wells(data_by_cells)
+
+    matrix = numpy.empty((len(sorted_unique_cells), len(sorted_unique_wells)))
+    matrix[:] = numpy.NaN
+
+    for dbc in data_by_cells:
+        for (cell, data) in dbc.cell_data_map.items():
+            logger.debug("data:  {}".format(data))
+
+            row_ind = sorted_unique_cells.index(cell)
+            row = matrix[row_ind]
+
+            col_inds = [sorted_unique_wells.index(x) for x in dbc.well_list]
+            logger.debug("col_inds:  {}".format(col_inds))
+
+            row[col_inds] = data
+
+    return MatrixAndAnnots(sorted_unique_cells, sorted_unique_wells, matrix)
+
+
+def write_gct_version_and_size(file_handle, example_perturbagen, matrix_and_annots):
+    file_handle.write(_gct_version + "\n")
+
+    matrix_shape = matrix_and_annots.matrix.shape
+    num_row_annots = len(matrix_and_annots.sorted_unique_cells[0].__dict__) - 1
+    num_col_annots = len(example_perturbagen.__dict__)
+    size_line = [matrix_shape[0], matrix_shape[1], num_row_annots, num_col_annots]
+
+    file_handle.write("\t".join([str(x) for x in size_line]) + "\n")
+
+
+def generate_column_headers(prism_replicate_name, example_cell, sorted_unique_wells):
+    h = ["id"]
+
+    cell_annot_order = [str(x) for x in example_cell.__dict__ if x != "id"]
+    cell_annot_order.sort()
+    h.extend(cell_annot_order)
+
+    h.extend([prism_replicate_name + ":" + w for w in sorted_unique_wells])
+
+    return (h, cell_annot_order)
+
+
+def generate_perturbagen_annotation_header_block(perturbagen_list, sorted_unique_wells, num_cell_annot):
+    annot_field_set = set()
+    for p in perturbagen_list:
+        annot_field_set.update(p.__dict__.keys())
+
+    annot_fields = list(annot_field_set)
+    annot_fields.sort()
+
+    well_pert_map = {}
+    for p in perturbagen_list:
+        well_pert_map[p.well_id] = p
+
+    r = []
+    for af in annot_fields:
+        row = []
+        r.append(row)
+
+        row.append(af)
+        row.extend([_null for i in range(num_cell_annot)])
+
+        for w in sorted_unique_wells:
+            p = well_pert_map[w]
+            value = p.__dict__[af] if af in p.__dict__ else None
+            row.append(value)
+
+    return r
+
+
+def generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order):
+    r = []
+    for (i, c) in enumerate(matrix_and_annots.sorted_unique_cells):
+        row = [c.id]
+        r.append(row)
+
+        row.extend([c.__dict__[ca] for ca in cell_annot_order])
+        row.extend(matrix_and_annots.matrix[i])
+
+    return r
+
+
+def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list,
+                    matrix_and_annots):
+    f = open(output_filepath, "w")
+    write_gct_version_and_size(f, perturbagen_list[0], matrix_and_annots)
+
+    (headers, cell_annot_order) = generate_column_headers(prism_replicate_name,
+        matrix_and_annots.sorted_unique_cells[0],
+        matrix_and_annots.sorted_unique_wells)
+
+    f.write("\t".join(headers) + "\n")
+
+    perturbation_annotation_header_block = generate_perturbagen_annotation_header_block(perturbagen_list,
+        matrix_and_annots.sorted_unique_wells, len(cell_annot_order))
+    for header_block_row in perturbation_annotation_header_block:
+        f.write("\t".join([str(x) for x in header_block_row]) + "\n")
+
+    row_annotation_and_data_block = generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order)
+    for row in row_annotation_and_data_block:
+        f.write("\t".join([str(x) for x in row]) + "\n")
+
     f.close()
-    cell_data = [x.split("\t") for x in cell_data]
-    logger.debug("cell_data headers - cell_data[0]:  {}".format(cell_data[0]))
-    cd_pool_id_ind = cell_data[0].index("Pool_ID")
-    cd_analyte_ind = cell_data[0].index("Analyte")
-    cd_name_ind = cell_data[0].index("StrippedName")
-    cd_minipool_ind = cell_data[0].index("MiniPool_ID")
-    cd_arbitrary_id_ind = cell_data[0].index("Arbitrary_ID")
-    cd_ccle_ind = cell_data[0].index("CCLE_Name")
-    cd_lua_ind = cell_data[0].index("LUA")
-
-    f = open("requirements_artifacts/pool_to_poolset_mapping.txt")
-    raw_pool_to_poolset_mapping = f.read().strip().split("\n")
-    f.close()
-    raw_pool_to_poolset_mapping = [x.split("\t") for x in raw_pool_to_poolset_mapping]
-    logger.debug("raw_pool_to_poolset_mapping[0]:  {}".format(raw_pool_to_poolset_mapping[0]))
-    p2pmap = {}
-    for row in raw_pool_to_poolset_mapping[1:]:
-        pool_id = row[0]
-        poolset_id = row[1]
-        if poolset_id not in p2pmap:
-            p2pmap[poolset_id] = []
-        p2pmap[poolset_id].append(pool_id)
-    logger.debug("p2pmap:  {}".format(p2pmap))
-
-    prev_wells = None
-    all_r = []
-    for pd in poolset_data_objects:
-        pools = p2pmap[pd.poolset_id]
-        logger.debug("pools:  {}".format(pools))
-
-        pools_cd = [x for x in cell_data if x[cd_pool_id_ind] in pools]
-        logger.debug("pools_cd:  {}".format(pools_cd))
-
-        analytes = [x[cd_analyte_ind] for x in pools_cd]
-
-        md_analyte_inds = [i for (i,x) in enumerate(pd.median_headers) if x in analytes]
-        logger.debug("md_analyte_inds:  {}".format(md_analyte_inds))
-
-        md_to_cd_map = {}
-        for i in md_analyte_inds:
-            analyte_name = pd.median_headers[i]
-            cd_ind = analytes.index(analyte_name)
-            md_to_cd_map[i] = cd_ind
-
-        logger.debug("md_to_cd_map:  {}".format(md_to_cd_map))
 
 
-        r = [[x[cd_name_ind], x[cd_ccle_ind], x[cd_analyte_ind], x[cd_lua_ind],
-            x[cd_minipool_ind], x[cd_pool_id_ind], pd.poolset_id, pd.csv_file]
-            for x in pools_cd]
+def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs_str):
+    split = davepool_id_csv_filepath_pairs_str.split(",")
+    r = []
+    for i in range(len(split)/2):
+        index = 2*i
+        r.append((split[index], split[index+1]))
 
-        wells = []
-        for md in pd.median_data:
-            w = parse_location_to_well(md[0])
-            wells.append(w)
+    return r
 
-            for i in md_analyte_inds:
-                datum = md[i]
-                r_ind = md_to_cd_map[i]
-                r[r_ind].append(datum)
 
-        logger.debug("r:  {}".format(r))
+def core(args):
+    prism_cell_list = prism_metadata.read_prism_cell_from_file(args.config_filepath)
 
-        if prev_wells is not None:
-            assert prev_wells == wells
-        prev_wells = wells
+    perturbagen_list = prism_metadata.read_perturbagen_from_file(args.plate_map_path, args.config_filepath)
 
-        all_r.extend(r)
+    davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
+    davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
-    header = [None for i in range(8)]
-    header.extend(prev_wells)
+    davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
-    f = open(output_file, "w")
+    (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects, davepool_id_to_cells_map)
 
-    writer = csv.writer(f, delimiter="\t")
-    writer.writerow(header)
-    for x in all_r:
-        writer.writerow(x)
-    f.close()
+    median_matrix_and_annots = build_matrix_and_annotations(all_median_data_by_cell)
+    count_matrix_and_annots = build_matrix_and_annotations(all_count_data_by_cell)
+
+    write_output_gct(args.prism_replicate_name + "_MEDIAN.gct", args.prism_replicate_name, perturbagen_list,
+                     median_matrix_and_annots)
+    write_output_gct(args.prism_replicate_name + "_COUNT.gct", args.prism_replicate_name, perturbagen_list,
+                     count_matrix_and_annots)
+
 
 if __name__ == "__main__":
-    setup_logger.setup(verbose=True)
-    main()
+    args = build_parser().parse_args(sys.argv[1:])
+    setup_logger.setup(verbose=args.verbose)
+    core(args)
