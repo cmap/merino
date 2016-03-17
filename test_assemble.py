@@ -302,7 +302,7 @@ class TestAssemble(unittest.TestCase):
         assert row[0] == "extra_annotation", row[0]
         assert row[1:4] == [assemble._null for i in range(3)], row[1:4]
         assert row[4] == "my extra annotation", row[4]
-        assert row[5] == None, row[5]
+        assert row[5] == assemble._null, row[5]
 
         row = r[1]
         logger.debug("row:  {}".format(row))
@@ -330,7 +330,7 @@ class TestAssemble(unittest.TestCase):
         cell_list.append(c)
 
         matrix = numpy.empty((2,2))
-        matrix[:] = [[1,2],[7,11]]
+        matrix[:] = [[1,2],[7,float('nan')]]
         matrix_and_annots = assemble.MatrixAndAnnots(cell_list, ["B02", "J01"], matrix)
 
         r = assemble.generate_row_annotation_and_data_block(matrix_and_annots, ["analyte_id", "davepool_id", "pool_id"])
@@ -353,7 +353,7 @@ class TestAssemble(unittest.TestCase):
         assert row[2] == "fake davepool 2", row[2]
         assert row[3] == "fake pool 2", row[3]
         assert row[4] == 7, row[4]
-        assert row[5] == 11, row[5]
+        assert row[5] == assemble._NaN, row[5]
 
     def test_write_output_gct(self):
         filepath = "functional_tests/test_assemble/test_write_output_gct.txt"

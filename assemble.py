@@ -17,7 +17,9 @@ MatrixAndAnnots = collections.namedtuple("MatrixAndAnnots", "sorted_unique_cells
 
 _gct_version = "#1.3"
 
-_null = "None"
+_null = "null"
+_NaN = "NaN"
+
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -208,7 +210,7 @@ def generate_perturbagen_annotation_header_block(perturbagen_list, sorted_unique
 
         for w in sorted_unique_wells:
             p = well_pert_map[w]
-            value = p.__dict__[af] if af in p.__dict__ else None
+            value = p.__dict__[af] if af in p.__dict__ else _null
             row.append(value)
 
     return r
@@ -221,7 +223,9 @@ def generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order):
         r.append(row)
 
         row.extend([c.__dict__[ca] for ca in cell_annot_order])
-        row.extend(matrix_and_annots.matrix[i])
+
+        numerical_data = [_NaN if numpy.isnan(x) else x for x in matrix_and_annots.matrix[i]]
+        row.extend(numerical_data)
 
     return r
 

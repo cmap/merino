@@ -93,6 +93,10 @@ class TestPrismMetadata(unittest.TestCase):
         assert p.pert_time_unit == "h", p.pert_time_unit
         assert p.pert_itime == "120 h", p.pert_itime
 
+        p.pert_mfc_desc = None
+        pm._build_additional_perturbagen_info(cp, [p])
+        assert p.pert_iname == p.pert_id, p.pert_iname
+
         p.pert_type = "unrecognized"
         pm._build_additional_perturbagen_info(cp, [p])
         assert p.pert_type == "ctl_vehicle", p.pert_type
@@ -119,6 +123,23 @@ class TestPrismMetadata(unittest.TestCase):
         assert context.exception is not None
         logger.debug("context.exception:  {}".format(context.exception))
         assert "pert_type attribute is missing from perturbagen" in str(context.exception), str(context.exception)
+
+    def test__build_additional_perturbagen_info_vehicle(self):
+        cp = ConfigParser.RawConfigParser()
+        cp.read("prism_pipeline.cfg")
+
+        p = pm.Perturbagen()
+        p.pert_type = "Empty"
+        p.pert_vehicle = "DMSO"
+        p.compound_well_mmoles_per_liter = None
+        p.pert_mfc_id = None
+
+        pm._build_additional_perturbagen_info(cp, [p])
+        logger.debug("p:  {}".format(p))
+
+        assert p.pert_dose is None, p.pert_dose
+        assert p.pert_dose_unit is None, p.pert_dose_unit
+        assert p.pert_idose is None, p.pert_idose
 
 
 if __name__ == "__main__":

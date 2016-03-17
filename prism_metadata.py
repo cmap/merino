@@ -79,15 +79,16 @@ def _build_additional_perturbagen_info(config, perturbagens):
         if p.compound_well_mmoles_per_liter is not None:
             try:
                 p.pert_dose = 1000.0 * float(p.compound_well_mmoles_per_liter) / float(p.dilution_factor)
+                p.pert_dose_unit = pert_dose_unit
+                p.pert_idose = str(p.pert_dose) + " " + p.pert_dose_unit
             except ValueError as e:
                 msg = "the concentration or dilution factors should be numbers, they are not.  p:  {}".format(p)
                 logger.exception(msg)
                 raise ValueError("prism_metadata _build_additional_perturbagen_info " + msg)
         else:
             p.pert_dose = None
-
-        p.pert_dose_unit = pert_dose_unit
-        p.pert_idose = str(p.pert_dose) + " " + p.pert_dose_unit
+            p.pert_dose_unit = None
+            p.pert_idose = None
 
         p.pert_id = p.pert_mfc_id[0:13] if p.pert_mfc_id is not None else pert_id_DMSO
 
@@ -97,7 +98,7 @@ def _build_additional_perturbagen_info(config, perturbagens):
         else:
             p.pert_type = pert_type_vehicle
 
-        p.pert_iname = p.pert_mfc_desc if "pert_mfc_desc" in p.__dict__ else None
+        p.pert_iname = p.pert_mfc_desc if "pert_mfc_desc" in p.__dict__ and p.pert_mfc_desc is not None else p.pert_id
 
         p.pert_time = pert_time
         p.pert_time_unit = pert_time_unit
