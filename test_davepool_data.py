@@ -16,10 +16,13 @@ class TestDavepoolData(unittest.TestCase):
         r = davepool_data.read_data(csv_filepath)
         assert r is not None
         assert r.csv_filepath == csv_filepath, r.csv_filepath
+        assert r.csv_datetime is not None
         assert r.median_headers is not None
         assert r.median_data is not None
         assert r.count_headers is not None
         assert r.count_data is not None
+
+        logger.debug("r.csv_datetime:  {}".format(r.csv_datetime))
 
     def test_get_datatype_range(self):
         data = [["a"], range(3), ["DataType:","my type"], range(4), range(5)]
@@ -51,6 +54,19 @@ class TestDavepoolData(unittest.TestCase):
         r = r["my type"]
         assert r[0] == 2, r[0]
         assert r[1] == 5, r[1]
+
+    def test_get_datetime_from_header_rows(self):
+        header_rows = [[],["a","b","c"], range(5), [davepool_data.date_header, "first", "second"], [], range(7)]
+        r = davepool_data.get_datetime_from_header_rows(header_rows, "fake csv_filepath")
+        logger.debug("r:  {}".format(r))
+        assert r == "first second", r
+
+        header_rows.append([davepool_data.date_header, "problem", "entry"])
+        with self.assertRaises(Exception) as context:
+            davepool_data.get_datetime_from_header_rows(header_rows, "fake csv_filepath")
+        logger.debug("context.exception:  {}".format(context.exception))
+        assert "expected to find only one datetime_row, found datetime_row:" in str(context.exception), str(context.exception)
+
 
 if __name__ == "__main__":
     setup_logger.setup(verbose=True)

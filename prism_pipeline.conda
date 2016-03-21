@@ -1,0 +1,15 @@
+name: prism_pipeline
+dependencies:
+- mkl=11.3.1=0
+- numpy=1.10.4=py27_0
+- openssl=1.0.2f=0
+- pip=8.0.3=py27_0
+- python=2.7.11=0
+- readline=6.2=2
+- setuptools=20.1.1=py27_0
+- sqlite=3.9.2=0
+- tk=8.5.18=0
+- wheel=0.29.0=py27_0
+- zlib=1.2.8=0
+- pip:
+  - prism-pipeline (/Users/dlahr/code_and_repos)==0.0.0

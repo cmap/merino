@@ -1,13 +1,13 @@
 import setup_logger
 import logging
 import davepool_data
-import csv
 import prism_metadata
 import collections
 import numpy
 import argparse
 import prism_pipeline
 import sys
+import os
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -17,7 +17,7 @@ MatrixAndAnnots = collections.namedtuple("MatrixAndAnnots", "sorted_unique_cells
 
 _gct_version = "#1.3"
 
-_null = "null"
+_null = "-666"
 _NaN = "NaN"
 
 
@@ -26,11 +26,13 @@ def build_parser():
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-config_filepath", help="path to the location of the configuration file", type=str,
                         default=prism_pipeline.default_config_filepath)
-    parser.add_argument('prism_replicate_name', help='name of the prism replicate that is being processed', type=str)
-    parser.add_argument('davepool_id_csv_filepath_pairs',
-                        help='comma separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id',
+    parser.add_argument("prism_replicate_name", help="name of the prism replicate that is being processed", type=str)
+    parser.add_argument("davepool_id_csv_filepath_pairs",
+                        help="comma separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
                         type=str)
-    parser.add_argument('plate_map_path', help='path to file containing plate map describing perturbagens used', type=str)
+    parser.add_argument("plate_map_path", help="path to file containing plate map describing perturbagens used", type=str)
+    parser.add_argument("plates_mapping_path", help="path to file containing the mapping between assasy plates and det_plates",
+                        type=str)
     return parser
 
 
@@ -211,6 +213,7 @@ def generate_perturbagen_annotation_header_block(perturbagen_list, sorted_unique
         for w in sorted_unique_wells:
             p = well_pert_map[w]
             value = p.__dict__[af] if af in p.__dict__ else _null
+            value = value if value is not None else _null
             row.append(value)
 
     return r
@@ -243,8 +246,16 @@ def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list,
 
     perturbation_annotation_header_block = generate_perturbagen_annotation_header_block(perturbagen_list,
         matrix_and_annots.sorted_unique_wells, len(cell_annot_order))
+
     for header_block_row in perturbation_annotation_header_block:
-        f.write("\t".join([str(x) for x in header_block_row]) + "\n")
+        row_output_strings = []
+        for x in header_block_row:
+            if isinstance(x, float):
+                row_output_strings.append("%.2f" % x)
+            else:
+                row_output_strings.append(str(x))
+
+        f.write("\t".join(row_output_strings) + "\n")
 
     row_annotation_and_data_block = generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order)
     for row in row_annotation_and_data_block:
@@ -263,13 +274,72 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs_str):
     return r
 
 
+def build_perturbagen_list(plate_map_path, config_filepath, assay_plates):
+    assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates])
+
+    all_perturbagens = prism_metadata.read_perturbagen_from_file(plate_map_path, config_filepath)
+
+    perts = [x for x in all_perturbagens if x.assay_plate_barcode in assay_plate_barcodes]
+
+    prism_metadata.validate_perturbagens(perts)
+
+    return perts
+
+
+def build_prism_cell_list(config_filepath, assay_plates):
+    prism_cell_list = prism_metadata.read_prism_cell_from_file(config_filepath)
+
+    pool_id_assay_plate_map = {}
+    for ap in assay_plates:
+        pool_id_assay_plate_map[ap.pool_id] = ap
+
+    pool_id_without_assay_plate = set()
+
+    for pc in prism_cell_list:
+        if pc.pool_id in pool_id_assay_plate_map:
+            assay_plate = pool_id_assay_plate_map[pc.pool_id]
+            pc.assay_plate_barcode = assay_plate.assay_plate_barcode
+            pc.det_plate = assay_plate.det_plate
+            pc.det_plate_scan_time = assay_plate.det_plate_scan_time
+        else:
+            pool_id_without_assay_plate.add(pc.pool_id)
+
+    if len(pool_id_without_assay_plate) > 0:
+        pool_id_without_assay_plate = list(pool_id_without_assay_plate)
+        pool_id_without_assay_plate.sort()
+        logger.warning("some pools were not found in the list of assay plates - pool_id_without_assay_plate:  {}".format(
+            pool_id_without_assay_plate))
+
+    return prism_cell_list
+
+def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objects):
+    all_assay_plates = prism_metadata.read_assay_plate_from_file(plates_mapping_path, config_filepath)
+
+    det_plate_davepool_data_objects_map = {}
+    for dpdo in davepool_data_objects:
+        filename = os.path.basename(dpdo.csv_filepath)
+        det_plate = filename.split(".")[0]
+        det_plate_davepool_data_objects_map[det_plate] = dpdo
+
+    assay_plates = [x for x in all_assay_plates if x.det_plate in det_plate_davepool_data_objects_map]
+    for ap in assay_plates:
+        ap.det_plate_scan_time = det_plate_davepool_data_objects_map[ap.det_plate].csv_datetime
+
+    return assay_plates
+
+
 def core(args):
-    prism_cell_list = prism_metadata.read_prism_cell_from_file(args.config_filepath)
-
-    perturbagen_list = prism_metadata.read_perturbagen_from_file(args.plate_map_path, args.config_filepath)
-
     davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
     davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
+
+    assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects)
+    logger.info("len(assay_plates):  {}".format(len(assay_plates)))
+
+    prism_cell_list = build_prism_cell_list(args.config_filepath, assay_plates)
+    logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
+
+    perturbagen_list = build_perturbagen_list(args.plate_map_path, args.config_filepath, assay_plates)
+    logger.info("len(perturbagen_list):  {}".format(len(perturbagen_list)))
 
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 

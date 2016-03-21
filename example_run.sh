@@ -1,0 +1,1 @@
+python assemble.py PREP001_CS1_X1 DP7,requirements_artifacts/PCAL001_P7_X1.csv,DP8,requirements_artifacts/PREP001_P8_X1.csv requirements_artifacts/7159-03-A02-01-01_02-29-16_12.20.32.txt requirements_artifacts/REP Master Plate Key_All Pools.txt -config_filepath prism_pipeline.cfg

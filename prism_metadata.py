@@ -3,12 +3,14 @@ import logging
 import ConfigParser
 import prism_pipeline
 import json
+import copy
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 _prism_cell_config_file_section = "PrismCell column headers"
 _perturbagen_config_file_section = "Perturbagen column headers"
+_assay_plate_config_file_section = "Assay Plate column headers"
 
 
 class PrismCell(object):
@@ -26,8 +28,21 @@ class PrismCell(object):
 
 
 class Perturbagen(object):
-    def __init__(self):
-        self.well_id = None
+    def __init__(self, well_id=None):
+        self.well_id = well_id
+
+    def __repr__(self):
+        return " ".join(["{}:{}".format(str(k),str(v)) for (k,v) in self.__dict__.items()])
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class AssayPlate(object):
+    def __init__(self, assay_plate_barcode=None, det_plate=None, pool_id=None):
+        self.assay_plate_barcode = assay_plate_barcode
+        self.det_plate = det_plate
+        self.pool_id = pool_id
 
     def __repr__(self):
         return " ".join(["{}:{}".format(str(k),str(v)) for (k,v) in self.__dict__.items()])
@@ -62,6 +77,17 @@ def read_perturbagen_from_file(filepath, config_filepath = prism_pipeline.defaul
     return perturbagens
 
 
+def read_assay_plate_from_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
+    cp = ConfigParser.RawConfigParser()
+    cp.read(config_filepath)
+
+    (headers, data) = _read_data(filepath)
+
+    header_map = _generate_header_map(headers, cp, _assay_plate_config_file_section)
+
+    return _parse_data(header_map, data, AssayPlate)
+
+
 def _build_additional_perturbagen_info(config, perturbagens):
     pert_type_mapping = json.loads(config.get("Perturbagen values", "pert_type_mapping"))
     logger.debug("pert_type_mapping:  {}".format(pert_type_mapping))
@@ -80,7 +106,7 @@ def _build_additional_perturbagen_info(config, perturbagens):
             try:
                 p.pert_dose = 1000.0 * float(p.compound_well_mmoles_per_liter) / float(p.dilution_factor)
                 p.pert_dose_unit = pert_dose_unit
-                p.pert_idose = str(p.pert_dose) + " " + p.pert_dose_unit
+                p.pert_idose = ("%.2f" % p.pert_dose) + " " + p.pert_dose_unit
             except ValueError as e:
                 msg = "the concentration or dilution factors should be numbers, they are not.  p:  {}".format(p)
                 logger.exception(msg)
@@ -112,7 +138,19 @@ def _parse_data(header_map, data, BuildClass):
         r.append(bc)
         for (h,i) in header_map.items():
             if len(row) > i:
-                bc.__dict__[h] = row[i] if row[i] != "" else None
+                val = row[i]
+                if val == "":
+                    val = None
+                else:
+                    try:
+                        val = int(val)
+                    except ValueError:
+                        try:
+                            val = float(val)
+                        except ValueError:
+                            pass
+
+                bc.__dict__[h] = val
 
     return r
 
@@ -141,3 +179,35 @@ def _read_data(tsv_filepath):
 
     data = split_raw_data[1:]
     return (headers, data)
+
+def validate_perturbagens(perturbagens):
+    well_pert_map = {}
+    mismatches = {}
+    for p in perturbagens:
+
+        well_id = p.well_id
+
+        if not well_id in well_pert_map:
+            well_pert_map[well_id] = p
+        else:
+            prev_p = well_pert_map[well_id]
+
+            p_comp = (p.pert_id, p.pert_idose)
+            prev_p_comp = (prev_p.pert_id, prev_p.pert_idose)
+            if p_comp != prev_p_comp:
+                logger.debug("mismatch well_id:  {}  p.assay_plate_barcode:  {}  p_comp:  {}  prev_p.assay_plate_barcode:  {}  "
+                             "prev_p_comp:  {}".format(well_id, p.assay_plate_barcode, p_comp, prev_p.assay_plate_barcode,
+                                                       prev_p_comp))
+
+                if well_id not in mismatches:
+                    mismatches[well_id] = []
+                mismatches[well_id].append(p.assay_plate_barcode)
+
+    if len(mismatches) > 0:
+        mismatch_wells = list(mismatches.keys())
+        mismatch_wells.sort()
+        msg = "the perturbagens provided contain different compounds in the same wells of different assasy plates - mismatch_wells():  {}".format(mismatch_wells)
+        logger.error(msg)
+        raise Exception("prism_metadata validate_perturbagens " + msg)
+    else:
+        return well_pert_map
