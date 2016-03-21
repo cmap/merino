@@ -324,36 +324,41 @@ class TestAssemble(unittest.TestCase):
         cell_list = []
         c = prism_metadata.PrismCell(pool_id="fake pool", analyte_id="fake analyte",
             davepool_id="fake davepool", id=3)
+        c.extra_annot = "my extra annotation"
         cell_list.append(c)
         c = prism_metadata.PrismCell(pool_id="fake pool 2", analyte_id="fake analyte 2",
             davepool_id="fake davepool 2", id=5)
+        c.extra_annot = None
         cell_list.append(c)
 
         matrix = numpy.empty((2,2))
         matrix[:] = [[1,2],[7,float('nan')]]
         matrix_and_annots = assemble.MatrixAndAnnots(cell_list, ["B02", "J01"], matrix)
 
-        r = assemble.generate_row_annotation_and_data_block(matrix_and_annots, ["analyte_id", "davepool_id", "pool_id"])
+        r = assemble.generate_row_annotation_and_data_block(matrix_and_annots, ["analyte_id", "davepool_id", "pool_id",
+                                                                                "extra_annot"])
         logger.debug("r:  {}".format(r))
 
         assert len(r) == 2, len(r)
         row = r[0]
-        assert len(row) == 6, len(row)
+        assert len(row) == 7, len(row)
         assert row[0] == 3, row[0]
         assert row[1] == "fake analyte", row[1]
         assert row[2] == "fake davepool", row[2]
         assert row[3] == "fake pool", row[3]
-        assert row[4] == 1, row[4]
-        assert row[5] == 2, row[5]
+        assert row[4] == "my extra annotation", row[4]
+        assert row[5] == 1, row[5]
+        assert row[6] == 2, row[6]
 
         row = r[1]
-        assert len(row) == 6, len(row)
+        assert len(row) == 7, len(row)
         assert row[0] == 5, row[0]
         assert row[1] == "fake analyte 2", row[1]
         assert row[2] == "fake davepool 2", row[2]
         assert row[3] == "fake pool 2", row[3]
-        assert row[4] == 7, row[4]
-        assert row[5] == assemble._NaN, row[5]
+        assert row[4] == assemble._null, row[4]
+        assert row[5] == 7, row[5]
+        assert row[6] == assemble._NaN, row[6]
 
     def test_write_output_gct(self):
         filepath = "functional_tests/test_assemble/test_write_output_gct.txt"

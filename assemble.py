@@ -225,7 +225,9 @@ def generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order):
         row = [c.id]
         r.append(row)
 
-        row.extend([c.__dict__[ca] for ca in cell_annot_order])
+        for ca in cell_annot_order:
+            value = c.__dict__[ca] if c.__dict__[ca] is not None else _null
+            row.append(value)
 
         numerical_data = [_NaN if numpy.isnan(x) else x for x in matrix_and_annots.matrix[i]]
         row.extend(numerical_data)
