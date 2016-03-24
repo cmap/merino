@@ -27,12 +27,12 @@ def build_parser():
     parser.add_argument("-config_filepath", help="path to the location of the configuration file", type=str,
                         default=prism_pipeline.default_config_filepath)
     parser.add_argument("prism_replicate_name", help="name of the prism replicate that is being processed", type=str)
-    parser.add_argument("davepool_id_csv_filepath_pairs",
-                        help="comma separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
-                        type=str)
     parser.add_argument("plate_map_path", help="path to file containing plate map describing perturbagens used", type=str)
     parser.add_argument("plates_mapping_path", help="path to file containing the mapping between assasy plates and det_plates",
                         type=str)
+    parser.add_argument("davepool_id_csv_filepath_pairs",
+                        help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
+                        type=str, nargs="+")
     return parser
 
 
@@ -266,12 +266,13 @@ def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list,
     f.close()
 
 
-def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs_str):
-    split = davepool_id_csv_filepath_pairs_str.split(",")
+def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
     r = []
-    for i in range(len(split)/2):
+    for i in range(len(davepool_id_csv_filepath_pairs)/2):
         index = 2*i
-        r.append((split[index], split[index+1]))
+        davepool_id = davepool_id_csv_filepath_pairs[index]
+        csv_filepath = davepool_id_csv_filepath_pairs[index+1]
+        r.append((davepool_id, csv_filepath))
 
     return r
 
@@ -359,4 +360,7 @@ def core(args):
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
     setup_logger.setup(verbose=args.verbose)
+
+    logger.debug("args:  {}".format(args))
+
     core(args)

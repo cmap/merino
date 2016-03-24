@@ -14,7 +14,7 @@ logger = logging.getLogger(setup_logger.LOGGER_NAME)
 class TestAssemble(unittest.TestCase):
     def test_parse_location_to_well(self):
         r = assemble.parse_location_to_well("1(1,A1)")
-        assert r == "A1", r
+        assert r == "A01", r
 
         r = assemble.parse_location_to_well("384(1,P24)")
         assert r == "P24", r
@@ -402,7 +402,7 @@ class TestAssemble(unittest.TestCase):
         assert len(r) == 9, "expect 9:  version, size, header row, 4 pert annot, 2 data rows, found len(r):  {}".format(len(r))
 
     def test_build_davepool_id_csv_list(self):
-        r = assemble.build_davepool_id_csv_list("a,1,b,2,c,3")
+        r = assemble.build_davepool_id_csv_list(["a","1","b","2","c","3"])
         logger.debug("r:  {}".format(r))
         assert len(r) == 3, len(r)
 
