@@ -331,7 +331,7 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
     return assay_plates
 
 
-def core(args):
+def main(args):
     davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
     davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
@@ -363,4 +363,4 @@ if __name__ == "__main__":
 
     logger.debug("args:  {}".format(args))
 
-    core(args)
+    main(args)
