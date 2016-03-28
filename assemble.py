@@ -33,6 +33,9 @@ def build_parser():
     parser.add_argument("davepool_id_csv_filepath_pairs",
                         help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
                         type=str, nargs="+")
+    parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
+                                                                           " ignored / excluded from the assemble",
+                        nargs="+", default=None)
     return parser
 
 
@@ -78,14 +81,19 @@ def build_data_by_cell(cells, davepool_data_obj):
     for (cell_data_map, wells, headers, data) in l:
         cell_header_map = {}
         for c in cells:
-            cell_header_map[c] = headers.index(c.analyte_id)
+            if c.ignore == False:
+                cell_header_map[c] = headers.index(c.analyte_id)
             cell_data_map[c] = []
 
         for d in data:
             wells.append(parse_location_to_well(d[0]))
             for c in cells:
-                datum_index = cell_header_map[c]
-                datum = d[datum_index]
+                if c in cell_header_map:
+                    datum_index = cell_header_map[c]
+                    datum = d[datum_index]
+                else:
+                    datum = float('nan')
+
                 cell_data_map[c].append(datum)
 
     return (DataByCell(cell_to_median_data_map, median_wells), DataByCell(cell_to_count_data_map, count_wells))
@@ -278,7 +286,7 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
 
 
 def build_perturbagen_list(plate_map_path, config_filepath, assay_plates):
-    assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates])
+    assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates if x.ignore == False])
 
     all_perturbagens = prism_metadata.read_perturbagen_from_file(plate_map_path, config_filepath)
 
@@ -304,6 +312,7 @@ def build_prism_cell_list(config_filepath, assay_plates):
             pc.assay_plate_barcode = assay_plate.assay_plate_barcode
             pc.det_plate = assay_plate.det_plate
             pc.det_plate_scan_time = assay_plate.det_plate_scan_time
+            pc.ignore = assay_plate.ignore
         else:
             pool_id_without_assay_plate.add(pc.pool_id)
 
@@ -315,7 +324,7 @@ def build_prism_cell_list(config_filepath, assay_plates):
 
     return prism_cell_list
 
-def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objects):
+def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objects, ignore_assay_plate_barcodes):
     all_assay_plates = prism_metadata.read_assay_plate_from_file(plates_mapping_path, config_filepath)
 
     det_plate_davepool_data_objects_map = {}
@@ -328,14 +337,19 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
     for ap in assay_plates:
         ap.det_plate_scan_time = det_plate_davepool_data_objects_map[ap.det_plate].csv_datetime
 
+        ap.ignore = ap.assay_plate_barcode in ignore_assay_plate_barcodes
+
     return assay_plates
 
 
 def main(args):
+    args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
+
     davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
     davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
-    assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects)
+    assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects,
+                                      args.ignore_assay_plate_barcodes)
     logger.info("len(assay_plates):  {}".format(len(assay_plates)))
 
     prism_cell_list = build_prism_cell_list(args.config_filepath, assay_plates)
