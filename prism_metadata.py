@@ -3,7 +3,7 @@ import logging
 import ConfigParser
 import prism_pipeline
 import json
-import copy
+import pandas
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -258,5 +258,31 @@ def validate_perturbagens(perturbagens):
         return well_pert_map
 
 
-def convert_perturbagen_list_to_col_metadata_df(perturbagen_list):
-    pass
+def convert_objects_to_metadata_df(index_builder, object_list, meta_renaming_map):
+    col_metadata_map = {}
+    for p in object_list:
+        for k in p.__dict__.keys():
+            if k not in col_metadata_map:
+                col_metadata_map[k] = []
+
+    index = []
+    for p in object_list:
+        index.append(index_builder(p))
+
+        for (field, list) in col_metadata_map.items():
+            value = p.__dict__[field] if field in p.__dict__ else None
+            list.append(value)
+
+    for (original_name, new_name) in meta_renaming_map.items():
+        if new_name not in col_metadata_map:
+            col_metadata_map[new_name] = col_metadata_map[original_name]
+            del col_metadata_map[original_name]
+        else:
+            raise Exception("prism_metadata convert_perturbagen_list_to_col_metadata_df conflict in column names - renaming "
+                            "column will erase existing data.  col_meta_renaming_map:  {}  col_metadata_map.keys():  {}".format(
+                meta_renaming_map, col_metadata_map.keys()
+            ))
+
+    return pandas.DataFrame(col_metadata_map, index=index)
+
+

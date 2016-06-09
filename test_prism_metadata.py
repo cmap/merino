@@ -244,8 +244,39 @@ class TestPrismMetadata(unittest.TestCase):
         r = pm._parse_raw_value("hello world")
         assert r == "hello world", r
 
-    def test_convert_perturbagen_list_to_col_metadata_df(self):
-        pm.convert_perturbagen_list_to_col_metadata_df(None)
+    def test_convert_objects_to_metadata_df(self):
+        col_base_id = "my col base id"
+        pert_list = [pm.Perturbagen("A01"), pm.Perturbagen("B02"), pm.Perturbagen(3)]
+        for (i, p) in enumerate(pert_list):
+            p.pert_type = "trt_cp"
+            p.random_inclusion = i
+            p.other = None
+            p.something = i*1.1
+
+        def index_builder(p):
+            return col_base_id + ":" + str(p.well_id)
+
+        r = pm.convert_objects_to_metadata_df(index_builder, pert_list, {"well_id":"pert_well"})
+        assert r is not None
+        logger.debug("r:  {}".format(r))
+
+        assert pm.cmap_pert_well in r.columns
+        assert "pert_type" in r.columns
+        assert "random_inclusion" in r.columns
+        assert "other" in r.columns
+        assert "something" in r.columns
+
+        expected_col_id = index_builder(pert_list[0])
+        assert expected_col_id in r.index, (expected_col_id, r.index)
+        expected_col_id = index_builder(pert_list[2])
+        assert expected_col_id in r.index, (expected_col_id, r.index)
+
+        assert "trt_cp" == r["pert_type"][expected_col_id], r["pert_type"][expected_col_id]
+        assert 2 == r["random_inclusion"][expected_col_id], r["random_inclusion"][expected_col_id]
+        assert r["other"][expected_col_id] is None, r["other"][expected_col_id]
+        assert 2.2 == r["something"][expected_col_id], r["something"][expected_col_id]
+        assert 3 == r["pert_well"][expected_col_id], r["pert_well"][expected_col_id]
+
 
 if __name__ == "__main__":
     setup_logger.setup(verbose=True)
