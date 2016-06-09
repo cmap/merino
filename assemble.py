@@ -36,7 +36,8 @@ def build_parser():
     parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
                                                                            " ignored / excluded from the assemble",
                         nargs="+", default=None)
-    parser.add_argument("-plate_map_type", "-pmt", help="type of the plate map", choices=["CM", "CMap"], default="CM")
+    parser.add_argument("-plate_map_type", "-pmt", help="type of the plate map", choices=prism_metadata.plate_map_types,
+                        default="CM")
     return parser
 
 
@@ -289,7 +290,8 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
 def build_perturbagen_list(plate_map_path, config_filepath, assay_plates):
     assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates if x.ignore == False])
 
-    all_perturbagens = prism_metadata.read_perturbagen_from_CM_file(plate_map_path, config_filepath)
+    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, prism_metadata._plate_map_type_CM,
+                                                                   config_filepath)
 
     perts = [x for x in all_perturbagens if x.assay_plate_barcode in assay_plate_barcodes]
 
@@ -381,4 +383,8 @@ if __name__ == "__main__":
 
     main(args)
 
+
+#TODO def convert_perturbagen_list_to_col_metadata_df (for use in GCToo) (in prism_metadata.py)
 #TODO need to collect perturbagens ignoring assay plate barcode when running in CMap plate mode
+#TODO convert cell meta data to row_metadata_df (for use in GCToo)
+#TODO convert data to data_df

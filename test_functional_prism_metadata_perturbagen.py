@@ -17,8 +17,10 @@ if __name__ == "__main__":
 
     assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates])
 
-    perts = prism_metadata.read_perturbagen_from_CM_file(
-        "functional_tests/test_functional_prism_metadata_perturbagen/7159-03-A02-01-01_02-29-16_12.20.32.txt", "prism_pipeline.cfg")
+    perts = prism_metadata.build_perturbagens_from_file(
+        "functional_tests/test_functional_prism_metadata_perturbagen/7159-03-A02-01-01_02-29-16_12.20.32.txt",
+        prism_metadata._plate_map_type_CM,
+        "prism_pipeline.cfg")
 
     replicate_perts = [x for x in perts if x.assay_plate_barcode in assay_plate_barcodes]
 

@@ -9,10 +9,15 @@ import copy
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 _prism_cell_config_file_section = "PrismCell column headers"
-_perturbagen_config_file_section = "Perturbagen column headers"
+_perturbagen_CM_input_config_file_section = "Perturbagen CM input column headers"
+_perturbagen_CMap_input_config_file_section = "Perturbagen CMap input column headers"
 _assay_plate_config_file_section = "Assay Plate column headers"
 
 cmap_pert_well = "pert_well"
+
+_plate_map_type_CM = "CM"
+_plate_map_type_CMap = "CMap"
+plate_map_types = [_plate_map_type_CM, _plate_map_type_CMap]
 
 
 class PrismCell(object):
@@ -62,68 +67,71 @@ def read_prism_cell_from_file(config_filepath = prism_pipeline.default_config_fi
     filepath = cp.get("PrismCell database file", "prism_cell_database_filepath")
     (headers, data) = _read_data(filepath)
 
-    header_map = _generate_header_map(headers, cp, _prism_cell_config_file_section)
+    header_map = _generate_header_map(headers, cp.items(_prism_cell_config_file_section), False)
 
     return _parse_data(header_map, data, PrismCell)
 
 
-def read_perturbagen_from_CM_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
-    cp = ConfigParser.RawConfigParser()
-    cp.read(config_filepath)
+def build_perturbagens_from_file(filepath, plate_map_type, config_filepath = prism_pipeline.default_config_filepath):
+    if plate_map_type == _plate_map_type_CM:
+        config_section = _perturbagen_CM_input_config_file_section
+        do_build_additional = True
+        do_keep_additional = False
+    elif plate_map_type == _plate_map_type_CMap:
+        config_section = _perturbagen_CMap_input_config_file_section
+        do_build_additional = False
+        do_keep_additional = True
+    else:
+        raise Exception("prism_metadata read_perturbagen_from_file unrecognized plate_map_type:  {}".format(plate_map_type))
 
-    (headers, data) = _read_data(filepath)
+    perturbagens = _read_perturbagen_from_file(filepath, config_section, do_keep_additional, config_filepath)
 
-    header_map = _generate_header_map(headers, cp, _perturbagen_config_file_section)
-
-    perturbagens = _parse_data(header_map, data, Perturbagen)
-    _build_additional_perturbagen_info(cp, perturbagens)
+    if do_build_additional:
+        _build_additional_perturbagen_info(config_filepath, perturbagens)
 
     return perturbagens
 
 
-def read_perturbagen_from_CMap_file(filepath):
-    (headers, data) = _read_data(filepath)
+def _read_perturbagen_from_file(filepath, config_section, do_keep_all,
+                                config_filepath = prism_pipeline.default_config_filepath):
 
-    r = []
-
-    for row in data:
-        p = Perturbagen()
-        r.append(p)
-
-        for (i, h) in enumerate(headers):
-            if len(row) > i:
-                raw_value = row[i]
-                val = _parse_raw_value(raw_value)
-
-                p.__dict__[h] = val
-
-        p.well_id = p.__dict__[cmap_pert_well]
-
-    return r
-
-
-def read_assay_plate_from_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
+    logger.debug("config_filepath:  {}".format(config_filepath))
     cp = ConfigParser.RawConfigParser()
     cp.read(config_filepath)
 
     (headers, data) = _read_data(filepath)
 
-    header_map = _generate_header_map(headers, cp, _assay_plate_config_file_section)
+    header_map = _generate_header_map(headers, cp.items(config_section), do_keep_all)
+
+    return _parse_data(header_map, data, Perturbagen)
+
+
+def read_assay_plate_from_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
+    logger.debug("config_filepath:  {}".format(config_filepath))
+    cp = ConfigParser.RawConfigParser()
+    cp.read(config_filepath)
+
+    (headers, data) = _read_data(filepath)
+
+    header_map = _generate_header_map(headers, cp.items(_assay_plate_config_file_section), False)
 
     return _parse_data(header_map, data, AssayPlate)
 
 
-def _build_additional_perturbagen_info(config, perturbagens):
-    pert_type_mapping = json.loads(config.get("Perturbagen values", "pert_type_mapping"))
+def _build_additional_perturbagen_info(config_filepath, perturbagens):
+    cp = ConfigParser.RawConfigParser()
+    cp.read(config_filepath)
+
+    pert_type_mapping = json.loads(cp.get("Perturbagen values", "pert_type_mapping"))
     logger.debug("pert_type_mapping:  {}".format(pert_type_mapping))
 
-    pert_dose_unit = config.get("Perturbagen values", "pert_dose_unit_uM")
-    pert_type_vehicle = config.get("Perturbagen values", "pert_type_vehicle")
+    pert_dose_unit = cp.get("Perturbagen values", "pert_dose_unit_uM")
+    pert_type_vehicle = cp.get("Perturbagen values", "pert_type_vehicle")
 
-    pert_time = config.get("Perturbagen values", "default_pert_time")
-    pert_time_unit = config.get("Perturbagen values", "default_pert_time_unit")
+    pert_time = cp.get("Perturbagen values", "default_pert_time")
+    pert_time_unit = cp.get("Perturbagen values", "default_pert_time_unit")
 
-    pert_id_DMSO = config.get("Perturbagen values", "pert_id_DMSO")
+    pert_id_DMSO = cp.get("Perturbagen values", "pert_id_DMSO")
 
     for (i,p) in enumerate(perturbagens):
         #multiply by 1000 for unit conversion from mM to uM, then apply dilution factor
@@ -187,13 +195,18 @@ def _parse_raw_value(raw_value):
     return val
 
 
-def _generate_header_map(headers, config, config_section):
-    columns = config.items(config_section)
+def _generate_header_map(headers, internal_header_file_header_pairs, do_keep_all):
+    reverse_header_map = {}
+    for (c_key, c_header_name) in internal_header_file_header_pairs:
+        reverse_header_map[c_header_name] = c_key
 
     header_map = {}
-    for (c_key, c_header_name) in columns:
-        if c_header_name in headers:
-            header_map[c_key] = headers.index(c_header_name)
+    for (i, h) in enumerate(headers):
+        if h in reverse_header_map:
+            c_key = reverse_header_map[h]
+            header_map[c_key] = i
+        elif do_keep_all:
+            header_map[h] = i
 
     logger.debug("header_map:  {}".format(header_map))
     return header_map
@@ -243,3 +256,7 @@ def validate_perturbagens(perturbagens):
         raise Exception("prism_metadata validate_perturbagens " + msg)
     else:
         return well_pert_map
+
+
+def convert_perturbagen_list_to_col_metadata_df(perturbagen_list):
+    pass
