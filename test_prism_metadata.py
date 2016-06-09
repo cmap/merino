@@ -78,8 +78,8 @@ class TestPrismMetadata(unittest.TestCase):
         assert len(r) > 0
         logger.debug("r:  {}".format(r))
 
-    def test_read_perturbagen_from_file(self):
-        r = pm.read_perturbagen_from_file("functional_tests/test_prism_metadata/perturbagen.txt", "prism_pipeline.cfg")
+    def test_read_perturbagen_from_CM_file(self):
+        r = pm.read_perturbagen_from_CM_file("functional_tests/test_prism_metadata/perturbagen.txt", "prism_pipeline.cfg")
         assert len(r) > 0
         for x in r:
             logger.debug("x:  {}".format(x))
@@ -193,6 +193,39 @@ class TestPrismMetadata(unittest.TestCase):
         assert context.exception is not None
         logger.debug("context.exception:  {}".format(context.exception))
         assert "the perturbagens provided contain different compounds in the same wells of different assasy plates" in str(context.exception), str(context.exception)
+
+    def test__parse_raw_value(self):
+        r = pm._parse_raw_value("")
+        assert r is None
+
+        r = pm._parse_raw_value("6")
+        assert r == 6, r
+
+        r = pm._parse_raw_value("6.1")
+        assert r == 6.1, r
+
+        r = pm._parse_raw_value("hello world")
+        assert r == "hello world", r
+
+    def test_read_perturbagen_from_CMap_file(self):
+        #1 perturbagen per well
+        r = pm.read_perturbagen_from_CMap_file("functional_tests/test_prism_metadata/LJP005.src")
+        assert len(r) > 0, len(r)
+        logger.debug("r[0]:  {}".format(r[0]))
+        logger.debug("r[6]:  {}".format(r[6]))
+        assert hasattr(r[0], "pert_id")
+        assert hasattr(r[0], "pert_type")
+        assert r[0].well_id is not None
+
+        #multiple perturbagens per well
+        r = pm.read_perturbagen_from_CMap_file("functional_tests/test_prism_metadata/PMEL.A001.src")
+        assert len(r) > 0, len(r)
+        logger.debug("r[0]:  {}".format(r[0]))
+        logger.debug("r[6]:  {}".format(r[6]))
+        assert hasattr(r[0], "pert_id")
+        assert hasattr(r[0], "pert_type")
+        assert r[0].well_id is not None
+
 
 if __name__ == "__main__":
     setup_logger.setup(verbose=True)

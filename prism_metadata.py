@@ -12,6 +12,8 @@ _prism_cell_config_file_section = "PrismCell column headers"
 _perturbagen_config_file_section = "Perturbagen column headers"
 _assay_plate_config_file_section = "Assay Plate column headers"
 
+cmap_pert_well = "pert_well"
+
 
 class PrismCell(object):
     def __init__(self, pool_id=None, analyte_id=None, davepool_id=None, id=None):
@@ -19,6 +21,8 @@ class PrismCell(object):
         self.analyte_id = analyte_id
         self.davepool_id = davepool_id
         self.id = id
+
+        self.ignore = False
 
     def __repr__(self):
         return " ".join(["{}:{}".format(str(k),str(v)) for (k,v) in self.__dict__.items()])
@@ -63,7 +67,7 @@ def read_prism_cell_from_file(config_filepath = prism_pipeline.default_config_fi
     return _parse_data(header_map, data, PrismCell)
 
 
-def read_perturbagen_from_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
+def read_perturbagen_from_CM_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
     cp = ConfigParser.RawConfigParser()
     cp.read(config_filepath)
 
@@ -75,6 +79,27 @@ def read_perturbagen_from_file(filepath, config_filepath = prism_pipeline.defaul
     _build_additional_perturbagen_info(cp, perturbagens)
 
     return perturbagens
+
+
+def read_perturbagen_from_CMap_file(filepath):
+    (headers, data) = _read_data(filepath)
+
+    r = []
+
+    for row in data:
+        p = Perturbagen()
+        r.append(p)
+
+        for (i, h) in enumerate(headers):
+            if len(row) > i:
+                raw_value = row[i]
+                val = _parse_raw_value(raw_value)
+
+                p.__dict__[h] = val
+
+        p.well_id = p.__dict__[cmap_pert_well]
+
+    return r
 
 
 def read_assay_plate_from_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
@@ -101,7 +126,7 @@ def _build_additional_perturbagen_info(config, perturbagens):
     pert_id_DMSO = config.get("Perturbagen values", "pert_id_DMSO")
 
     for (i,p) in enumerate(perturbagens):
-        #multiply by 1000 for unit conversion from mM to uM, then apply diluation factor
+        #multiply by 1000 for unit conversion from mM to uM, then apply dilution factor
         if p.compound_well_mmoles_per_liter is not None:
             try:
                 p.pert_dose = 1000.0 * float(p.compound_well_mmoles_per_liter) / float(p.dilution_factor)
@@ -138,21 +163,28 @@ def _parse_data(header_map, data, BuildClass):
         r.append(bc)
         for (h,i) in header_map.items():
             if len(row) > i:
-                val = row[i]
-                if val == "":
-                    val = None
-                else:
-                    try:
-                        val = int(val)
-                    except ValueError:
-                        try:
-                            val = float(val)
-                        except ValueError:
-                            pass
+                raw_value = row[i]
+                val = _parse_raw_value(raw_value)
 
                 bc.__dict__[h] = val
 
     return r
+
+
+def _parse_raw_value(raw_value):
+    val = raw_value
+    if val == "":
+        val = None
+    else:
+        try:
+            val = int(val)
+        except ValueError:
+            try:
+                val = float(val)
+            except ValueError:
+                pass
+
+    return val
 
 
 def _generate_header_map(headers, config, config_section):

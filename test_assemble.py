@@ -411,6 +411,27 @@ class TestAssemble(unittest.TestCase):
         assert r[2][0] == "c", r[2][0]
         assert r[2][1] == "3", r[2][1]
 
+    def test_full_functional(self):
+        expected_files = ["PCAL003_CS1_X1_COUNT.gct", "PCAL003_CS1_X1_MEDIAN.gct"]
+        for ef in expected_files:
+            if os.path.exists(ef):
+                os.remove(ef)
+
+        args = assemble.build_parser().parse_args(["-config_filepath",
+            "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg", "PCAL003_CS1_X1",
+            "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt",
+            "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt",
+            "DP7", "functional_tests/test_assemble/full_functional_test/PCAL003_DP7_X1.csv",
+            "DP8", "functional_tests/test_assemble/full_functional_test/PCAL003_DP8_X1.csv"])
+        logger.debug("args:  {}".format(args))
+
+        assemble.main(args)
+
+        for ef in expected_files:
+            assert os.path.exists(ef), ef
+            os.remove(ef)
+
+        args.plate_map_path = "functional_tests/test_assemble/full_functional_test/"
 
 if __name__ == "__main__":
     setup_logger.setup(verbose=True)

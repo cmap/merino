@@ -36,6 +36,7 @@ def build_parser():
     parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
                                                                            " ignored / excluded from the assemble",
                         nargs="+", default=None)
+    parser.add_argument("-plate_map_type", "-pmt", help="type of the plate map", choices=["CM", "CMap"], default="CM")
     return parser
 
 
@@ -179,7 +180,7 @@ def write_gct_version_and_size(file_handle, example_perturbagen, matrix_and_anno
     file_handle.write(_gct_version + "\n")
 
     matrix_shape = matrix_and_annots.matrix.shape
-    num_row_annots = len(matrix_and_annots.sorted_unique_cells[0].__dict__) - 1
+    num_row_annots = len(matrix_and_annots.sorted_unique_cells[0].__dict__) - 2
     num_col_annots = len(example_perturbagen.__dict__)
     size_line = [matrix_shape[0], matrix_shape[1], num_row_annots, num_col_annots]
 
@@ -189,7 +190,7 @@ def write_gct_version_and_size(file_handle, example_perturbagen, matrix_and_anno
 def generate_column_headers(prism_replicate_name, example_cell, sorted_unique_wells):
     h = ["id"]
 
-    cell_annot_order = [str(x) for x in example_cell.__dict__ if x != "id"]
+    cell_annot_order = [str(x) for x in example_cell.__dict__ if x != "id" and x != "ignore"]
     cell_annot_order.sort()
     h.extend(cell_annot_order)
 
@@ -288,7 +289,7 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
 def build_perturbagen_list(plate_map_path, config_filepath, assay_plates):
     assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates if x.ignore == False])
 
-    all_perturbagens = prism_metadata.read_perturbagen_from_file(plate_map_path, config_filepath)
+    all_perturbagens = prism_metadata.read_perturbagen_from_CM_file(plate_map_path, config_filepath)
 
     perts = [x for x in all_perturbagens if x.assay_plate_barcode in assay_plate_barcodes]
 
@@ -323,6 +324,7 @@ def build_prism_cell_list(config_filepath, assay_plates):
             pool_id_without_assay_plate))
 
     return prism_cell_list
+
 
 def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objects, ignore_assay_plate_barcodes):
     all_assay_plates = prism_metadata.read_assay_plate_from_file(plates_mapping_path, config_filepath)
@@ -378,3 +380,5 @@ if __name__ == "__main__":
     logger.debug("args:  {}".format(args))
 
     main(args)
+
+#TODO need to collect perturbagens ignoring assay plate barcode when running in CMap plate mode
