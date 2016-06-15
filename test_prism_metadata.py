@@ -1,4 +1,3 @@
-from unittest import TestCase
 import setup_logger
 import logging
 import unittest
@@ -50,7 +49,6 @@ class TestPrismMetadata(unittest.TestCase):
         assert "extra_header" in r
         assert r["extra_header"] == 3, r["extra_header"]
 
-
     def test__parse_data(self):
         headers = ["pool_id", "analyte", "strippedname"]
         cp = ConfigParser.RawConfigParser()
@@ -66,6 +64,8 @@ class TestPrismMetadata(unittest.TestCase):
 
         header_map["extra header that doesn't have data in any row"] = 10
         r = pm._parse_data(header_map, data, pm.PrismCell)
+        logger.debug("r:  {}".format(r))
+        assert len(r) == len(data), len(r)
 
         data.append(["7", "", "blah"])
         r = pm._parse_data(header_map, data, pm.PrismCell)
@@ -179,7 +179,8 @@ class TestPrismMetadata(unittest.TestCase):
             pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
         assert context.exception is not None
         logger.debug("context.exception:  {}".format(context.exception))
-        assert "the concentration or dilution factors should be numbers" in str(context.exception), str(context.exception)
+        assert "the concentration or dilution factors should be numbers" in str(context.exception), \
+            str(context.exception)
 
         p.compound_well_mmoles_per_liter = 5.0
         del p.pert_type
@@ -209,7 +210,7 @@ class TestPrismMetadata(unittest.TestCase):
 
         for assay_plate_barcode in ["a" + str(i) for i in range(2)]:
             new_perts = [pm.Perturbagen(well_id=i) for i in range(num_wells)]
-            for (i,np) in enumerate(new_perts):
+            for (i, np) in enumerate(new_perts):
                 np.assay_plate_barcode = assay_plate_barcode
                 np.pert_id = "BRD-K" + str(int(11.0*i))
                 np.pert_idose = str(13.0*i) + " uM"
@@ -229,7 +230,8 @@ class TestPrismMetadata(unittest.TestCase):
             pm.validate_perturbagens(perts)
         assert context.exception is not None
         logger.debug("context.exception:  {}".format(context.exception))
-        assert "the perturbagens provided contain different compounds in the same wells of different assasy plates" in str(context.exception), str(context.exception)
+        assert "the perturbagens provided contain different compounds in the same wells of different assasy plates" in \
+               str(context.exception), str(context.exception)
 
     def test__parse_raw_value(self):
         r = pm._parse_raw_value("")
@@ -253,10 +255,10 @@ class TestPrismMetadata(unittest.TestCase):
             p.other = None
             p.something = i*1.1
 
-        def index_builder(p):
-            return col_base_id + ":" + str(p.well_id)
+        def index_builder(pert):
+            return col_base_id + ":" + str(pert.well_id)
 
-        r = pm.convert_objects_to_metadata_df(index_builder, pert_list, {"well_id":"pert_well"})
+        r = pm.convert_objects_to_metadata_df(index_builder, pert_list, {"well_id": "pert_well"})
         assert r is not None
         logger.debug("r:  {}".format(r))
 
@@ -276,6 +278,21 @@ class TestPrismMetadata(unittest.TestCase):
         assert r["other"][expected_col_id] is None, r["other"][expected_col_id]
         assert 2.2 == r["something"][expected_col_id], r["something"][expected_col_id]
         assert 3 == r["pert_well"][expected_col_id], r["pert_well"][expected_col_id]
+
+    def test_convert_objects_to_metadata_df_for_prism_cell(self):
+        cell_list = [pm.PrismCell(1, 2, 3, 5), pm.PrismCell(7, 11, 13, 17)]
+
+        def index_builder(c):
+            return c.id
+
+        r = pm.convert_objects_to_metadata_df(index_builder, cell_list, {"id": "rid"})
+
+        assert r is not None
+        logger.debug("r:  {}".format(r))
+
+        assert "pool_id" in r.columns
+        assert "davepool_id" in r.columns
+        assert "analyte_id" in r.columns
 
 
 if __name__ == "__main__":
