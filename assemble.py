@@ -2,20 +2,27 @@ import setup_logger
 import logging
 import davepool_data
 import prism_metadata
-import collections
 import numpy
 import argparse
 import prism_pipeline
 import sys
 import os
+import GCToo.GCToo as GCToo
+import pandas
+import GCToo.write_gctoo as write_gctoo
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
-DataByCell = collections.namedtuple("DataByCell", "cell_data_map well_list")
-MatrixAndAnnots = collections.namedtuple("MatrixAndAnnots", "sorted_unique_cells sorted_unique_wells matrix")
+class DataByCell:
+    def __init__(self, cell_data_map=None, well_list=None):
+        self.cell_data_map = cell_data_map
+        self.well_list = well_list
+    def __str__(self):
+        return "cell_data_map:  {}  well_list:  {}".format(self.cell_data_map, self.well_list)
 
-_gct_version = "#1.3"
+_remove_row_annotations = ["id", "ignore"]
+_remove_col_annotations = ["assay_plate_barcode"]
 
 _null = "-666"
 _NaN = "NaN"
@@ -52,6 +59,11 @@ def parse_location_to_well(location):
 
 
 def read_davepool_data_objects(davepool_id_csv_list):
+    '''
+    create davepool objects and populate with data read from csv's
+    :param davepool_id_csv_list: list of pairs of davepool ID and path to corresponding csv file for that davepool
+    :return:
+    '''
     r = []
     for (dp_id, csv_filepath) in davepool_id_csv_list:
         pd = davepool_data.read_data(csv_filepath)
@@ -62,6 +74,11 @@ def read_davepool_data_objects(davepool_id_csv_list):
 
 
 def build_davepool_id_to_cells_map(prism_cell_list):
+    '''
+    build one-to-many mapping between davepool ID and the corresponding PRISM cell lines that are within that davepool
+    :param prism_cell_list:
+    :return:
+    '''
     r = {}
     for pc in prism_cell_list:
         if pc.davepool_id not in r:
@@ -118,8 +135,9 @@ def combine_maps_with_checks(source_map, dest_map):#TODO use this
 def process_data(davepool_data_objects, davepool_id_to_cells_map):
     logger.debug("davepool_id_to_cells_map.keys():  {}".format(davepool_id_to_cells_map.keys()))
 
-    all_median_data_by_cell = []
-    all_count_data_by_cell = []
+    authoritative_well_list = []
+    all_median_data_by_cell = DataByCell(cell_data_map={})
+    all_count_data_by_cell = DataByCell(cell_data_map={})
 
     for dd in davepool_data_objects:
         cells = davepool_id_to_cells_map[dd.davepool_id]
@@ -127,8 +145,19 @@ def process_data(davepool_data_objects, davepool_id_to_cells_map):
 
         (median_data_by_cell), (count_data_by_cell) = build_data_by_cell(cells, dd)
 
-        all_median_data_by_cell.append(median_data_by_cell)
-        all_count_data_by_cell.append(count_data_by_cell)
+        if len(authoritative_well_list) == 0:
+            authoritative_well_list = median_data_by_cell.well_list
+        else:
+            assert authoritative_well_list == median_data_by_cell.well_list, (authoritative_well_list,
+                                                                              median_data_by_cell.well_list)
+            assert authoritative_well_list == count_data_by_cell.well_list, (authoritative_well_list,
+                                                                             count_data_by_cell.well_list)
+
+        all_median_data_by_cell.cell_data_map.update(median_data_by_cell.cell_data_map)
+        all_count_data_by_cell.cell_data_map.update(count_data_by_cell.cell_data_map)
+
+    all_median_data_by_cell.well_list = authoritative_well_list
+    all_count_data_by_cell.well_list = authoritative_well_list
 
     return (all_median_data_by_cell, all_count_data_by_cell)
 
@@ -156,79 +185,6 @@ def generate_sorted_unique_cells_and_wells(data_by_cells):
     return (sorted_unique_cells, sorted_unique_wells)
 
 
-def build_matrix_and_annotations(data_by_cells):
-    (sorted_unique_cells, sorted_unique_wells) = generate_sorted_unique_cells_and_wells(data_by_cells)
-
-    matrix = numpy.empty((len(sorted_unique_cells), len(sorted_unique_wells)))
-    matrix[:] = numpy.NaN
-
-    for dbc in data_by_cells:
-        for (cell, data) in dbc.cell_data_map.items():
-            logger.debug("data:  {}".format(data))
-
-            row_ind = sorted_unique_cells.index(cell)
-            row = matrix[row_ind]
-
-            col_inds = [sorted_unique_wells.index(x) for x in dbc.well_list]
-            logger.debug("col_inds:  {}".format(col_inds))
-
-            row[col_inds] = data
-
-    return MatrixAndAnnots(sorted_unique_cells, sorted_unique_wells, matrix)
-
-
-def write_gct_version_and_size(file_handle, example_perturbagen, matrix_and_annots):
-    file_handle.write(_gct_version + "\n")
-
-    matrix_shape = matrix_and_annots.matrix.shape
-    num_row_annots = len(matrix_and_annots.sorted_unique_cells[0].__dict__) - 2
-    num_col_annots = len(example_perturbagen.__dict__)
-    size_line = [matrix_shape[0], matrix_shape[1], num_row_annots, num_col_annots]
-
-    file_handle.write("\t".join([str(x) for x in size_line]) + "\n")
-
-
-def generate_column_headers(prism_replicate_name, example_cell, sorted_unique_wells):
-    h = ["id"]
-
-    cell_annot_order = [str(x) for x in example_cell.__dict__ if x != "id" and x != "ignore"]
-    cell_annot_order.sort()
-    h.extend(cell_annot_order)
-
-    h.extend([prism_replicate_name + ":" + w for w in sorted_unique_wells])
-
-    return (h, cell_annot_order)
-
-
-def generate_perturbagen_annotation_header_block(perturbagen_list, sorted_unique_wells, num_cell_annot):
-    annot_field_set = set()
-    for p in perturbagen_list:
-        annot_field_set.update(p.__dict__.keys())
-
-    annot_fields = list(annot_field_set)
-    annot_fields.sort()
-
-    well_pert_map = {}
-    for p in perturbagen_list:
-        well_pert_map[p.well_id] = p
-
-    r = []
-    for af in annot_fields:
-        row = []
-        r.append(row)
-
-        row.append(af)
-        row.extend([_null for i in range(num_cell_annot)])
-
-        for w in sorted_unique_wells:
-            p = well_pert_map[w]
-            value = p.__dict__[af] if af in p.__dict__ else _null
-            value = value if value is not None else _null
-            row.append(value)
-
-    return r
-
-
 def generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order):
     r = []
     for (i, c) in enumerate(matrix_and_annots.sorted_unique_cells):
@@ -245,38 +201,66 @@ def generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order):
     return r
 
 
-def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list,
-                    matrix_and_annots):
-    f = open(output_filepath, "w")
-    write_gct_version_and_size(f, perturbagen_list[0], matrix_and_annots)
+def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list, data_by_cell):
+    my_gctoo = GCToo.GCToo()
 
-    (headers, cell_annot_order) = generate_column_headers(prism_replicate_name,
-        matrix_and_annots.sorted_unique_cells[0],
-        matrix_and_annots.sorted_unique_wells)
+    #build column metadata dataframe:
+    def column_ID_builder(perturbagen):
+        return prism_replicate_name + ":" + perturbagen.well_id
 
-    f.write("\t".join(headers) + "\n")
+    my_gctoo.col_metadata_df = prism_metadata.convert_objects_to_metadata_df(column_ID_builder, perturbagen_list,
+                                                                             {"well_id":"pert_well"})
+    for col_annot in _remove_col_annotations:
+        if col_annot in my_gctoo.col_metadata_df.columns:
+            my_gctoo.col_metadata_df.drop(col_annot, axis=1, inplace=True)
+    logger.debug("my_gctoo.col_metadata_df:  {}".format(my_gctoo.col_metadata_df))
+    ########################################
 
-    perturbation_annotation_header_block = generate_perturbagen_annotation_header_block(perturbagen_list,
-        matrix_and_annots.sorted_unique_wells, len(cell_annot_order))
+    #build row metadata dataframe:
+    def row_ID_builder(prism_cell_obj):
+        return prism_cell_obj.id
 
-    for header_block_row in perturbation_annotation_header_block:
-        row_output_strings = []
-        for x in header_block_row:
-            if isinstance(x, float):
-                row_output_strings.append("%.2f" % x)
-            else:
-                row_output_strings.append(str(x))
+    my_gctoo.row_metadata_df = prism_metadata.convert_objects_to_metadata_df(row_ID_builder,
+        data_by_cell.cell_data_map.keys(), {})
 
-        f.write("\t".join(row_output_strings) + "\n")
+    for row_annot in _remove_row_annotations:
+        if row_annot in my_gctoo.row_metadata_df.columns:
+            my_gctoo.row_metadata_df.drop(row_annot, axis=1, inplace=True)
+    logger.debug("my_gctoo.row_metadata_df:  {}".format(my_gctoo.row_metadata_df))
+    ########################################
 
-    row_annotation_and_data_block = generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order)
-    for row in row_annotation_and_data_block:
-        f.write("\t".join([str(x) for x in row]) + "\n")
+    #build data dataframe - will have the cells as columns and rows as wells, and then transpose
+    #start by building mapping between cell ID and corresponding data for that cell, to populate dataframe columns
+    cell_id_data_map = {}
+    for (c, data) in data_by_cell.cell_data_map.items():
+        id = row_ID_builder(c)
+        cell_id_data_map[id] = data
+    logger.debug("cell_id_data_map:  {}".format(cell_id_data_map))
 
-    f.close()
+    #build index for the rows of the dataframe using what is actually the column ID (since it will be transposed)
+    well_perturbagen_map = {}
+    for p in perturbagen_list:
+        well_perturbagen_map[p.well_id] = p
+    data_df_column_ids = []
+    for w in data_by_cell.well_list:
+        p = well_perturbagen_map[w]
+        data_df_column_ids.append(column_ID_builder(p))
+
+    my_gctoo.data_df = pandas.DataFrame(cell_id_data_map, index=data_df_column_ids).T
+    logger.debug("my_gctoo.data_df:  {}".format(my_gctoo.data_df))
+    ########################################
+
+    logger.debug("my_gctoo:  {}".format(my_gctoo))
+
+    write_gctoo.write(my_gctoo, output_filepath, data_null=_NaN, filler_null=_null)
 
 
 def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
+    '''
+    break list of davepool_id and csv file path from input into pairs
+    :param davepool_id_csv_filepath_pairs:
+    :return:
+    '''
     r = []
     for i in range(len(davepool_id_csv_filepath_pairs)/2):
         index = 2*i
@@ -288,19 +272,34 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
 
 
 def build_perturbagen_list(plate_map_path, config_filepath, assay_plates):
+    '''
+    read all perturbagens in, and then keep only those whose assay_plate_barcode matches one of the already loaded
+    assay plate barcodes.  Validate the remaining perturbagens.
+    :param plate_map_path:
+    :param config_filepath:
+    :param assay_plates:
+    :return:
+    '''
     assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates if x.ignore == False])
 
     all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, prism_metadata._plate_map_type_CM,
                                                                    config_filepath)
 
-    perts = [x for x in all_perturbagens if x.assay_plate_barcode in assay_plate_barcodes]
+    all_assay_plate_perts = [x for x in all_perturbagens if x.assay_plate_barcode in assay_plate_barcodes]
 
-    prism_metadata.validate_perturbagens(perts)
+    validated_unique_perts = prism_metadata.validate_perturbagens(all_assay_plate_perts).values()
 
-    return perts
+    return validated_unique_perts
 
 
 def build_prism_cell_list(config_filepath, assay_plates):
+    '''
+    read PRISM cell line meta data from file specified in config file (at config_filepath), then associate with
+    assay_plate based on pool ID.  Check for cell pools that are not associated with any assay plate
+    :param config_filepath:
+    :param assay_plates:
+    :return:
+    '''
     prism_cell_list = prism_metadata.read_prism_cell_from_file(config_filepath)
 
     pool_id_assay_plate_map = {}
@@ -329,15 +328,29 @@ def build_prism_cell_list(config_filepath, assay_plates):
 
 
 def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objects, ignore_assay_plate_barcodes):
+    '''
+    read all assay plate meta data from provided file at plates_mapping_path then remove assay plates whose det_plate
+    does not match those in the davepool_data_objects.  Add additional metadata to assay_plates indicating the
+    scan time and if they should be ignored (based if the assay plate barcode is in ignore_assay_plate_barcodes)
+    :param plates_mapping_path: path to file that contains
+    :param config_filepath:
+    :param davepool_data_objects:
+    :param ignore_assay_plate_barcodes:
+    :return:
+    '''
     all_assay_plates = prism_metadata.read_assay_plate_from_file(plates_mapping_path, config_filepath)
 
+    #parse the csv filename to get the det_plate, build a map between det_plate and davepool object
     det_plate_davepool_data_objects_map = {}
     for dpdo in davepool_data_objects:
         filename = os.path.basename(dpdo.csv_filepath)
         det_plate = filename.split(".")[0]
         det_plate_davepool_data_objects_map[det_plate] = dpdo
 
+    #only keep assay plates whose det_plate matches one of the loaded davepool
     assay_plates = [x for x in all_assay_plates if x.det_plate in det_plate_davepool_data_objects_map]
+
+    #add scan time to assay_plate metadata, and indicate if the assay plate should be ignored
     for ap in assay_plates:
         ap.det_plate_scan_time = det_plate_davepool_data_objects_map[ap.det_plate].csv_datetime
 
@@ -349,30 +362,32 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
 def main(args):
     args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
 
+    #read actual data from relevant csv files, associate it with davepool ID
     davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
     davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
+    #read assay plate meta data relevant to current set of csv files / davepools
     assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects,
                                       args.ignore_assay_plate_barcodes)
     logger.info("len(assay_plates):  {}".format(len(assay_plates)))
 
+    #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
     prism_cell_list = build_prism_cell_list(args.config_filepath, assay_plates)
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
+    #read in all the perturbagens but restrict to those that were on the provided assay_plates
     perturbagen_list = build_perturbagen_list(args.plate_map_path, args.config_filepath, assay_plates)
     logger.info("len(perturbagen_list):  {}".format(len(perturbagen_list)))
 
+    #build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
     (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects, davepool_id_to_cells_map)
 
-    median_matrix_and_annots = build_matrix_and_annotations(all_median_data_by_cell)
-    count_matrix_and_annots = build_matrix_and_annotations(all_count_data_by_cell)
-
     write_output_gct(args.prism_replicate_name + "_MEDIAN.gct", args.prism_replicate_name, perturbagen_list,
-                     median_matrix_and_annots)
+                     all_median_data_by_cell)
     write_output_gct(args.prism_replicate_name + "_COUNT.gct", args.prism_replicate_name, perturbagen_list,
-                     count_matrix_and_annots)
+                     all_count_data_by_cell)
 
 
 if __name__ == "__main__":
@@ -383,8 +398,4 @@ if __name__ == "__main__":
 
     main(args)
 
-
-#TODO def convert_perturbagen_list_to_col_metadata_df (for use in GCToo) (in prism_metadata.py)
 #TODO need to collect perturbagens ignoring assay plate barcode when running in CMap plate mode
-#TODO convert cell meta data to row_metadata_df (for use in GCToo)
-#TODO convert data to data_df
