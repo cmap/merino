@@ -11,6 +11,10 @@ datatype_header = "DataType:"
 
 
 class DavepoolData(object):
+    '''
+    contains the data associated with a davepool - davepool id, csv file information,
+    relevant data read from the csv
+    '''
     def __init__(self, csv_filepath=None, csv_datetime=None, median_headers=None, median_data=None,
         count_headers=None, count_data=None, davepool_id=None):
 

@@ -107,6 +107,12 @@ def _read_perturbagen_from_file(filepath, config_section, do_keep_all,
 
 
 def read_assay_plate_from_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
+    '''
+    read
+    :param filepath:
+    :param config_filepath:
+    :return:
+    '''
     logger.debug("config_filepath:  {}".format(config_filepath))
     cp = ConfigParser.RawConfigParser()
     cp.read(config_filepath)
