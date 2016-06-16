@@ -41,10 +41,9 @@ def build_parser():
                         help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
                         type=str, nargs="+")
     parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
-                                                                           " ignored / excluded from the assemble",
-                        nargs="+", default=None)
+                        " ignored / excluded from the assemble", nargs="+", default=None)
     parser.add_argument("-plate_map_type", "-pmt", help="type of the plate map", choices=prism_metadata.plate_map_types,
-                        default="CM")
+                        default=prism_metadata.plate_map_type_CM)
     return parser
 
 
@@ -118,7 +117,7 @@ def build_data_by_cell(cells, davepool_data_obj):
     return (DataByCell(cell_to_median_data_map, median_wells), DataByCell(cell_to_count_data_map, count_wells))
 
 
-def combine_maps_with_checks(source_map, dest_map):#TODO use this
+def combine_maps_with_checks(source_map, dest_map):
     source_keys = set(source_map.keys())
     dest_keys = set(dest_map.keys())
 
@@ -153,8 +152,8 @@ def process_data(davepool_data_objects, davepool_id_to_cells_map):
             assert authoritative_well_list == count_data_by_cell.well_list, (authoritative_well_list,
                                                                              count_data_by_cell.well_list)
 
-        all_median_data_by_cell.cell_data_map.update(median_data_by_cell.cell_data_map)
-        all_count_data_by_cell.cell_data_map.update(count_data_by_cell.cell_data_map)
+        combine_maps_with_checks(median_data_by_cell.cell_data_map, all_median_data_by_cell.cell_data_map)
+        combine_maps_with_checks(count_data_by_cell.cell_data_map, all_count_data_by_cell.cell_data_map)
 
     all_median_data_by_cell.well_list = authoritative_well_list
     all_count_data_by_cell.well_list = authoritative_well_list
@@ -162,46 +161,7 @@ def process_data(davepool_data_objects, davepool_id_to_cells_map):
     return (all_median_data_by_cell, all_count_data_by_cell)
 
 
-def generate_sorted_unique_cells_and_wells(data_by_cells):
-    unique_cells = set()
-    unique_wells = set()
-    for dbc in data_by_cells:
-        unique_cells.update(dbc.cell_data_map.keys())
-        unique_wells.update(dbc.well_list)
-
-    sorted_unique_cells = list(unique_cells)
-
-    def try_float_id(id):
-        try:
-            return float(id)
-        except ValueError:
-            return id
-
-    sorted_unique_cells.sort(key=lambda c: try_float_id(c.id))
-
-    sorted_unique_wells = list(unique_wells)
-    sorted_unique_wells.sort()
-
-    return (sorted_unique_cells, sorted_unique_wells)
-
-
-def generate_row_annotation_and_data_block(matrix_and_annots, cell_annot_order):
-    r = []
-    for (i, c) in enumerate(matrix_and_annots.sorted_unique_cells):
-        row = [c.id]
-        r.append(row)
-
-        for ca in cell_annot_order:
-            value = c.__dict__[ca] if c.__dict__[ca] is not None else _null
-            row.append(value)
-
-        numerical_data = [_NaN if numpy.isnan(x) else x for x in matrix_and_annots.matrix[i]]
-        row.extend(numerical_data)
-
-    return r
-
-
-def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list, data_by_cell):
+def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
     my_gctoo = GCToo.GCToo()
 
     #build column metadata dataframe:
@@ -213,6 +173,8 @@ def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list, da
     for col_annot in _remove_col_annotations:
         if col_annot in my_gctoo.col_metadata_df.columns:
             my_gctoo.col_metadata_df.drop(col_annot, axis=1, inplace=True)
+
+    my_gctoo.col_metadata_df.sort_index(inplace=True)
     logger.debug("my_gctoo.col_metadata_df:  {}".format(my_gctoo.col_metadata_df))
     ########################################
 
@@ -226,6 +188,8 @@ def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list, da
     for row_annot in _remove_row_annotations:
         if row_annot in my_gctoo.row_metadata_df.columns:
             my_gctoo.row_metadata_df.drop(row_annot, axis=1, inplace=True)
+
+    my_gctoo.row_metadata_df.sort_index(inplace=True)
     logger.debug("my_gctoo.row_metadata_df:  {}".format(my_gctoo.row_metadata_df))
     ########################################
 
@@ -247,12 +211,12 @@ def write_output_gct(output_filepath, prism_replicate_name, perturbagen_list, da
         data_df_column_ids.append(column_ID_builder(p))
 
     my_gctoo.data_df = pandas.DataFrame(cell_id_data_map, index=data_df_column_ids).T
+    my_gctoo.data_df.sort_index(axis=0, inplace=True)
+    my_gctoo.data_df.sort_index(axis=1, inplace=True)
     logger.debug("my_gctoo.data_df:  {}".format(my_gctoo.data_df))
     ########################################
 
-    logger.debug("my_gctoo:  {}".format(my_gctoo))
-
-    write_gctoo.write(my_gctoo, output_filepath, data_null=_NaN, filler_null=_null)
+    return my_gctoo
 
 
 def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
@@ -282,7 +246,7 @@ def build_perturbagen_list(plate_map_path, config_filepath, assay_plates):
     '''
     assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates if x.ignore == False])
 
-    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, prism_metadata._plate_map_type_CM,
+    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, prism_metadata.plate_map_type_CM,
                                                                    config_filepath)
 
     all_assay_plate_perts = [x for x in all_perturbagens if x.assay_plate_barcode in assay_plate_barcodes]
@@ -384,10 +348,11 @@ def main(args):
 
     (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects, davepool_id_to_cells_map)
 
-    write_output_gct(args.prism_replicate_name + "_MEDIAN.gct", args.prism_replicate_name, perturbagen_list,
-                     all_median_data_by_cell)
-    write_output_gct(args.prism_replicate_name + "_COUNT.gct", args.prism_replicate_name, perturbagen_list,
-                     all_count_data_by_cell)
+    median_gctoo = build_gctoo(args.prism_replicate_name, perturbagen_list, all_median_data_by_cell)
+    write_gctoo.write(median_gctoo, args.prism_replicate_name + "_MEDIAN.gct", data_null=_NaN, filler_null=_null)
+
+    count_gctoo = build_gctoo(args.prism_replicate_name, perturbagen_list, all_count_data_by_cell)
+    write_gctoo.write(count_gctoo, args.prism_replicate_name + "_COUNT.gct", data_null=_NaN, filler_null=_null)
 
 
 if __name__ == "__main__":
@@ -397,5 +362,3 @@ if __name__ == "__main__":
     logger.debug("args:  {}".format(args))
 
     main(args)
-
-#TODO need to collect perturbagens ignoring assay plate barcode when running in CMap plate mode

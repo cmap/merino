@@ -86,7 +86,6 @@ class TestAssemble(unittest.TestCase):
         assert "A01" in r_med.well_list, r_med.well_list
         assert "J13" in r_med.well_list, r_med.well_list
 
-
         assert len(r_med.cell_data_map) == len(cells), (len(r_med.cell_data_map), len(cells))
         for (i, c) in enumerate(cells):
             assert c in r_med.cell_data_map
@@ -163,26 +162,7 @@ class TestAssemble(unittest.TestCase):
         assert 29 == median_data_by_cell.cell_data_map[cells[2]][1]
 
 
-    def test_generate_sorted_unique_cells_and_wells(self):
-        cells = [prism_metadata.PrismCell(id="11"), prism_metadata.PrismCell(id="1"), prism_metadata.PrismCell(id="2")]
-        data_by_cells = [assemble.DataByCell({cells[0]:[1,2,3,5], cells[1]:[7,11,13,17]}, ["D01","B02","J03","D04"])]
-        data_by_cells.append(assemble.DataByCell({cells[1]:[19,2,3,5], cells[2]:[23,11,13,17]}, ["D01","B03","K13","M21"]))
-
-        expected_cells = [cells[1], cells[2], cells[0]]
-        expected_wells = set(data_by_cells[0].well_list)
-        expected_wells.update(data_by_cells[1].well_list)
-        expected_wells = list(expected_wells)
-        expected_wells.sort()
-
-        r = assemble.generate_sorted_unique_cells_and_wells(data_by_cells)
-        logger.debug("r:  {}".format(r))
-        assert len(r) == 2, len(r)
-
-        assert expected_cells == r[0], (expected_cells, r[0])
-        assert expected_wells == r[1], (expected_wells, r[1])
-
-
-    def test_write_output_gct(self):
+    def test_build_gctoo(self):
         filepath = "functional_tests/test_assemble/test_write_output_gct.txt"
         if os.path.exists(filepath):
             os.remove(filepath)
@@ -197,10 +177,16 @@ class TestAssemble(unittest.TestCase):
         p.pert_dose_unit = "uM"
         pert_list.append(p)
         p = prism_metadata.Perturbagen()
-        p.well_id = "B02"
+        p.well_id = "M03"
         p.pert_id = "BRD-K91011121"
         p.pert_dose = 13.0
         p.pert_dose_unit = "mg/mL"
+        pert_list.append(p)
+        p = prism_metadata.Perturbagen()
+        p.well_id = "B02"
+        p.pert_id = "BRD-K31415171"
+        p.pert_dose = 17.0
+        p.pert_dose_unit = "nM"
         pert_list.append(p)
 
         cell_list = []
@@ -210,17 +196,19 @@ class TestAssemble(unittest.TestCase):
         c = prism_metadata.PrismCell(pool_id="fake pool 2", analyte_id="fake analyte 2",
             davepool_id="fake davepool 2", id=5)
         cell_list.append(c)
+        c = prism_metadata.PrismCell(pool_id="fake pool 2", analyte_id="fake analyte 3",
+            davepool_id="fake davepool 2", id=7)
+        cell_list.append(c)
 
-        data_by_cell = assemble.DataByCell({cell_list[0]:[1,2], cell_list[1]:[7,11]}, ["J01", "B02"])
+        data_by_cell = assemble.DataByCell({cell_list[1]:[1,2,11], cell_list[2]:[13,17,19], cell_list[0]:[23,29,31]},
+                                           ["J01", "M03", "B02"])
 
-        assemble.write_output_gct(filepath, prn, pert_list, data_by_cell)
-
-        f = open(filepath)
-        r = f.read().strip().split("\n")
-        f.close()
+        r = assemble.build_gctoo(prn, pert_list, data_by_cell)
+        assert r is not None
         logger.debug("r:  {}".format(r))
-        assert len(r) == 9, "expect 9:  version, size, header row, 4 pert annot, 2 data rows, found len(r):  {}".format(
-            len(r))
+        logger.debug("r.col_metadata_df:  {}".format(r.col_metadata_df))
+        logger.debug("r.row_metadata_df:  {}".format(r.row_metadata_df))
+        logger.debug("r.data_df:  {}".format(r.data_df))
 
     def test_build_davepool_id_csv_list(self):
         r = assemble.build_davepool_id_csv_list(["a", "1", "b", "2", "c", "3"])
@@ -238,12 +226,16 @@ class TestAssemble(unittest.TestCase):
             if os.path.exists(ef):
                 os.remove(ef)
 
-        args = assemble.build_parser().parse_args(["-config_filepath",
-            "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg", "PCAL003_CS1_X1",
-            "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt",
-            "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt",
-            "DP7", "functional_tests/test_assemble/full_functional_test/PCAL003_DP7_X1.csv",
-            "DP8", "functional_tests/test_assemble/full_functional_test/PCAL003_DP8_X1.csv"])
+        config_filepath = "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg"
+        prism_replicate_name = "PCAL003_CS1_X1"
+        plate_map_path = "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt"
+        plates_mapping_path = "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt"
+        dp7_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP7_X1.csv"
+        dp8_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP8_X1.csv"
+
+        args = assemble.build_parser().parse_args(["-config_filepath", config_filepath, prism_replicate_name,
+            plate_map_path, plates_mapping_path, "DP7", dp7_csv_path, "DP8", dp8_csv_path])
+
         logger.debug("args:  {}".format(args))
 
         assemble.main(args)
@@ -252,7 +244,6 @@ class TestAssemble(unittest.TestCase):
             assert os.path.exists(ef), ef
             os.remove(ef)
 
-        args.plate_map_path = "functional_tests/test_assemble/full_functional_test/"
 
 if __name__ == "__main__":
     setup_logger.setup(verbose=True)

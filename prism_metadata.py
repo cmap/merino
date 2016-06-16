@@ -15,9 +15,9 @@ _assay_plate_config_file_section = "Assay Plate column headers"
 
 cmap_pert_well = "pert_well"
 
-_plate_map_type_CM = "CM"
-_plate_map_type_CMap = "CMap"
-plate_map_types = [_plate_map_type_CM, _plate_map_type_CMap]
+plate_map_type_CM = "CM"
+plate_map_type_CMap = "CMap"
+plate_map_types = [plate_map_type_CM, plate_map_type_CMap]
 
 
 class PrismCell(object):
@@ -73,11 +73,11 @@ def read_prism_cell_from_file(config_filepath = prism_pipeline.default_config_fi
 
 
 def build_perturbagens_from_file(filepath, plate_map_type, config_filepath = prism_pipeline.default_config_filepath):
-    if plate_map_type == _plate_map_type_CM:
+    if plate_map_type == plate_map_type_CM:
         config_section = _perturbagen_CM_input_config_file_section
         do_build_additional = True
         do_keep_additional = False
-    elif plate_map_type == _plate_map_type_CMap:
+    elif plate_map_type == plate_map_type_CMap:
         config_section = _perturbagen_CMap_input_config_file_section
         do_build_additional = False
         do_keep_additional = True
