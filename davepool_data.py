@@ -82,12 +82,18 @@ def read_data(csv_filepath):
 
     pd = DavepoolData(csv_filepath=csv_filepath, csv_datetime=datetime)
     pd.median_headers = data[median_range[0]+1]
+    logger.info("len(pd.median_headers):  {}".format(len(pd.median_headers)))
+    
     pd.median_data = data[(median_range[0]+2):(median_range[1]-1)]
+    logger.info("len(pd.median_data):  {}".format(len(pd.median_data)))
     logger.debug("first line of median data - pd.median_data[0]:  {}".format(pd.median_data[0]))
     logger.debug("last line of median data - pd.median_data[-1]:  {}".format(pd.median_data[-1]))
 
     pd.count_headers = data[count_range[0]+1]
+    logger.info("len(pd.count_headers):  {}".format(len(pd.count_headers)))
+
     pd.count_data = data[(count_range[0]+2):(count_range[1]-1)]
+    logger.info("len(pd.count_data):  {}".format(len(pd.count_data)))
     logger.debug("first line of count data - pd.count_data[0]:  {}".format(pd.count_data[0]))
     logger.debug("last line of count data - pd.count_data[-1]:  {}".format(pd.count_data[-1]))
 

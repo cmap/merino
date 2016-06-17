@@ -175,6 +175,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
             my_gctoo.col_metadata_df.drop(col_annot, axis=1, inplace=True)
 
     my_gctoo.col_metadata_df.sort_index(inplace=True)
+    logger.info("my_gctoo.col_metadata_df.shape:  {}".format(my_gctoo.col_metadata_df.shape))
     logger.debug("my_gctoo.col_metadata_df:  {}".format(my_gctoo.col_metadata_df))
     ########################################
 
@@ -190,6 +191,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
             my_gctoo.row_metadata_df.drop(row_annot, axis=1, inplace=True)
 
     my_gctoo.row_metadata_df.sort_index(inplace=True)
+    logger.info("my_gctoo.row_metadata_df.shape:  {}".format(my_gctoo.row_metadata_df.shape))
     logger.debug("my_gctoo.row_metadata_df:  {}".format(my_gctoo.row_metadata_df))
     ########################################
 
@@ -213,6 +215,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
     my_gctoo.data_df = pandas.DataFrame(cell_id_data_map, index=data_df_column_ids).T
     my_gctoo.data_df.sort_index(axis=0, inplace=True)
     my_gctoo.data_df.sort_index(axis=1, inplace=True)
+    logger.info("my_gctoo.data_df.shape:  {}".format(my_gctoo.data_df.shape))
     logger.debug("my_gctoo.data_df:  {}".format(my_gctoo.data_df))
     ########################################
 
