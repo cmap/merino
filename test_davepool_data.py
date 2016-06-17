@@ -12,7 +12,7 @@ class TestDavepoolData(unittest.TestCase):
         assert hasattr(r, "median_headers")
 
     def test_read_data(self):
-        csv_filepath = "requirements_artifacts/PCAL001_P1_X1.csv"
+        csv_filepath = "functional_tests/test_davepool_data/PCAL001_P1_X1.csv"
         r = davepool_data.read_data(csv_filepath)
         assert r is not None
         assert r.csv_filepath == csv_filepath, r.csv_filepath
@@ -24,6 +24,12 @@ class TestDavepoolData(unittest.TestCase):
 
         logger.debug("r.csv_datetime:  {}".format(r.csv_datetime))
 
+    def test_read_data_from_jcsv(self):
+        csv_filepath = "functional_tests/test_davepool_data/PMEL.A009_CS2_X3.csv"
+        r = davepool_data.read_data(csv_filepath)
+        logger.debug("r.count_data[-2:]:  {}".format(r.count_data[-2:]))
+        assert len(r.count_data) == 384, len(r.count_data)
+
     def test_get_datatype_range(self):
         data = [["a"], range(3), ["DataType:","my type"], range(4), range(5)]
 
@@ -34,7 +40,7 @@ class TestDavepoolData(unittest.TestCase):
         assert "my type" in r
         r = r["my type"]
         assert r[0] == 2, r[0]
-        assert r[1] == 5, r[1]
+        assert r[1] == 6, r[1]
 
         r = davepool_data.get_datatype_range(data, ["unfounded"])
         assert r is not None
