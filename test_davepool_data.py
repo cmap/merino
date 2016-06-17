@@ -73,6 +73,22 @@ class TestDavepoolData(unittest.TestCase):
         logger.debug("context.exception:  {}".format(context.exception))
         assert "expected to find only one datetime_row, found datetime_row:" in str(context.exception), str(context.exception)
 
+    def test_validate_data(self):
+        dd = davepool_data.DavepoolData()
+
+        #happy path
+        dd.median_data = [[0], [1]]
+        dd.count_data = [[2], [3]]
+        dd.validate_data()
+
+        #invalid data path
+        dd.median_data[1].pop(0)
+        with self.assertRaises(Exception) as context:
+            dd.validate_data()
+        assert context.exception is not None
+        logger.debug("context.exception:  {}".format(context.exception))
+        assert "data row is empty" in str(context.exception)
+
 
 if __name__ == "__main__":
     setup_logger.setup(verbose=True)

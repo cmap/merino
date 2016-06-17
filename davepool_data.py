@@ -26,9 +26,15 @@ class DavepoolData(object):
         self.count_data = count_data
         self.davepool_id = davepool_id
 
-
     def __repr__(self):
         return " ".join(["{}:{}".format(k,v) for (k,v) in self.__dict__.items()])
+
+    def validate_data(self):
+        data_arrays = [("median", self.median_data), ("count", self.count_data)]
+        for (data_name, da) in data_arrays:
+            for (i, md) in enumerate(da):
+                assert len(md) > 0, "data row is empty - data_name:  {}  row number i:  {} self.median_data[i-1]:  {}".format(
+                    data_name, i, self.median_data[i-1])
 
 def get_datatype_range(data, datatype_names):
     datatype_indexes = [i for (i,row) in enumerate(data) if len(row) > 0 and row[0] == datatype_header]
@@ -100,5 +106,7 @@ def read_data(csv_filepath):
     logger.info("len(pd.count_data):  {}".format(len(pd.count_data)))
     logger.debug("first line of count data - pd.count_data[0]:  {}".format(pd.count_data[0]))
     logger.debug("last line of count data - pd.count_data[-1]:  {}".format(pd.count_data[-1]))
+
+    pd.validate_data()
 
     return pd
