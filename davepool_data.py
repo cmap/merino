@@ -33,7 +33,11 @@ class DavepoolData(object):
 def get_datatype_range(data, datatype_names):
     datatype_indexes = [i for (i,row) in enumerate(data) if len(row) > 0 and row[0] == datatype_header]
     datatypes = [data[i][1] for i in datatype_indexes]
-    datatype_indexes.append(len(data)+1)
+
+    i = len(data) - 1
+    while i > datatype_indexes[-1] and len(data[i]) == 0:
+        i = i - 1
+    datatype_indexes.append(i + 2)
 
     r = {}
     for dn in datatype_names:
