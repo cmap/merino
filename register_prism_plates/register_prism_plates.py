@@ -13,8 +13,10 @@ logger = logging.getLogger(setup_logger.LOGGER_NAME)
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("pert_plate_start_number", help="starting number to use for the CMAP pert plate", type=int)
-    parser.add_argument("input_files", help="input file containing output of CMAP_Plate_Content_from_RunID", type=str,
-                        nargs="+")
+    parser.add_argument("input_files",
+                        help="""input file(s) containing output of compound management Pipeline Pilot Webport
+                              "CMAP_Assay_Plate_Compound_Map_Names_Cell_Line_Metadata_from_RunID""",
+                        type=str, nargs="+")
     parser.add_argument("-output_file", help="file to write the output to", type=str, default="output.txt")
     parser.add_argument('-verbose', '-v', help='Whether to print a bunch of output.', action='store_true',
                         default=False)
