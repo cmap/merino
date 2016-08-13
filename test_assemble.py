@@ -220,6 +220,40 @@ class TestAssemble(unittest.TestCase):
         assert r[2][0] == "c", r[2][0]
         assert r[2][1] == "3", r[2][1]
 
+    def test_build_perturbagen_list(self):
+        test_dir = "functional_tests/test_assemble/test_build_perturbagen_list/"
+        plate_map_path = os.path.join(test_dir, "plate_map.src")
+        config_filepath = os.path.join(test_dir, "prism_pipeline.cfg")
+        assay_plates = [prism_metadata.AssayPlate(assay_plate_barcode="SCW0112212")]
+	assay_plates[0].ignore = False
+	
+	#happy path - plate map has 9 entries but only 4 match the assay_plate_barcode
+	r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, False)
+	self.assertIsNotNone(r)
+	logger.debug("len(r):  {}".format(len(r)))
+	logger.debug("r:  {}".format(r))
+	self.assertEquals(4, len(r), "expected to load 4 perturbagens, did not")
+
+        #happy path in which two assay plates are present, but one is ignored
+	assay_plates.append(prism_metadata.AssayPlate(assay_plate_barcode="SCW0112213"))
+	assay_plates[1].ignore = False
+	assay_plates[0].ignore = True
+
+        r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, False)
+	self.assertIsNotNone(r)
+	logger.debug("len(r):  {}".format(len(r)))
+	logger.debug("r:  {}".format(r))
+	self.assertEquals(5, len(r), "expected to load 5 perturbagens, did not")
+
+	#happy path but mash the assay_plate_barcode and do not attempt to match assay plate barcodes
+	#NB: plate_map.src has 11 entries but 2 are duplicates and they should be stripped out
+	assay_plates[1].assay_plate_barcode = "another_fake_barcode"
+        r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, True)
+        self.assertIsNotNone(r)
+        logger.debug("len(r):  {}".format(len(r)))
+        logger.debug("r:  {}".format(r))
+        self.assertEquals(9, len(r), "expected to load 9 perturbagens, did not")
+
     def test_full_functional(self):
         expected_files = ["PCAL003_CS1_X1_COUNT.gct", "PCAL003_CS1_X1_MEDIAN.gct"]
         for ef in expected_files:
