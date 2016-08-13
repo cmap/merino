@@ -306,6 +306,7 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
     :return:
     '''
     all_assay_plates = prism_metadata.read_assay_plate_from_file(plates_mapping_path, config_filepath)
+    logger.info("len(all_assay_plates):  {}".format(len(all_assay_plates)))
 
     #parse the csv filename to get the det_plate, build a map between det_plate and davepool object
     det_plate_davepool_data_objects_map = {}
@@ -313,6 +314,8 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
         filename = os.path.basename(dpdo.csv_filepath)
         det_plate = filename.split(".")[0]
         det_plate_davepool_data_objects_map[det_plate] = dpdo
+
+    logger.info("det_plate_davepool_data_objects_map.keys():  {}".format(det_plate_davepool_data_objects_map.keys()))
 
     #only keep assay plates whose det_plate matches one of the loaded davepool
     assay_plates = [x for x in all_assay_plates if x.det_plate in det_plate_davepool_data_objects_map]

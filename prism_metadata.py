@@ -68,6 +68,7 @@ def read_prism_cell_from_file(config_filepath = prism_pipeline.default_config_fi
     (headers, data) = _read_data(filepath)
 
     header_map = _generate_header_map(headers, cp.items(_prism_cell_config_file_section), False)
+    logger.debug("header_map:  {}".format(header_map))
 
     return _parse_data(header_map, data, PrismCell)
 
@@ -102,6 +103,7 @@ def _read_perturbagen_from_file(filepath, config_section, do_keep_all,
     (headers, data) = _read_data(filepath)
 
     header_map = _generate_header_map(headers, cp.items(config_section), do_keep_all)
+    logger.debug("header_map:  {}".format(header_map))
 
     return _parse_data(header_map, data, Perturbagen)
 
@@ -120,6 +122,7 @@ def read_assay_plate_from_file(filepath, config_filepath = prism_pipeline.defaul
     (headers, data) = _read_data(filepath)
 
     header_map = _generate_header_map(headers, cp.items(_assay_plate_config_file_section), False)
+    logger.debug("header_map:  {}".format(header_map))
 
     return _parse_data(header_map, data, AssayPlate)
 
@@ -214,7 +217,9 @@ def _generate_header_map(headers, internal_header_file_header_pairs, do_keep_all
         elif do_keep_all:
             header_map[h] = i
 
-    logger.debug("header_map:  {}".format(header_map))
+    if len(header_map) == 0:
+        raise Exception("prism_metadata _generate_header_map header_map has no entries, possible mismatch between expected and actual columns (e.g. check config file for mapping")
+
     return header_map
 
 
@@ -265,11 +270,15 @@ def validate_perturbagens(perturbagens):
 
 
 def convert_objects_to_metadata_df(index_builder, object_list, meta_renaming_map):
+    logger.debug("len(object_list):  {}".format(len(object_list)))
+
     col_metadata_map = {}
     for p in object_list:
         for k in p.__dict__.keys():
             if k not in col_metadata_map:
                 col_metadata_map[k] = []
+ 
+    logger.debug("col_metadata_map.keys():  {}".format(col_metadata_map.keys()))
 
     index = []
     for p in object_list:
