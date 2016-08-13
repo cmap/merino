@@ -249,8 +249,10 @@ def build_perturbagen_list(plate_map_path, config_filepath, assay_plates):
     '''
     assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates if x.ignore == False])
 
+    logger.info("loading all perturbagens...")
     all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, prism_metadata.plate_map_type_CM,
                                                                    config_filepath)
+    logger.info("finished loading all perturbagens")
 
     all_assay_plate_perts = [x for x in all_perturbagens if x.assay_plate_barcode in assay_plate_barcodes]
 

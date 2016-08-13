@@ -33,8 +33,8 @@ class DavepoolData(object):
         data_arrays = [("median", self.median_data), ("count", self.count_data)]
         for (data_name, da) in data_arrays:
             for (i, md) in enumerate(da):
-                assert len(md) > 0, "data row is empty - data_name:  {}  row number i:  {} self.median_data[i-1]:  {}".format(
-                    data_name, i, self.median_data[i-1])
+                assert len(md) > 0, "data row is empty - self.davepool_id:  {}  self.csv_filepath:  {}  data_name:  {}  row number i:  {}  previous row - self.median_data[i-1]:  {}".format(
+                    self.davepool_id, self.csv_filepath, data_name, i, self.median_data[i-1])
 
 def get_datatype_range(data, datatype_names):
     datatype_indexes = [i for (i,row) in enumerate(data) if len(row) > 0 and row[0] == datatype_header]
