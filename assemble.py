@@ -47,8 +47,8 @@ def build_parser():
     parser.add_argument("-use_all_perts_regardless_of_assay_plate", "-uaproap", help="when loading perturbagens do not attempt to " +
                         "match their assay_plate_barcode column with the assay_plate_barcodes loaded from the plates_mapping_path " +
                         "NB: using this option means that the plate_map can only have 1 pert plate, otherwise if multiple pert plates " +
-			"are present when validating the perturbagens the systems will halt because any given well will have mutliple " +
-			"different perturbagens.",
+                        "are present when validating the perturbagens the systems will halt because any given well will have mutliple " +
+                        "different perturbagens.",
                         action="store_true", default=False)
     return parser
 
@@ -257,21 +257,16 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
     return r
 
 
-def build_perturbagen_list(plate_map_path, config_filepath, assay_plates, use_all_perts_regardless_of_assay_plate):
+def build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, use_all_perts_regardless_of_assay_plate):
     '''
-    read all perturbagens in, and then keep only those whose assay_plate_barcode matches one of the already loaded
+    keep only those entries in all_perturbagens whose assay_plate_barcode matches one of the already loaded
     assay plate barcodes.  Validate the remaining perturbagens.
-    :param plate_map_path:
+    :param all_perturbagens:
     :param config_filepath:
     :param assay_plates:
     :return:
     '''
     assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates if x.ignore == False])
-
-    logger.info("loading all perturbagens...")
-    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, prism_metadata.plate_map_type_CM,
-                                                                   config_filepath)
-    logger.info("finished loading all perturbagens")
 
     all_assay_plate_perts = None
     if True == use_all_perts_regardless_of_assay_plate:
@@ -354,7 +349,20 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
     return assay_plates
 
 
-def main(args):
+def read_all_perturbagens_from_file(plate_map_path, config_filepath):
+    logger.info("loading all perturbagens...")
+    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, prism_metadata.plate_map_type_CM,
+        config_filepath)
+
+    logger.info("finished loading all perturbagens")
+
+    return all_perturbagens
+
+
+def main(args, all_perturbagens=None):
+    if all_perturbagens is None:
+        all_perturbagens = read_all_perturbagens_from_file(args.plate_map_path, args.config_filepath)
+
     args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
 
     #read actual data from relevant csv files, associate it with davepool ID
@@ -371,7 +379,7 @@ def main(args):
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
     #read in all the perturbagens but restrict to those that were on the provided assay_plates
-    perturbagen_list = build_perturbagen_list(args.plate_map_path, args.config_filepath, assay_plates, args.use_all_perts_regardless_of_assay_plate)
+    perturbagen_list = build_perturbagen_list(all_perturbagens, args.config_filepath, assay_plates, args.use_all_perts_regardless_of_assay_plate)
     logger.info("len(perturbagen_list):  {}".format(len(perturbagen_list)))
 
     #build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool

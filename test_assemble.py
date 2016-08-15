@@ -237,7 +237,7 @@ class TestAssemble(unittest.TestCase):
         s = r["s3"].loc["cell2"]
         logger.debug("s:  {}".format(s))
         self.assertEquals(assemble._NaN, s, "expected blank empty string to be replaced with _NaN, was not")
-        
+
     def test_build_davepool_id_csv_list(self):
         r = assemble.build_davepool_id_csv_list(["a", "1", "b", "2", "c", "3"])
         logger.debug("r:  {}".format(r))
@@ -254,9 +254,11 @@ class TestAssemble(unittest.TestCase):
         config_filepath = os.path.join(test_dir, "prism_pipeline.cfg")
         assay_plates = [prism_metadata.AssayPlate(assay_plate_barcode="SCW0112212")]
         assay_plates[0].ignore = False
+
+        all_perturbagens = assemble.read_all_perturbagens_from_file(plate_map_path, config_filepath)
 	
     	#happy path - plate map has 9 entries but only 4 match the assay_plate_barcode
-        r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, False)
+        r = assemble.build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, False)
         self.assertIsNotNone(r)
         logger.debug("len(r):  {}".format(len(r)))
         logger.debug("r:  {}".format(r))
@@ -267,7 +269,7 @@ class TestAssemble(unittest.TestCase):
         assay_plates[1].ignore = False
         assay_plates[0].ignore = True
 
-        r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, False)
+        r = assemble.build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, False)
         self.assertIsNotNone(r)
         logger.debug("len(r):  {}".format(len(r)))
         logger.debug("r:  {}".format(r))
@@ -276,7 +278,7 @@ class TestAssemble(unittest.TestCase):
         #happy path but mash the assay_plate_barcode and do not attempt to match assay plate barcodes
         #NB: plate_map.src has 11 entries but 2 are duplicates and they should be stripped out
         assay_plates[1].assay_plate_barcode = "another_fake_barcode"
-        r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, True)
+        r = assemble.build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, True)
         self.assertIsNotNone(r)
         logger.debug("len(r):  {}".format(len(r)))
         logger.debug("r:  {}".format(r))
