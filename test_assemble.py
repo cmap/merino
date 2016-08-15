@@ -204,12 +204,40 @@ class TestAssemble(unittest.TestCase):
                                            ["J01", "M03", "B02"])
 
         r = assemble.build_gctoo(prn, pert_list, data_by_cell)
-        assert r is not None
+        self.assertIsNotNone(r)
         logger.debug("r:  {}".format(r))
         logger.debug("r.col_metadata_df:  {}".format(r.col_metadata_df))
         logger.debug("r.row_metadata_df:  {}".format(r.row_metadata_df))
         logger.debug("r.data_df:  {}".format(r.data_df))
 
+    def test_build_gctoo_data_df(self):
+        #happy path - all numbers
+        cell_id_data_map = {"cell1":[0,1,2,3], "cell2":[5,7,11,13]}
+        data_df_column_ids = ["s1", "s2", "s3", "s5"]
+        r = assemble.build_gctoo_data_df(cell_id_data_map, data_df_column_ids)
+        self.assertIsNotNone(r)
+        logger.debug("r:  {}".format(r))
+        self.assertEquals(True, all(data_df_column_ids == r.columns),
+                          "columns of result do not match provided columns - data_df_column_ids:  {}  r.columns:  {}".format(
+                              data_df_column_ids, r.columns))
+        #check that index entries are present and sorted
+        self.assertEquals("cell1", r.index[0])
+        self.assertEquals("cell2", r.index[1])
+
+        #2nd happy path - blank entry present in data
+        cell_id_data_map["cell1"][1] = ""
+        cell_id_data_map["cell2"][2] = ""
+        r = assemble.build_gctoo_data_df(cell_id_data_map, data_df_column_ids)
+        self.assertIsNotNone(r)
+        logger.debug("r:  {}".format(r))
+        s = r["s2"].loc["cell1"]
+        logger.debug("s:  {}".format(s))
+        self.assertEquals(assemble._NaN, s, "expected blank empty string to be replaced with _NaN, was not")
+
+        s = r["s3"].loc["cell2"]
+        logger.debug("s:  {}".format(s))
+        self.assertEquals(assemble._NaN, s, "expected blank empty string to be replaced with _NaN, was not")
+        
     def test_build_davepool_id_csv_list(self):
         r = assemble.build_davepool_id_csv_list(["a", "1", "b", "2", "c", "3"])
         logger.debug("r:  {}".format(r))
@@ -225,29 +253,29 @@ class TestAssemble(unittest.TestCase):
         plate_map_path = os.path.join(test_dir, "plate_map.src")
         config_filepath = os.path.join(test_dir, "prism_pipeline.cfg")
         assay_plates = [prism_metadata.AssayPlate(assay_plate_barcode="SCW0112212")]
-	assay_plates[0].ignore = False
+        assay_plates[0].ignore = False
 	
-	#happy path - plate map has 9 entries but only 4 match the assay_plate_barcode
-	r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, False)
-	self.assertIsNotNone(r)
-	logger.debug("len(r):  {}".format(len(r)))
-	logger.debug("r:  {}".format(r))
-	self.assertEquals(4, len(r), "expected to load 4 perturbagens, did not")
+    	#happy path - plate map has 9 entries but only 4 match the assay_plate_barcode
+        r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, False)
+        self.assertIsNotNone(r)
+        logger.debug("len(r):  {}".format(len(r)))
+        logger.debug("r:  {}".format(r))
+        self.assertEquals(4, len(r), "expected to load 4 perturbagens, did not")
 
         #happy path in which two assay plates are present, but one is ignored
-	assay_plates.append(prism_metadata.AssayPlate(assay_plate_barcode="SCW0112213"))
-	assay_plates[1].ignore = False
-	assay_plates[0].ignore = True
+        assay_plates.append(prism_metadata.AssayPlate(assay_plate_barcode="SCW0112213"))
+        assay_plates[1].ignore = False
+        assay_plates[0].ignore = True
 
         r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, False)
-	self.assertIsNotNone(r)
-	logger.debug("len(r):  {}".format(len(r)))
-	logger.debug("r:  {}".format(r))
-	self.assertEquals(5, len(r), "expected to load 5 perturbagens, did not")
+        self.assertIsNotNone(r)
+        logger.debug("len(r):  {}".format(len(r)))
+        logger.debug("r:  {}".format(r))
+        self.assertEquals(5, len(r), "expected to load 5 perturbagens, did not")
 
-	#happy path but mash the assay_plate_barcode and do not attempt to match assay plate barcodes
-	#NB: plate_map.src has 11 entries but 2 are duplicates and they should be stripped out
-	assay_plates[1].assay_plate_barcode = "another_fake_barcode"
+        #happy path but mash the assay_plate_barcode and do not attempt to match assay plate barcodes
+        #NB: plate_map.src has 11 entries but 2 are duplicates and they should be stripped out
+        assay_plates[1].assay_plate_barcode = "another_fake_barcode"
         r = assemble.build_perturbagen_list(plate_map_path, config_filepath, assay_plates, True)
         self.assertIsNotNone(r)
         logger.debug("len(r):  {}".format(len(r)))

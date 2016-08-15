@@ -218,14 +218,27 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
         p = well_perturbagen_map[w]
         data_df_column_ids.append(column_ID_builder(p))
 
-    my_gctoo.data_df = pandas.DataFrame(cell_id_data_map, index=data_df_column_ids).T
-    my_gctoo.data_df.sort_index(axis=0, inplace=True)
-    my_gctoo.data_df.sort_index(axis=1, inplace=True)
-    logger.info("my_gctoo.data_df.shape:  {}".format(my_gctoo.data_df.shape))
-    logger.debug("my_gctoo.data_df:  {}".format(my_gctoo.data_df))
+    my_gctoo.data_df = build_gctoo_data_df(cell_id_data_map, data_df_column_ids)
     ########################################
 
     return my_gctoo
+
+
+def build_gctoo_data_df(cell_id_data_map, data_df_column_ids):
+    '''
+    build the pandas dataframe that will be used for the data_df part of a gctoo object
+    :param cell_id_data_map:
+    :param data_df_column_ids:
+    :return:
+    '''
+    data_df = pandas.DataFrame(cell_id_data_map, index=data_df_column_ids).T
+    data_df.sort_index(axis=0, inplace=True)
+    data_df.sort_index(axis=1, inplace=True)
+    data_df.replace("", value=_NaN, inplace=True)
+    logger.info("data_df.shape:  {}".format(data_df.shape))
+    logger.debug("data_df:  {}".format(data_df))
+
+    return data_df
 
 
 def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
