@@ -5,6 +5,7 @@ import sys
 import assay_plate
 import ConfigParser
 import prism_det_plate
+import math
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -12,6 +13,7 @@ logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("project_id", help="project_id will be used as prefix for pert_plate", type=str)
     parser.add_argument("pert_plate_start_number", help="starting number to use for the CMAP pert plate", type=int)
     parser.add_argument("input_files",
                         help="""input file(s) containing output of compound management Pipeline Pilot Webport
@@ -23,14 +25,9 @@ def build_parser():
     parser.add_argument("-config_filepath", help="path to configuration file", type=str,
                         default="register_prism_plates.cfg")
     parser.add_argument("-hostname", help="lims db host name", type=str, default="getafix-v")
-    #	parser.add_argument("-queue_choice", "-qc", help="which of the queues to work on - valid values are roast, brew, both", type=str,
-    #		choices=["roast", "brew", "both"], default="both")
-    #	parser.add_argument("-add_to_queue", "-a", help="add the det_plate entries to the roast_queue", type=str, nargs="+", default=None)
-    # To make --option1 and --option2 mutually exclusive, one can define mutually_exclusive_group in argparse,
-    # argparse asserts that the options added to the group are not used at the same time and throws exception if otherwise
-    #    	mutually_exclusive_group = parser.add_mutually_exclusive_group()
-    #    	mutually_exclusive_group.add_argument("--option1", action="store", dest="option1", help="provide argument for option1", default=None)
-    #    	mutually_exclusive_group.add_argument("--option2", action="store", dest="option2", help="provide argument for option2", default=None)
+    parser.add_argument("-dont_assert_plate_numbers_match", 
+    	help="instead of asserting that len(assay_plates) %% len(pool_id_sorted) == 0 and len(assay_plates) %% len(compound_plates_sorted) == 0 just issue warnings",
+	action="store_true", default=False)
     return parser
 
 
@@ -68,10 +65,10 @@ def determine_compound_plates(assay_plates):
     return compound_plates_sorted
 
 
-def build_pert_plate_mapping(compound_plates_sorted, pert_plate_start_number):
+def build_pert_plate_mapping(compound_plates_sorted, pert_plate_start_number, project_id):
     pert_plate_mapping = {}
     for (i, cp) in enumerate(compound_plates_sorted):
-        pert_plate = "PCAL" + str(i + pert_plate_start_number).zfill(3)
+        pert_plate = project_id + str(i + pert_plate_start_number).zfill(3)
         pert_plate_mapping[cp] = pert_plate
     logger.info("pert_plate_mapping:  {}".format(pert_plate_mapping))
     return pert_plate_mapping
@@ -92,15 +89,30 @@ def main(args):
 
     pool_id_sorted = determine_pool_ids(assay_plates)
 
-    assert len(assay_plates) % len(pool_id_sorted) == 0
+    if (len(assay_plates) % len(pool_id_sorted)) != 0:
+        msg = "number of assay plates is not an even multiple of number of pools - remainder len(assay_plates) % len(pool_id_sorted):  {}".format(len(assay_plates) % len(pool_id_sorted))
+        if args.dont_assert_plate_numbers_match:
+	    logger.warning(msg)
+	else:
+	    raise Exception("register_prism_plates main " + msg)
 
     compound_plates_sorted = determine_compound_plates(assay_plates)
 
-    assert len(assay_plates) % len(compound_plates_sorted) == 0
-    num_reps = len(assay_plates) / len(compound_plates_sorted) / len(pool_id_sorted)
+    if (len(assay_plates) % len(compound_plates_sorted)) == 0:
+        msg = "number of assay plates is not an even multiple of number of compound plates - remainder len(assay_plates) % len(compound_plates_sorted):  {}".format(len(assay_plates) % len(compound_plates_sorted))
+	if args.dont_assert_plate_numbers_match:
+	    logger.warning(msg)
+	else:
+	    raise Exception("register_prism_plates main " + msg)
+
+    num_repos = None
+    if args.dont_assert_plate_numbers_match:
+        num_reps = int(math.ceil(float(len(assay_plates)) / float(len(compound_plates_sorted)) / float(len(pool_id_sorted))))
+    else:
+        num_reps = len(assay_plates) / len(compound_plates_sorted) / len(pool_id_sorted)
     logger.info("num_reps:  {}".format(num_reps))
 
-    pert_plate_mapping = build_pert_plate_mapping(compound_plates_sorted, args.pert_plate_start_number)
+    pert_plate_mapping = build_pert_plate_mapping(compound_plates_sorted, args.pert_plate_start_number, args.project_id)
 
     pool_id_to_davepool_id_map = build_pool_id_to_davepool_id_mapping(args.config_filepath)
 
