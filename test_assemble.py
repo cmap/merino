@@ -255,7 +255,7 @@ class TestAssemble(unittest.TestCase):
         assay_plates = [prism_metadata.AssayPlate(assay_plate_barcode="SCW0112212")]
         assay_plates[0].ignore = False
 
-        all_perturbagens = assemble.read_all_perturbagens_from_file(plate_map_path, config_filepath)
+        all_perturbagens = assemble.read_all_perturbagens_from_file(plate_map_path, config_filepath, prism_metadata.plate_map_type_CM)
 	
     	#happy path - plate map has 9 entries but only 4 match the assay_plate_barcode
         r = assemble.build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, False)

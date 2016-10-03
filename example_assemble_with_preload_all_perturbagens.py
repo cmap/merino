@@ -1,5 +1,6 @@
 import prism_pipeline.assemble as assemble
 import prism_pipeline.setup_logger as setup_logger
+import prism_pipeline.prism_metadata as prism_metadata
 import logging
 import os
 import glob
@@ -17,7 +18,8 @@ def main():
 	base_assemble_dir = "../assemble/"
 	base_lxb_dir = "../lxb/"
 
-	all_perturbagens = assemble.read_all_perturbagens_from_file(plate_map_filepath, config_filepath)
+	all_perturbagens = assemble.read_all_perturbagens_from_file(plate_map_filepath, config_filepath,
+																prism_metadata.plate_map_type_CM)
 	
 	parser = assemble.build_parser()
 	args_list = ["-config_filepath", config_filepath, None, "", plate_mapping_filepath, "DP7", None, "DP8", None]
