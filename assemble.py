@@ -351,8 +351,7 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
 
 def read_all_perturbagens_from_file(plate_map_path, config_filepath, plate_map_type):
     logger.info("loading all perturbagens...")
-    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, prism_metadata.plate_map_type_CM,
-        config_filepath)
+    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, plate_map_type, config_filepath)
 
     logger.info("finished loading all perturbagens")
 
