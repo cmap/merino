@@ -60,12 +60,18 @@ class AssayPlate(object):
         return self.__repr__()
 
 
-def read_prism_cell_from_file(config_filepath = prism_pipeline.default_config_filepath):
+def read_prism_cell_from_file(config_filepath, cell_set_definition_file):
     cp = ConfigParser.RawConfigParser()
     cp.read(config_filepath)
 
-    filepath = cp.get("PrismCell database file", "prism_cell_database_filepath")
+    if cell_set_definition_file is None:
+        filepath = cp.get("PrismCell database file", "prism_cell_database_filepath")
+    else:
+        filepath = cell_set_definition_file
+
     (headers, data) = _read_data(filepath)
+
+    data = [x for x in data if x[0][0] != "#"]
 
     header_map = _generate_header_map(headers, cp.items(_prism_cell_config_file_section), False)
     logger.debug("header_map:  {}".format(header_map))

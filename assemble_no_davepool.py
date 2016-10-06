@@ -22,6 +22,8 @@ def build_parser():
     parser.add_argument("csv_filepath", help="path to csv file containing data", type=str)
     parser.add_argument("-plate_map_type", "-pmt", help="type of the plate map", choices=prism_metadata.plate_map_types,
                         default=prism_metadata.plate_map_type_CM)
+    parser.add_argument("-cell_set_definition_file", "-csdf",
+                        help="file containing cell set definition to use, overriding config file", type=str, default=None)
     return parser
 
 
@@ -30,7 +32,7 @@ def main(args):
     my_davepool = davepool_data.read_data(args.csv_filepath)
 
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
-    prism_cell_list = prism_metadata.read_prism_cell_from_file(args.config_filepath)
+    prism_cell_list = prism_metadata.read_prism_cell_from_file(args.config_filepath, args.cell_set_definition_file)
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
     #read in all the perturbagens but restrict to those that were on the provided assay_plates

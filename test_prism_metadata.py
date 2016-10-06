@@ -91,9 +91,20 @@ class TestPrismMetadata(unittest.TestCase):
         assert isinstance(r[1].dilution_factor, int)
 
     def test_read_prism_cell_from_file(self):
-        r = pm.read_prism_cell_from_file("prism_pipeline.cfg")
-        assert len(r) > 0
-        logger.debug("r:  {}".format(r))
+        r = pm.read_prism_cell_from_file("prism_pipeline.cfg", None)
+        self.assertGreater(len(r), 20)
+        logger.debug("r[0:10]:  {}".format(r[0:10]))
+
+        r = pm.read_prism_cell_from_file("prism_pipeline.cfg",
+                                         "functional_tests/test_prism_metadata/test_read_prism_cell_from_file/test_cell_definition.txt")
+        self.assertEqual(8, len(r))
+        logger.debug("r[0:8]:  {}".format(r[0:10]))
+
+        #check that commented out line is ignored when reading in cell metadata
+        c = [x for x in r if x.id == 4]
+        logger.debug("c:  {}".format(c))
+        self.assertEqual(0, len(c), "expected that cell line with id == 5 was not read in because it is commented out in " +
+                         "test_cell_definition.txt, but it was found")
 
     def test__read_perturbagen_from_file_CM(self):
         r = pm._read_perturbagen_from_file("functional_tests/test_prism_metadata/perturbagen.txt",

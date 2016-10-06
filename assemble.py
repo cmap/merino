@@ -50,6 +50,8 @@ def build_parser():
                         "are present when validating the perturbagens the systems will halt because any given well will have mutliple " +
                         "different perturbagens.",
                         action="store_true", default=False)
+    parser.add_argument("-cell_set_definition_file", "-csdf", help="file containing cell set definition to use, overriding config file",
+                        type=str, default=None)
     return parser
 
 
@@ -279,7 +281,7 @@ def build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, use_
     return validated_unique_perts
 
 
-def build_prism_cell_list(config_filepath, assay_plates):
+def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_file):
     '''
     read PRISM cell line meta data from file specified in config file (at config_filepath), then associate with
     assay_plate based on pool ID.  Check for cell pools that are not associated with any assay plate
@@ -287,7 +289,7 @@ def build_prism_cell_list(config_filepath, assay_plates):
     :param assay_plates:
     :return:
     '''
-    prism_cell_list = prism_metadata.read_prism_cell_from_file(config_filepath)
+    prism_cell_list = prism_metadata.read_prism_cell_from_file(config_filepath, cell_set_definition_file)
 
     pool_id_assay_plate_map = {}
     for ap in assay_plates:
@@ -374,7 +376,7 @@ def main(args, all_perturbagens=None):
     logger.info("len(assay_plates):  {}".format(len(assay_plates)))
 
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
-    prism_cell_list = build_prism_cell_list(args.config_filepath, assay_plates)
+    prism_cell_list = build_prism_cell_list(args.config_filepath, assay_plates, args.cell_set_definition_file)
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
     #read in all the perturbagens but restrict to those that were on the provided assay_plates
