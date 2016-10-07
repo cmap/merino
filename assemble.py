@@ -334,7 +334,7 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
     det_plate_davepool_data_objects_map = {}
     for dpdo in davepool_data_objects:
         filename = os.path.basename(dpdo.csv_filepath)
-        det_plate = filename.split(".")[0]
+        det_plate = ".".join(filename.split(".")[0:-1])
         det_plate_davepool_data_objects_map[det_plate] = dpdo
 
     logger.info("det_plate_davepool_data_objects_map.keys():  {}".format(det_plate_davepool_data_objects_map.keys()))
