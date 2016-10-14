@@ -15,6 +15,7 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("project_id", help="project_id will be used as prefix for pert_plate", type=str)
     parser.add_argument("pert_plate_start_number", help="starting number to use for the CMAP pert plate", type=int)
+    parser.add_argument("cellset_id", help="CellSet ID used for these plates", type=str)
     parser.add_argument("input_files",
                         help="""input file(s) containing output of compound management Pipeline Pilot Webport
                               "CMAP_Assay_Plate_Compound_Map_Names_Cell_Line_Metadata_from_RunID""",
@@ -26,8 +27,8 @@ def build_parser():
                         default="register_prism_plates.cfg")
     parser.add_argument("-hostname", help="lims db host name", type=str, default="getafix-v")
     parser.add_argument("-dont_assert_plate_numbers_match", 
-    	help="instead of asserting that len(assay_plates) %% len(pool_id_sorted) == 0 and len(assay_plates) %% len(compound_plates_sorted) == 0 just issue warnings",
-	action="store_true", default=False)
+        help="instead of asserting that len(assay_plates) %% len(pool_id_sorted) == 0 and len(assay_plates) %% len(compound_plates_sorted) == 0 just issue warnings",
+    action="store_true", default=False)
     return parser
 
 
@@ -92,18 +93,18 @@ def main(args):
     if (len(assay_plates) % len(pool_id_sorted)) != 0:
         msg = "number of assay plates is not an even multiple of number of pools - remainder len(assay_plates) % len(pool_id_sorted):  {}".format(len(assay_plates) % len(pool_id_sorted))
         if args.dont_assert_plate_numbers_match:
-	    logger.warning(msg)
-	else:
-	    raise Exception("register_prism_plates main " + msg)
+            logger.warning(msg)
+        else:
+            raise Exception("register_prism_plates main " + msg)
 
     compound_plates_sorted = determine_compound_plates(assay_plates)
 
     if (len(assay_plates) % len(compound_plates_sorted)) == 0:
         msg = "number of assay plates is not an even multiple of number of compound plates - remainder len(assay_plates) % len(compound_plates_sorted):  {}".format(len(assay_plates) % len(compound_plates_sorted))
-	if args.dont_assert_plate_numbers_match:
-	    logger.warning(msg)
-	else:
-	    raise Exception("register_prism_plates main " + msg)
+        if args.dont_assert_plate_numbers_match:
+            logger.warning(msg)
+        else:
+            raise Exception("register_prism_plates main " + msg)
 
     num_repos = None
     if args.dont_assert_plate_numbers_match:
@@ -140,7 +141,7 @@ def main(args):
         rep_num = cur_rc[ap.assay_plate_barcode]
         rep_str = "X" + str(rep_num)
         det_plate = pert_plate + "_" + davepool_id + "_" + rep_str
-        prism_replicate = pert_plate + "_CS1_" + rep_str
+        prism_replicate = pert_plate + args.cell_set_id + rep_str
         true_pool_id = ap.pool_id[:4]
         rows.append((ap.assay_plate_barcode, true_pool_id, ap.compound_plate_map_name, davepool_id, det_plate,
                      prism_replicate))
