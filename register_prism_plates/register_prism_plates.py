@@ -141,7 +141,7 @@ def main(args):
         rep_num = cur_rc[ap.assay_plate_barcode]
         rep_str = "X" + str(rep_num)
         det_plate = pert_plate + "_" + davepool_id + "_" + rep_str
-        prism_replicate = pert_plate + args.cell_set_id + rep_str
+        prism_replicate = pert_plate + args.cellset_id + rep_str
         true_pool_id = ap.pool_id[:4]
         rows.append((ap.assay_plate_barcode, true_pool_id, ap.compound_plate_map_name, davepool_id, det_plate,
                      prism_replicate))
