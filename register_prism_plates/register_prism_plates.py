@@ -28,7 +28,7 @@ def build_parser():
     parser.add_argument("-hostname", help="lims db host name", type=str, default="getafix-v")
     parser.add_argument("-dont_assert_plate_numbers_match", 
         help="instead of asserting that len(assay_plates) %% len(pool_id_sorted) == 0 and len(assay_plates) %% len(compound_plates_sorted) == 0 just issue warnings",
-    action="store_true", default=False)
+        action="store_true", default=False)
     return parser
 
 
@@ -99,7 +99,7 @@ def main(args):
 
     compound_plates_sorted = determine_compound_plates(assay_plates)
 
-    if (len(assay_plates) % len(compound_plates_sorted)) == 0:
+    if (len(assay_plates) % len(compound_plates_sorted)) != 0:
         msg = "number of assay plates is not an even multiple of number of compound plates - remainder len(assay_plates) % len(compound_plates_sorted):  {}".format(len(assay_plates) % len(compound_plates_sorted))
         if args.dont_assert_plate_numbers_match:
             logger.warning(msg)
@@ -141,7 +141,7 @@ def main(args):
         rep_num = cur_rc[ap.assay_plate_barcode]
         rep_str = "X" + str(rep_num)
         det_plate = pert_plate + "_" + davepool_id + "_" + rep_str
-        prism_replicate = pert_plate + args.cellset_id + rep_str
+        prism_replicate = pert_plate + "_" + args.cellset_id + "_" + rep_str
         true_pool_id = ap.pool_id[:4]
         rows.append((ap.assay_plate_barcode, true_pool_id, ap.compound_plate_map_name, davepool_id, det_plate,
                      prism_replicate))
