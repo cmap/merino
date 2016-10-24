@@ -2,9 +2,8 @@ import logging
 import setup_logger
 import argparse
 import sys
-import assay_plate
+import plate_tracking_metadata
 import ConfigParser
-import prism_det_plate
 import math
 
 
@@ -32,8 +31,8 @@ def build_parser():
     return parser
 
 
-def load_and_validate_assay_plates(input_fles, config_filepath):
-    assay_plates = assay_plate.read_assay_plates(args.input_files, args.config_filepath)
+def load_and_validate_assay_plates(input_files, config_filepath):
+    assay_plates = plate_tracking_metadata.read_assay_plates(input_files, config_filepath)
     logger.info("len(assay_plates):  {}".format(len(assay_plates)))
 
     r = [x for x in assay_plates if len(x.compound_plate) > 1]
