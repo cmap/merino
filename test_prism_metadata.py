@@ -16,80 +16,6 @@ class TestPrismMetadata(unittest.TestCase):
         assert hasattr(r, "pool_id")
         assert hasattr(r, "analyte_id")
 
-    def test__read_data(self):
-        (h, d) = pm._read_data(test_file)
-
-        assert h is not None
-        logger.debug("h:  {}".format(h))
-        assert "pool_id" in h
-
-        assert d is not None
-        logger.debug("d:  {}".format(d))
-        assert len(d) > 0
-
-    def test__generate_header_map(self):
-        #happy path ignore extra field
-        headers = ["pool_id", "analyte", "strippedname", "extra_header"]
-
-        cp = ConfigParser.RawConfigParser()
-        cp.read("prism_pipeline.cfg")
-        internal_header_file_header_pairs = cp.items(pm._prism_cell_config_file_section)
-
-        r = pm._generate_header_map(headers, internal_header_file_header_pairs, False)
-        logger.debug("r:  {}".format(r))
-        assert len(r) == 3, len(r)
-        assert "extra_header" not in r, r
-        assert "pool_id" in r, r
-        assert r["pool_id"] == 0, r["pool_id"]
-
-        #happy path include extra field
-        r = pm._generate_header_map(headers, internal_header_file_header_pairs, True)
-        logger.debug("r:  {}".format(r))
-        assert len(r) == 4, len(r)
-        assert "extra_header" in r
-        assert r["extra_header"] == 3, r["extra_header"]
-
-    def test__parse_data(self):
-        headers = ["pool_id", "analyte", "strippedname"]
-        cp = ConfigParser.RawConfigParser()
-        cp.read("prism_pipeline.cfg")
-
-        header_map = pm._generate_header_map(headers, cp.items(pm._prism_cell_config_file_section), False)
-
-        data = [["1", "analyte 2", "my cell's name"], ["3", "analyte 5", "autre cell nom"]]
-
-        r = pm._parse_data(header_map, data, pm.PrismCell)
-        logger.debug("r:  {}".format(r))
-        assert len(r) == len(data), len(r)
-
-        header_map["extra header that doesn't have data in any row"] = 10
-        r = pm._parse_data(header_map, data, pm.PrismCell)
-        logger.debug("r:  {}".format(r))
-        assert len(r) == len(data), len(r)
-
-        data.append(["7", "", "blah"])
-        r = pm._parse_data(header_map, data, pm.PrismCell)
-        assert r[2].analyte_id is None
-
-        headers = ["well_position", "compound_well_mmoles_per_liter", "dilution_factor"]
-        cp = ConfigParser.RawConfigParser()
-        cp.read("prism_pipeline.cfg")
-        header_map = pm._generate_header_map(headers, cp.items(pm._perturbagen_CM_input_config_file_section), False)
-
-        data = [["A01", "1.010101", "2"], ["B07", "3.030303", "5"]]
-        r = pm._parse_data(header_map, data, pm.Perturbagen)
-        logger.debug("r:  {}".format(r))
-        assert len(r) == len(data), len(r)
-
-        assert hasattr(r[0], "compound_well_mmoles_per_liter"), r[0].__dict__
-        assert isinstance(r[0].compound_well_mmoles_per_liter, float)
-
-        assert r[0].compound_well_mmoles_per_liter == 1.010101, r[0].compound_well_mmoles_per_liter
-        assert isinstance(r[0].dilution_factor, int)
-        assert r[0].dilution_factor == 2, r[0].dilution_factor
-        assert isinstance(r[1].compound_well_mmoles_per_liter, float)
-        assert isinstance(r[1].dilution_factor, int)
-
     def test_read_prism_cell_from_file(self):
         r = pm.read_prism_cell_from_file("prism_pipeline.cfg", None)
         self.assertGreater(len(r), 20)
@@ -243,19 +169,6 @@ class TestPrismMetadata(unittest.TestCase):
         logger.debug("context.exception:  {}".format(context.exception))
         assert "the perturbagens provided contain different compounds in the same wells of different assasy plates" in \
                str(context.exception), str(context.exception)
-
-    def test__parse_raw_value(self):
-        r = pm._parse_raw_value("")
-        assert r is None
-
-        r = pm._parse_raw_value("6")
-        assert r == 6, r
-
-        r = pm._parse_raw_value("6.1")
-        assert r == 6.1, r
-
-        r = pm._parse_raw_value("hello world")
-        assert r == "hello world", r
 
     def test_convert_objects_to_metadata_df(self):
         col_base_id = "my col base id"
