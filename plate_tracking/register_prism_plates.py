@@ -28,23 +28,23 @@ def build_parser():
     parser.add_argument("-dont_assert_plate_numbers_match", 
         help="instead of asserting that len(assay_plates) %% len(pool_id_sorted) == 0 and len(assay_plates) %% len(compound_plates_sorted) == 0 just issue warnings",
         action="store_true", default=False)
+    parser.add_argument("-compound_plate_col_basename", "-cpcb", help="base name to use when identifying the compound plate(s) " +
+                        "e.g. for the default value of compound_map would use the column \"compound_map\" but would also look " +
+                        " for columns compound_map_2, compound_map_3 etc.", type=str, default="compound_map")
+    parser.add_argument("-poscon_plate_col_basename", "-ppcb", help="base name to use when identifying the poscon plate(s) " +
+                        "e.g. for the default value of poscon_map would use the column \"poscon_map\" but would also look " +
+                        " for columns poscon_map_2, poscon_map_3 etc.", type=str, default="poscon_map")
     return parser
 
 
-def load_and_validate_assay_plates(input_files, config_filepath):
-    assay_plates = plate_tracking_metadata.read_assay_plates(input_files, config_filepath)
+def load_and_sort_assay_plates(input_files, config_filepath, compound_plate_col_basename, poscon_plate_col_basename):
+    (assay_plates, compound_plate_cols) = plate_tracking_metadata.read_assay_plates(input_files, config_filepath, compound_plate_col_basename,
+                                                             poscon_plate_col_basename)
     logger.info("len(assay_plates):  {}".format(len(assay_plates)))
-
-    r = [x for x in assay_plates if len(x.compound_plate) > 1]
-    logger.info("assay plates with multiple compound plates:  {}".format(r))
-    assert len(r) == 0
-    for ap in assay_plates:
-        for x in ap.compound_plate:
-            ap.compound_plate_map_name = x
 
     assay_plates.sort(key=lambda x: x.assay_plate_barcode)
 
-    return assay_plates
+    return (assay_plates, compound_plate_cols)
 
 
 def determine_pool_ids(assay_plates):
@@ -57,7 +57,7 @@ def determine_pool_ids(assay_plates):
 
 
 def determine_compound_plates(assay_plates):
-    r = set([x.compound_plate_map_name for x in assay_plates])
+    r = set([x.compound_plates for x in assay_plates])
     compound_plates_sorted = list(r)
     compound_plates_sorted.sort()
     logger.info("number of compound plates:  {}".format(len(compound_plates_sorted)))
@@ -85,7 +85,8 @@ def build_pool_id_to_davepool_id_mapping(config_filepath):
 
 
 def main(args):
-    assay_plates = load_and_validate_assay_plates(args.input_files, args.config_filepath)
+    (assay_plates, compound_plate_cols) = load_and_sort_assay_plates(args.input_files, args.config_filepath, args.compound_plate_col_basename,
+                                              args.poscon_plate_col_basename)
 
     pool_id_sorted = determine_pool_ids(assay_plates)
 
@@ -105,7 +106,7 @@ def main(args):
         else:
             raise Exception("register_prism_plates main " + msg)
 
-    num_repos = None
+    num_reps = None
     if args.dont_assert_plate_numbers_match:
         num_reps = int(math.ceil(float(len(assay_plates)) / float(len(compound_plates_sorted)) / float(len(pool_id_sorted))))
     else:
@@ -119,7 +120,7 @@ def main(args):
     rep_counter = {}
     rows = []
     for ap in assay_plates:
-        pert_plate = pert_plate_mapping[ap.compound_plate_map_name]
+        pert_plate = pert_plate_mapping[ap.compound_plates]
 
         davepool_id = pool_id_to_davepool_id_map[ap.pool_id]
 
@@ -132,8 +133,7 @@ def main(args):
             cur_rc[ap.assay_plate_barcode] = 1
         else:
             if ap.assay_plate_barcode in cur_rc:
-                raise Exception("assay plate barcode appeared twice in rep_counter - cur_rc:  {}  ap:  {}".format(cur_rc,
-                                                                                                                  ap))
+                raise Exception("assay plate barcode appeared twice in rep_counter - cur_rc:  {}  ap:  {}".format(cur_rc, ap))
             else:
                 cur_rc[ap.assay_plate_barcode] = max(cur_rc.values()) + 1
 
@@ -142,12 +142,18 @@ def main(args):
         det_plate = pert_plate + "_" + davepool_id + "_" + rep_str
         prism_replicate = pert_plate + "_" + args.cellset_id + "_" + rep_str
         true_pool_id = ap.pool_id[:4]
-        rows.append((ap.assay_plate_barcode, true_pool_id, ap.compound_plate_map_name, davepool_id, det_plate,
-                     prism_replicate))
+
+        cur_row = [ap.assay_plate_barcode, true_pool_id]
+        cur_row.extend(ap.compound_plates)
+        cur_row.extend([davepool_id, det_plate, prism_replicate])
+        rows.append(cur_row)
 
     rows.sort(key=lambda x: (x[5], x[1]))
 
-    rows.insert(0, ("assay_plate_barcode", "pool_id", "compound_plate_map_name", "davepool_id", "det_plate", "prism_replicate"))
+    headers = ["assay_plate_barcode", "pool_id"]
+    headers.extend(compound_plate_cols)
+    headers.extend(["davepool_id", "det_plate", "prism_replicate"])
+    rows.insert(0, headers)
 
     f = open(args.output_file, "w")
     for r in rows:
