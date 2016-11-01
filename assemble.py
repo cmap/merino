@@ -7,9 +7,9 @@ import argparse
 import prism_pipeline
 import sys
 import os
-import GCToo.GCToo as GCToo
+import broadinstitute_cmap.io.GCToo.GCToo as GCToo
 import pandas
-import GCToo.write_gctoo as write_gctoo
+import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
