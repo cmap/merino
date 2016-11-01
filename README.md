@@ -6,7 +6,7 @@ Data Flow for converting raw PRISM data into processed results
 
 0.  Create a local conda environment
     0.  conda env create -f \<path to prism_pipeline code>/prism_pipeline.conda
-    0. Note: This will only work with conda version 3.19
+     Note: This will only work with conda version 3.19
 0.  Activate the environment:
     0.  source \<path to conda bin>/activate prism_pipeline
 0.  Add the prism pipeline code directory to the python path:
