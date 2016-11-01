@@ -6,7 +6,7 @@ import setup_logger
 import logging
 import davepool_data
 import sys
-import GCToo.write_gctoo as write_gctoo
+import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
