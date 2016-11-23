@@ -4,8 +4,10 @@ import setup_logger
 import logging
 import prism_metadata
 import davepool_data
+import check_and_build_perts
 import numpy
 import os
+import glob
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -248,42 +250,6 @@ class TestAssemble(unittest.TestCase):
         assert r[2][0] == "c", r[2][0]
         assert r[2][1] == "3", r[2][1]
 
-    def test_build_perturbagen_list(self):
-        test_dir = "functional_tests/test_assemble/test_build_perturbagen_list/"
-        plate_map_path = os.path.join(test_dir, "plate_map.src")
-        config_filepath = os.path.join(test_dir, "prism_pipeline.cfg")
-        assay_plates = [prism_metadata.AssayPlate(assay_plate_barcode="SCW0112212")]
-        assay_plates[0].ignore = False
-
-        all_perturbagens = assemble.read_all_perturbagens_from_file(plate_map_path, config_filepath, prism_metadata.plate_map_type_CM)
-	
-    	#happy path - plate map has 9 entries but only 4 match the assay_plate_barcode
-        r = assemble.build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, False)
-        self.assertIsNotNone(r)
-        logger.debug("len(r):  {}".format(len(r)))
-        logger.debug("r:  {}".format(r))
-        self.assertEquals(4, len(r), "expected to load 4 perturbagens, did not")
-
-        #happy path in which two assay plates are present, but one is ignored
-        assay_plates.append(prism_metadata.AssayPlate(assay_plate_barcode="SCW0112213"))
-        assay_plates[1].ignore = False
-        assay_plates[0].ignore = True
-
-        r = assemble.build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, False)
-        self.assertIsNotNone(r)
-        logger.debug("len(r):  {}".format(len(r)))
-        logger.debug("r:  {}".format(r))
-        self.assertEquals(5, len(r), "expected to load 5 perturbagens, did not")
-
-        #happy path but mash the assay_plate_barcode and do not attempt to match assay plate barcodes
-        #NB: plate_map.src has 11 entries but 2 are duplicates and they should be stripped out
-        assay_plates[1].assay_plate_barcode = "another_fake_barcode"
-        r = assemble.build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, True)
-        self.assertIsNotNone(r)
-        logger.debug("len(r):  {}".format(len(r)))
-        logger.debug("r:  {}".format(r))
-        self.assertEquals(9, len(r), "expected to load 9 perturbagens, did not")
-
     def test_full_functional(self):
         expected_files = ["PCAL003_CS1_X1_COUNT.gct", "PCAL003_CS1_X1_MEDIAN.gct"]
         for ef in expected_files:
@@ -292,13 +258,15 @@ class TestAssemble(unittest.TestCase):
 
         config_filepath = "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg"
         prism_replicate_name = "PCAL003_CS1_X1"
-        plate_map_path = "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt"
+        all_perts_plate_map_path = "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt"
         plates_mapping_path = "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt"
+        check_and_build_perts.main(plate_map_path=all_perts_plate_map_path, plate_tracking_file=plates_mapping_path, config_filepath=config_filepath)
+        plate_map_path = 'PCAL003.src'
         dp7_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP7_X1.csv"
         dp8_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP8_X1.csv"
 
         args = assemble.build_parser().parse_args(["-config_filepath", config_filepath, prism_replicate_name,
-            plate_map_path, plates_mapping_path, "DP7", dp7_csv_path, "DP8", dp8_csv_path])
+            plate_map_path, plates_mapping_path, "DP7", dp7_csv_path, "DP8", dp8_csv_path, '-plate_map_type', 'CMap'])
 
         logger.debug("args:  {}".format(args))
 
@@ -307,6 +275,11 @@ class TestAssemble(unittest.TestCase):
         for ef in expected_files:
             assert os.path.exists(ef), ef
             os.remove(ef)
+
+        for map_file in glob.glob('PCAL*.src'):
+            x = os.path.getsize(map_file)
+            assert x > 0
+            os.remove(map_file)
 
 
 if __name__ == "__main__":
