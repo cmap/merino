@@ -340,7 +340,7 @@ def read_all_perturbagens_from_file(plate_map_path, config_filepath, plate_map_t
 
 
 def main(args, all_perturbagens=None):
-    import pdb
+
     if all_perturbagens is None:
         all_perturbagens = read_all_perturbagens_from_file(args.plate_map_path, args.config_filepath, args.plate_map_type)
 
