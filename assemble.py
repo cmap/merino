@@ -7,12 +7,13 @@ import argparse
 import prism_pipeline
 import sys
 import os
-import GCToo.GCToo as GCToo
+import broadinstitute_cmap.io.GCToo.GCToo as GCToo
 import pandas
-import GCToo.write_gctoo as write_gctoo
+import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
+
 
 class DataByCell:
     def __init__(self, cell_data_map=None, well_list=None):
@@ -259,28 +260,6 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
     return r
 
 
-def build_perturbagen_list(all_perturbagens, config_filepath, assay_plates, use_all_perts_regardless_of_assay_plate):
-    '''
-    keep only those entries in all_perturbagens whose assay_plate_barcode matches one of the already loaded
-    assay plate barcodes.  Validate the remaining perturbagens.
-    :param all_perturbagens:
-    :param config_filepath:
-    :param assay_plates:
-    :return:
-    '''
-    assay_plate_barcodes = set([x.assay_plate_barcode for x in assay_plates if x.ignore == False])
-
-    all_assay_plate_perts = None
-    if True == use_all_perts_regardless_of_assay_plate:
-        all_assay_plate_perts = all_perturbagens
-    else:
-        all_assay_plate_perts = [x for x in all_perturbagens if x.assay_plate_barcode in assay_plate_barcodes]
-
-    validated_unique_perts = prism_metadata.validate_perturbagens(all_assay_plate_perts).values()
-
-    return validated_unique_perts
-
-
 def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_file):
     '''
     read PRISM cell line meta data from file specified in config file (at config_filepath), then associate with
@@ -361,6 +340,7 @@ def read_all_perturbagens_from_file(plate_map_path, config_filepath, plate_map_t
 
 
 def main(args, all_perturbagens=None):
+    import pdb
     if all_perturbagens is None:
         all_perturbagens = read_all_perturbagens_from_file(args.plate_map_path, args.config_filepath, args.plate_map_type)
 
@@ -379,19 +359,15 @@ def main(args, all_perturbagens=None):
     prism_cell_list = build_prism_cell_list(args.config_filepath, assay_plates, args.cell_set_definition_file)
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
-    #read in all the perturbagens but restrict to those that were on the provided assay_plates
-    perturbagen_list = build_perturbagen_list(all_perturbagens, args.config_filepath, assay_plates, args.use_all_perts_regardless_of_assay_plate)
-    logger.info("len(perturbagen_list):  {}".format(len(perturbagen_list)))
-
     #build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
     (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects, davepool_id_to_cells_map)
 
-    median_gctoo = build_gctoo(args.prism_replicate_name, perturbagen_list, all_median_data_by_cell)
+    median_gctoo = build_gctoo(args.prism_replicate_name, all_perturbagens, all_median_data_by_cell)
     write_gctoo.write(median_gctoo, args.prism_replicate_name + "_MEDIAN.gct", data_null=_NaN, filler_null=_null)
 
-    count_gctoo = build_gctoo(args.prism_replicate_name, perturbagen_list, all_count_data_by_cell)
+    count_gctoo = build_gctoo(args.prism_replicate_name, all_perturbagens, all_count_data_by_cell)
     write_gctoo.write(count_gctoo, args.prism_replicate_name + "_COUNT.gct", data_null=_NaN, filler_null=_null)
 
 
