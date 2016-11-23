@@ -45,12 +45,6 @@ def build_parser():
                         " ignored / excluded from the assemble", nargs="+", default=None)
     parser.add_argument("-plate_map_type", "-pmt", help="type of the plate map", choices=prism_metadata.plate_map_types,
                         default=prism_metadata.plate_map_type_CM)
-    parser.add_argument("-use_all_perts_regardless_of_assay_plate", "-uaproap", help="when loading perturbagens do not attempt to " +
-                        "match their assay_plate_barcode column with the assay_plate_barcodes loaded from the plates_mapping_path " +
-                        "NB: using this option means that the plate_map can only have 1 pert plate, otherwise if multiple pert plates " +
-                        "are present when validating the perturbagens the systems will halt because any given well will have mutliple " +
-                        "different perturbagens.",
-                        action="store_true", default=False)
     parser.add_argument("-cell_set_definition_file", "-csdf", help="file containing cell set definition to use, overriding config file",
                         type=str, default=None)
     return parser
