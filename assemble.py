@@ -323,20 +323,10 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
 
     return assay_plates
 
-
-def read_all_perturbagens_from_file(plate_map_path, config_filepath, plate_map_type):
-    logger.info("loading all perturbagens...")
-    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, plate_map_type, config_filepath)
-
-    logger.info("finished loading all perturbagens")
-
-    return all_perturbagens
-
-
 def main(args, all_perturbagens=None):
 
     if all_perturbagens is None:
-        all_perturbagens = read_all_perturbagens_from_file(args.plate_map_path, args.config_filepath, args.plate_map_type)
+        all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, args.plate_map_type, args.config_filepath)
 
     args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
 
