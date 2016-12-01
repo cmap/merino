@@ -258,9 +258,12 @@ class TestAssemble(unittest.TestCase):
 
         config_filepath = "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg"
         prism_replicate_name = "PCAL003_CS1_X1"
-        all_perts_plate_map_path = "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt"
         plates_mapping_path = "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt"
-        check_and_build_perts.main(plate_map_path=all_perts_plate_map_path, plate_tracking_file=plates_mapping_path, config_filepath=config_filepath)
+        args1 = check_and_build_perts.build_parser().parse_args(
+            ["functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg",
+             "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt",
+             "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt"])
+        check_and_build_perts.main(args1)
         plate_map_path = 'PCAL003.src'
         dp7_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP7_X1.csv"
         dp8_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP8_X1.csv"

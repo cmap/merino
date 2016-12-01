@@ -1,3 +1,18 @@
+"""
+
+Command line script for validating and separating individual plate maps from a cohort plate map.
+
+Given a cohort plate map, this script checks that all metadata for a given pert plate is the same,
+and then writes the metadata out to a separate plate map for each pert plate.
+
+Given a plate tracking file, the script builds a map for which assay plates correspond to which pert plates.
+It then uses this to map out which perturbagen objects in the plate map correspond to which pert plate,
+based on their assay plate. Once there is a 'perturbagen map' for each pert plate, these perturbagen sets can
+be validated (this just checks that all of the corresponding wells recieved the same treatment),
+and written into a new plate map.
+
+"""
+
 import prism_metadata
 import numpy
 import pandas as pd
@@ -7,11 +22,16 @@ import argparse
 import sys
 import prism_pipeline
 
+__author__ = "Evan Lemire"
+__email__ = "elemire@broadinstitute.org"
+
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # Optional
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
+    # Next three required
     parser.add_argument("config_filepath", help="path to the location of the configuration file", type=str,
                         default=prism_pipeline.default_config_filepath)
     parser.add_argument("plate_map_path", help="path to file containing plate map describing perturbagens used", type=str)
@@ -21,12 +41,13 @@ def build_parser():
 
 def build_assayplate_pertplate_map(plate_tracking_file):
 
+        # Read in plate tracking file as pandas data frame
         plate_tacking_df = pd.read_table(plate_tracking_file, header=0, sep='\t')
-        # Return sorted list of all assay plate barcodes
-        assay_plates = sorted(set(plate_tacking_df['assay_plate_barcode']))
+
+        # Initialize map
         assayplate_pertplate_map = {}
 
-        # For each assay plate, find its entry and add its pert plate name to the map
+        # For each assay plate, create a key in the map and add its pert plate as the value
         for (apb, pp) in plate_tacking_df[["assay_plate_barcode", "pert_plate"]].values:
                 assayplate_pertplate_map[apb] = pp
 
@@ -49,9 +70,11 @@ def build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map):
                                 pert_plate_perturbagens_map[pertpl] = []
                         current_perturbagens = pert_plate_perturbagens_map[pertpl]
                         current_perturbagens.append(p)
+                # Record the names of plate present in the plate map but not in plate tracking
                 else:
                         missing_plates.append(apb)
 
+        # If there are plates missing from plate tracking, fail.
         if len(missing_plates) > 0:
                 msg = "{} assay plates in plate map were missing from plate tracking file:  {}".format(
                         len(missing_plates), missing_plates)
@@ -63,6 +86,10 @@ def build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map):
 
 def create_plate_map_dataframes(pert_plate_perturbagens_map):
 
+        # This index builder currently serves no purpose. convert_objects_to_metadata_df requires an 'index builder'
+        # as it was initially used to make GCTs and you labelled your rows and columns using pieces from multiple
+        # fields in the df. In the case of the plate map we just want to make one column the index, but refactoring
+        # convert_objects_to_metadata_df would complicate the code a lot, so we make a dummy index builder.
         def index_builder(pert):
                 return pert.well_id
 
@@ -84,6 +111,7 @@ def create_plate_map_dataframes(pert_plate_perturbagens_map):
 
 def write_plate_maps(dataframe_map):
 
+        # Write plate maps to tab delimited text files
         for (pertplate, dataframe) in dataframe_map.items():
                 dataframe.to_csv('{}.src'.format(pertplate), sep='\t')
 

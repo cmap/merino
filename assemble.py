@@ -1,3 +1,10 @@
+"""
+
+Command line script which takes the two CSVs belonging to a single PRISM replicate and combines them into a GCT file
+along with all of the relevant meta data.
+
+The meta data inputs are a plate map, a cell set definition file, a plate tracking file, and a davepool-analyte mapping.
+"""
 import setup_logger
 import logging
 import davepool_data
