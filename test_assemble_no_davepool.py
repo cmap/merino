@@ -38,7 +38,7 @@ class TestAssembleNoDavepool(unittest.TestCase):
 
         for ef in expected_files:
             assert os.path.exists(ef), ef
-            # os.remove(ef)
+            os.remove(ef)
 
 
 if __name__ == "__main__":

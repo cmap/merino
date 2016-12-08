@@ -41,47 +41,47 @@ def build_parser():
 
 def build_assayplate_pertplate_map(plate_tracking_file):
 
-        # Read in plate tracking file as pandas data frame
-        plate_tacking_df = pd.read_table(plate_tracking_file, header=0, sep='\t')
+    # Read in plate tracking file as pandas data frame
+    plate_tracking_df = pd.read_table(plate_tracking_file, header=0)
 
-        # Initialize map
-        assayplate_pertplate_map = {}
+    # Initialize map
+    assayplate_pertplate_map = {}
 
-        # For each assay plate, create a key in the map and add its pert plate as the value
-        for (apb, pp) in plate_tacking_df[["assay_plate_barcode", "pert_plate"]].values:
-                assayplate_pertplate_map[apb] = pp
+    # For each assay plate, create a key in the map and add its pert plate as the value
+    for (apb, pp) in plate_tracking_df[["assay_plate_barcode", "pert_plate"]].values:
+            assayplate_pertplate_map[apb] = pp
 
-        return assayplate_pertplate_map
+    return assayplate_pertplate_map
 
 
 def build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map):
 
-        pert_plate_perturbagens_map = {}
+    pert_plate_perturbagens_map = {}
 
-        # Read through each pert object in the cohort map, get its assay plate and use that to look up its pert plate.
-        # Add the pert object to a map as a value under the key of its respective pert plate.
+    # Read through each pert object in the cohort map, get its assay plate and use that to look up its pert plate.
+    # Add the pert object to a map as a value under the key of its respective pert plate.
 
-        missing_plates = []
-        for p in all_perturbagens:
-                apb = p.assay_plate_barcode
-                if apb in assayplate_pertplate_map:
-                        pertpl = assayplate_pertplate_map[apb]
-                        if pertpl not in pert_plate_perturbagens_map:
-                                pert_plate_perturbagens_map[pertpl] = []
-                        current_perturbagens = pert_plate_perturbagens_map[pertpl]
-                        current_perturbagens.append(p)
-                # Record the names of plate present in the plate map but not in plate tracking
-                else:
-                        missing_plates.append(apb)
+    missing_plates = []
+    for p in all_perturbagens:
+            apb = p.assay_plate_barcode
+            if apb in assayplate_pertplate_map:
+                    pertpl = assayplate_pertplate_map[apb]
+                    if pertpl not in pert_plate_perturbagens_map:
+                            pert_plate_perturbagens_map[pertpl] = []
+                    current_perturbagens = pert_plate_perturbagens_map[pertpl]
+                    current_perturbagens.append(p)
+            # Record the names of plate present in the plate map but not in plate tracking
+            else:
+                    missing_plates.append(apb)
 
-        # If there are plates missing from plate tracking, fail.
-        if len(missing_plates) > 0:
-                msg = "{} assay plates in plate map were missing from plate tracking file:  {}".format(
-                        len(missing_plates), missing_plates)
-                logger.error(msg)
-                raise Exception("check_and_build_perts build_pertplate_perturbagen_map " + msg)
+    # If there are plates missing from plate tracking, fail.
+    if len(missing_plates) > 0:
+            msg = "{} assay plates in plate map were missing from plate tracking file:  {}".format(
+                    len(missing_plates), missing_plates)
+            logger.error(msg)
+            raise Exception("check_and_build_perts build_pertplate_perturbagen_map " + msg)
 
-        return pert_plate_perturbagens_map
+    return pert_plate_perturbagens_map
 
 
 def create_plate_map_dataframes(pert_plate_perturbagens_map):
@@ -97,8 +97,8 @@ def create_plate_map_dataframes(pert_plate_perturbagens_map):
         # write out a well map of perts for each pert plate. Turn this well map into a list of perts to pass to df
         # builder. Sort and index df, then write to tab delimited .src file.
         dataframe_map = {}
-        for (pertplate) in pert_plate_perturbagens_map:
-                validated_perturbagens = prism_metadata.validate_perturbagens(pert_plate_perturbagens_map[pertplate])
+        for (pertplate, perturbagens) in pert_plate_perturbagens_map.iteritems():
+                validated_perturbagens = prism_metadata.validate_perturbagens(perturbagens)
                 dataframe = prism_metadata.convert_objects_to_metadata_df(index_builder, validated_perturbagens.values(),
                                                            {"well_id": "pert_well"})
                 dataframe_indexed = dataframe.set_index("pert_well")

@@ -6,7 +6,7 @@ import setup_logger
 import logging
 import davepool_data
 import sys
-import GCToo.write_gctoo as write_gctoo
+import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -32,7 +32,7 @@ def main(args):
     my_davepool = davepool_data.read_data(args.csv_filepath)
 
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
-    prism_cell_list = prism_metadata.read_prism_cell_from_file(args.config_filepath, args.cell_set_definition_file)
+    prism_cell_list = prism_metadata.read_prism_cell_from_file(args.config_filepath, args.cell_set_definition_file, 'cell_set_definition')
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
     #read in all the perturbagens but restrict to those that were on the provided assay_plates

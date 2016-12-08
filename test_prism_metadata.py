@@ -17,12 +17,13 @@ class TestPrismMetadata(unittest.TestCase):
         assert hasattr(r, "analyte_id")
 
     def test_read_prism_cell_from_file(self):
-        r = pm.read_prism_cell_from_file("prism_pipeline.cfg", None)
+        r = pm.read_prism_cell_from_file("prism_pipeline.cfg", None, 'cell_set_definition')
         self.assertGreater(len(r), 20)
         logger.debug("r[0:10]:  {}".format(r[0:10]))
 
         r = pm.read_prism_cell_from_file("prism_pipeline.cfg",
-                                         "functional_tests/test_prism_metadata/test_read_prism_cell_from_file/test_cell_definition.txt")
+                                         "functional_tests/test_prism_metadata/test_read_prism_cell_from_file/test_cell_definition.txt",
+                                         'cell_set_definition')
         self.assertEqual(8, len(r))
         logger.debug("r[0:8]:  {}".format(r[0:10]))
 
@@ -171,6 +172,8 @@ class TestPrismMetadata(unittest.TestCase):
                str(context.exception), str(context.exception)
 
     def test_convert_objects_to_metadata_df(self):
+        import pdb
+        pdb.set_trace()
         col_base_id = "my col base id"
         pert_list = [pm.Perturbagen("A01"), pm.Perturbagen("B02"), pm.Perturbagen(3)]
         for (i, p) in enumerate(pert_list):

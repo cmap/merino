@@ -10,6 +10,7 @@ import parse_data
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 _prism_cell_config_file_section = "PrismCell column headers"
+_davepool_analyte_mapping_file_section = "DavepoolAnalyteMapping column headers"
 _perturbagen_CM_input_config_file_section = "Perturbagen CM input column headers"
 _perturbagen_CMap_input_config_file_section = "Perturbagen CMap input column headers"
 _assay_plate_config_file_section = "Assay Plate column headers"
@@ -49,11 +50,11 @@ class Perturbagen(object):
 
 
 class AssayPlate(object):
-    def __init__(self, assay_plate_barcode=None, det_plate=None, pool_id=None):
+    def __init__(self, assay_plate_barcode=None, det_plate=None, pool_id=None, ignore=None):
         self.assay_plate_barcode = assay_plate_barcode
         self.det_plate = det_plate
         self.pool_id = pool_id
-
+        self.ignore = ignore
     def __repr__(self):
         return " ".join(["{}:{}".format(str(k),str(v)) for (k,v) in self.__dict__.items()])
 
@@ -61,22 +62,24 @@ class AssayPlate(object):
         return self.__repr__()
 
 
-def read_prism_cell_from_file(config_filepath, cell_set_definition_file):
+def read_prism_cell_from_file(config_filepath, row_metadata_file, row_metadata_type):
     cp = ConfigParser.RawConfigParser()
     cp.read(config_filepath)
 
-    if cell_set_definition_file is None:
-        filepath = cp.get("PrismCell database file", "prism_cell_database_filepath")
-    else:
-        filepath = cell_set_definition_file
+    filepath = row_metadata_file
 
     (headers, data) = parse_data.read_data(filepath)
 
     data = [x for x in data if x[0][0] != "#"]
 
-    header_map = parse_data.generate_header_map(headers, cp.items(_prism_cell_config_file_section), False)
-    logger.debug("header_map:  {}".format(header_map))
+    if row_metadata_type == 'cell_set_definition':
+        header_map = parse_data.generate_header_map(headers, cp.items(_prism_cell_config_file_section), False)
+    elif row_metadata_type == 'davepool_analyte_mapping':
+        header_map = parse_data.generate_header_map(headers, cp.items(_davepool_analyte_mapping_file_section), False)
+    else:
+        raise Exception ("prism_metadata.py read_prism_cell_from_file: Invalid row metadata type: {}. Must be cell_set_definition or davepool_analyte_mapping".format(row_metadata_type))
 
+    logger.debug("header_map:  {}".format(header_map))
     return parse_data.parse_data(header_map, data, PrismCell)
 
 
@@ -125,7 +128,6 @@ def read_assay_plate_from_file(filepath, config_filepath = prism_pipeline.defaul
     logger.debug("config_filepath:  {}".format(config_filepath))
     cp = ConfigParser.RawConfigParser()
     cp.read(config_filepath)
-
     (headers, data) = parse_data.read_data(filepath)
 
     header_map = parse_data.generate_header_map(headers, cp.items(_assay_plate_config_file_section), False)
@@ -164,7 +166,6 @@ def _build_additional_perturbagen_info(config_filepath, perturbagens):
             p.pert_dose = None
             p.pert_dose_unit = None
             p.pert_idose = None
-
         p.pert_id = p.pert_mfc_id[0:13] if p.pert_mfc_id is not None else pert_id_DMSO
 
         assert hasattr(p, "pert_type"), "pert_type attribute is missing from perturbagen i:  {}  p:  {}".format(i, p)
@@ -214,6 +215,14 @@ def validate_perturbagens(perturbagens):
 
 
 def convert_objects_to_metadata_df(index_builder, object_list, meta_renaming_map):
+    """
+
+    :param index_builder: Function that given a provided entry in object_list provides a unique index for that entry
+    :param object_list: List of objects that should be converted into rows in the data frame. The properties of these
+    objects will be the columns of the data frame.
+    :param meta_renaming_map: A mapping between the name of a property and the column header to be used in the output.
+    :return: A dataframe where each row corresponds to one of the objects in the object list.
+    """
     logger.debug("len(object_list):  {}".format(len(object_list)))
 
     col_metadata_map = {}
@@ -223,7 +232,6 @@ def convert_objects_to_metadata_df(index_builder, object_list, meta_renaming_map
                 col_metadata_map[k] = []
  
     logger.debug("col_metadata_map.keys():  {}".format(col_metadata_map.keys()))
-
     index = []
     for p in object_list:
         index.append(index_builder(p))
