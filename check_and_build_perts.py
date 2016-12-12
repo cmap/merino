@@ -8,7 +8,7 @@ and then writes the metadata out to a separate plate map for each pert plate.
 Given a plate tracking file, the script builds a map for which assay plates correspond to which pert plates.
 It then uses this to map out which perturbagen objects in the plate map correspond to which pert plate,
 based on their assay plate. Once there is a 'perturbagen map' for each pert plate, these perturbagen sets can
-be validated (this just checks that all of the corresponding wells recieved the same treatment),
+be validated (this just checks that all of the corresponding wells received the same treatment),
 and written into a new plate map.
 
 """

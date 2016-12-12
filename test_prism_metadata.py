@@ -17,7 +17,8 @@ class TestPrismMetadata(unittest.TestCase):
         assert hasattr(r, "analyte_id")
 
     def test_read_prism_cell_from_file(self):
-        r = pm.read_prism_cell_from_file("prism_pipeline.cfg", None, 'cell_set_definition')
+        cell_set_definition = "/Users/elemire/Workspace/prism_pipeline/requirements_artifacts/CalicoTranche1PrimaryMetaData_02252016.txt"
+        r = pm.read_prism_cell_from_file("prism_pipeline.cfg", cell_set_definition, 'cell_set_definition')
         self.assertGreater(len(r), 20)
         logger.debug("r[0:10]:  {}".format(r[0:10]))
 
@@ -172,8 +173,6 @@ class TestPrismMetadata(unittest.TestCase):
                str(context.exception), str(context.exception)
 
     def test_convert_objects_to_metadata_df(self):
-        import pdb
-        pdb.set_trace()
         col_base_id = "my col base id"
         pert_list = [pm.Perturbagen("A01"), pm.Perturbagen("B02"), pm.Perturbagen(3)]
         for (i, p) in enumerate(pert_list):

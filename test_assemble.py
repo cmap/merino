@@ -256,7 +256,7 @@ class TestAssemble(unittest.TestCase):
             if os.path.exists(ef):
                 os.remove(ef)
 
-        config_filepath = "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg"
+        config_filepath = "/Users/elemire/Workspace/prism_pipeline/functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg"
         prism_replicate_name = "PCAL003_CS1_X1"
         plates_mapping_path = "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt"
         args1 = check_and_build_perts.build_parser().parse_args(
@@ -267,9 +267,12 @@ class TestAssemble(unittest.TestCase):
         plate_map_path = 'PCAL003.src'
         dp7_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP7_X1.csv"
         dp8_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP8_X1.csv"
+        csdf_path = "/Users/elemire/Workspace/prism_pipeline/requirements_artifacts/CalicoTranche1PrimaryMetaData_02252016.txt"
+        dmf_path = "/Users/elemire/Workspace/prism_pipeline/requirements_artifacts/test_davepool_analyte_mapping.txt"
 
-        args = assemble.build_parser().parse_args(["-config_filepath", config_filepath, prism_replicate_name,
-            plate_map_path, plates_mapping_path, "DP7", dp7_csv_path, "DP8", dp8_csv_path, '-plate_map_type', 'CMap'])
+        args = assemble.build_parser().parse_args(["-config_filepath", config_filepath, "-prn", prism_replicate_name,
+            "-pmp", plate_map_path, "-ptp", plates_mapping_path, "-dp_csv", "DP7", dp7_csv_path, "DP8", dp8_csv_path, '-plate_map_type', 'CMap',
+                                                   "-csdf", csdf_path, "-dmf", dmf_path])
 
         logger.debug("args:  {}".format(args))
 

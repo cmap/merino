@@ -326,7 +326,6 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
     :param ignore_assay_plate_barcodes:
     :return:
     '''
-
     all_assay_plates = prism_metadata.read_assay_plate_from_file(plates_mapping_path, config_filepath)
     logger.info("len(all_assay_plates):  {}".format(len(all_assay_plates)))
 
