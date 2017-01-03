@@ -9,8 +9,7 @@ import parse_data
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
-_prism_cell_config_file_section = "PrismCell column headers"
-_davepool_analyte_mapping_file_section = "DavepoolAnalyteMapping column headers"
+
 _perturbagen_CM_input_config_file_section = "Perturbagen CM input column headers"
 _perturbagen_CMap_input_config_file_section = "Perturbagen CMap input column headers"
 _assay_plate_config_file_section = "Assay Plate column headers"
@@ -62,9 +61,7 @@ class AssayPlate(object):
         return self.__repr__()
 
 
-def read_prism_cell_from_file(config_filepath, row_metadata_file, row_metadata_type):
-    cp = ConfigParser.RawConfigParser()
-    cp.read(config_filepath)
+def read_prism_cell_from_file(row_metadata_file, items):
 
     filepath = row_metadata_file
 
@@ -72,12 +69,7 @@ def read_prism_cell_from_file(config_filepath, row_metadata_file, row_metadata_t
 
     data = [x for x in data if x[0][0] != "#"]
 
-    if row_metadata_type == 'cell_set_definition':
-        header_map = parse_data.generate_header_map(headers, cp.items(_prism_cell_config_file_section), False)
-    elif row_metadata_type == 'davepool_analyte_mapping':
-        header_map = parse_data.generate_header_map(headers, cp.items(_davepool_analyte_mapping_file_section), False)
-    else:
-        raise Exception ("prism_metadata.py read_prism_cell_from_file: Invalid row metadata type: {}. Must be cell_set_definition or davepool_analyte_mapping".format(row_metadata_type))
+    header_map = parse_data.generate_header_map(headers, items, False)
 
     logger.debug("header_map:  {}".format(header_map))
     return parse_data.parse_data(header_map, data, PrismCell)

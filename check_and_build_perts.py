@@ -32,11 +32,11 @@ def build_parser():
     # Optional
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     # Next three required
-    parser.add_argument("config_filepath", help="path to the location of the configuration file", type=str,
+    parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
                         default=prism_pipeline.default_config_filepath)
-    parser.add_argument("plate_map_path", help="path to file containing plate map describing perturbagens used", type=str)
-    parser.add_argument("plate_tracking_path", help="path to file containing the mapping between assasy plates and det_plates",
-                        type=str)
+    parser.add_argument("-plate_map_path", "-pmp", help="path to file containing plate map describing perturbagens used", type=str, required=True)
+    parser.add_argument("-plate_tracking_path", "-ptp", help="path to file containing the mapping between assasy plates and det_plates",
+                        type=str, required=True)
     return parser
 
 def build_assayplate_pertplate_map(plate_tracking_file):
@@ -56,7 +56,7 @@ def build_assayplate_pertplate_map(plate_tracking_file):
 
 def build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map):
 
-    pert_plate_perturbagens_map = {}
+    pertplate_perturbagens_map = {}
 
     # Read through each pert object in the cohort map, get its assay plate and use that to look up its pert plate.
     # Add the pert object to a map as a value under the key of its respective pert plate.
@@ -66,9 +66,9 @@ def build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map):
             apb = p.assay_plate_barcode
             if apb in assayplate_pertplate_map:
                     pertpl = assayplate_pertplate_map[apb]
-                    if pertpl not in pert_plate_perturbagens_map:
-                            pert_plate_perturbagens_map[pertpl] = []
-                    current_perturbagens = pert_plate_perturbagens_map[pertpl]
+                    if pertpl not in pertplate_perturbagens_map:
+                            pertplate_perturbagens_map[pertpl] = []
+                    current_perturbagens = pertplate_perturbagens_map[pertpl]
                     current_perturbagens.append(p)
             # Record the names of plate present in the plate map but not in plate tracking
             else:
@@ -81,10 +81,10 @@ def build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map):
             logger.error(msg)
             raise Exception("check_and_build_perts build_pertplate_perturbagen_map " + msg)
 
-    return pert_plate_perturbagens_map
+    return pertplate_perturbagens_map
 
 
-def create_plate_map_dataframes(pert_plate_perturbagens_map):
+def create_plate_map_dataframes(pertplate_perturbagens_map):
 
         # This index builder currently serves no purpose. convert_objects_to_metadata_df requires an 'index builder'
         # as it was initially used to make GCTs and you labelled your rows and columns using pieces from multiple
@@ -97,7 +97,7 @@ def create_plate_map_dataframes(pert_plate_perturbagens_map):
         # write out a well map of perts for each pert plate. Turn this well map into a list of perts to pass to df
         # builder. Sort and index df, then write to tab delimited .src file.
         dataframe_map = {}
-        for (pertplate, perturbagens) in pert_plate_perturbagens_map.iteritems():
+        for (pertplate, perturbagens) in pertplate_perturbagens_map.iteritems():
                 validated_perturbagens = prism_metadata.validate_perturbagens(perturbagens)
                 dataframe = prism_metadata.convert_objects_to_metadata_df(index_builder, validated_perturbagens.values(),
                                                            {"well_id": "pert_well"})
@@ -129,17 +129,17 @@ def main(args):
 
         # Create mapping of all assay plates to their respective pert plate. There are usually multiple
         # assay plates per pert plate, e.g. for a typical experiment with CellSet 1.2 there are 23 cell pools
-        # done in 3 replicates = 69 assay plates per pert plate.
+        # done in 3 replicates = 69 assay plates per pert plate
         assayplate_pertplate_map = build_assayplate_pertplate_map(args.plate_tracking_path)
 
         # Read in all perturbagens from the entire cohort from the platemap
         all_perturbagens = read_all_perturbagens_from_file(args.plate_map_path, args.config_filepath, prism_metadata.plate_map_type_CM)
 
-        # Separate out all pert pbjects into their respective pert plates using assayplate to pertplate map.
-        pert_plate_perturbagens_map = build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map)
+        # Separate out all pert pbjects into their respective pert plates using assayplate to pertplate map
+        pertplate_perturbagens_map = build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map)
 
         # Return a pandas dataframe of perts for each pert plate
-        pertplate_dataframes = create_plate_map_dataframes(pert_plate_perturbagens_map)
+        pertplate_dataframes = create_plate_map_dataframes(pertplate_perturbagens_map)
 
         # Write out individual plate map for each pert plate
         write_plate_maps(pertplate_dataframes)

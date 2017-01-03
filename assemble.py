@@ -18,9 +18,14 @@ import os
 import broadinstitute_cmap.io.GCToo.GCToo as GCToo
 import pandas
 import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
+import ConfigParser
+from flask import Flask
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
+
+_prism_cell_config_file_section = "PrismCell column headers"
+_davepool_analyte_mapping_file_section = "DavepoolAnalyteMapping column headers"
 
 
 class DataByCell:
@@ -38,25 +43,34 @@ _NaN = "NaN"
 
 
 def build_parser():
+
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
-    parser.add_argument("-config_filepath", help="path to the location of the configuration file", type=str,
-                        default=prism_pipeline.default_config_filepath)
-    parser.add_argument("-prism_replicate_name", "-prn", help="name of the prism replicate that is being processed", type=str, required=True)
+    # The following arguments are required. These are files that are necessary for assembly and which change
+    # frequently between cohorts, replicates, etc.
+    parser.add_argument("-prism_replicate_name", "-prn", help="name of the prism replicate that is being processed",
+                        type=str, required=True)
     parser.add_argument("-davepool_mapping_file", "-dmf", help="mapping of analytes to pools and davepools",
-                        type=str, required=False)
-    parser.add_argument("-plate_map_path", "-pmp", help="path to file containing plate map describing perturbagens used", type=str, required=True)
-    parser.add_argument("-plates_mapping_path", "-ptp", help="path to file containing the mapping between assasy plates and det_plates",
+                        type=str, required=True)
+    parser.add_argument("-plate_map_path", "-pmp",
+                        help="path to file containing plate map describing perturbagens used", type=str, required=True)
+    parser.add_argument("-plates_mapping_path", "-ptp",
+                        help="path to file containing the mapping between assasy plates and det_plates",
                         type=str, required=True)
     parser.add_argument("-davepool_id_csv_filepath_pairs", "-dp_csv",
                         help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
                         type=str, nargs="+", required=True)
+    parser.add_argument("-cell_set_definition_file", "-csdf",
+                        help="file containing cell set definition to use, overriding config file",
+                        type=str, default=None, required=True)
+    # These arguments are optional. Some may be superfluous now and might be removed.
+    parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
+    parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
+                        default=prism_pipeline.default_config_filepath)
     parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
                         " ignored / excluded from the assemble", nargs="+", default=None)
     parser.add_argument("-plate_map_type", "-pmt", help="type of the plate map", choices=prism_metadata.plate_map_types,
-                        default=prism_metadata.plate_map_type_CM)
-    parser.add_argument("-cell_set_definition_file", "-csdf", help="file containing cell set definition to use, overriding config file",
-                        type=str, default=None, required=True)
+                        default=prism_metadata.plate_map_type_CMap)
+
     return parser
 
 
@@ -270,12 +284,18 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
     assay_plate based on pool ID.  Check for cell pools that are not associated with any assay plate
     :param config_filepath:
     :param assay_plates:
+    :param cell_set_definition_file:
     :return:
     '''
+    cp = ConfigParser.RawConfigParser()
+    cp.read(config_filepath)
 
-    prism_cell_list = prism_metadata.read_prism_cell_from_file(config_filepath, cell_set_definition_file, 'cell_set_definition')
+    prism_cell_list_items = cp.items(_prism_cell_config_file_section)
+    davepool_mapping_items = cp.items(_davepool_analyte_mapping_file_section)
 
-    davepool_mapping = prism_metadata.read_prism_cell_from_file(config_filepath, davepool_mapping_file, 'davepool_analyte_mapping')
+    prism_cell_list = prism_metadata.read_prism_cell_from_file(cell_set_definition_file, prism_cell_list_items)
+
+    davepool_mapping = prism_metadata.read_prism_cell_from_file(davepool_mapping_file, davepool_mapping_items)
 
     pool_id_assay_plate_map = {}
 
@@ -283,19 +303,23 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
         pool_id_assay_plate_map[ap.pool_id] = ap
 
     pool_id_without_assay_plate = set()
+    cell_list_id_not_in_davepool_mapping = set()
 
     # Assign davepool mapping info to respective cell IDs
-    davepool_mapping_id_map = {}
+    cell_id_davepool_map = {}
     for dp in davepool_mapping:
-        davepool_mapping_id_map[dp.id] = dp
+        cell_id_davepool_map[dp.id] = dp
 
     for pc in prism_cell_list:
-        if pc.id in davepool_mapping_id_map.keys():
-            cell = davepool_mapping_id_map[pc.id]
-            pc.analyte_id = cell.analyte_id
-            pc.davepool_id = cell.davepool_id
-            pc.pool_id = cell.pool_id
-        if pc.pool_id in pool_id_assay_plate_map:
+        if pc.id in cell_id_davepool_map.keys():
+            cell_davepool = cell_id_davepool_map[pc.id]
+            pc.analyte_id = cell_davepool.analyte_id
+            pc.davepool_id = cell_davepool.davepool_id
+            if pc.pool_id not in cell_davepool.pool_id:
+                raise Exception ("Cell set pool id does not match davepool mapping pool id at cell id {}".format(pc.id))
+        else:
+            cell_list_id_not_in_davepool_mapping.add(pc.id)
+        if pc.pool_id in pool_id_assay_plate_map.keys():
             assay_plate = pool_id_assay_plate_map[pc.pool_id]
             pc.assay_plate_barcode = assay_plate.assay_plate_barcode
             pc.det_plate = assay_plate.det_plate
@@ -307,11 +331,15 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
     if len(pool_id_without_assay_plate) > 0:
         pool_id_without_assay_plate = list(pool_id_without_assay_plate)
         pool_id_without_assay_plate.sort()
-        message = ("some pools were not found in the list of assay plates - pool_id_without_assay_plate:  {}".format(
+        message1 = ("some pools were not found in the list of assay plates - pool_id_without_assay_plate:  {}".format(
             pool_id_without_assay_plate))
-        logger.error(message)
-        raise Exception ("assemble build_prism_cell_list " + message)
-
+        logger.error(message1)
+        raise Exception ("assemble build_prism_cell_list " + message1)
+    if len(cell_list_id_not_in_davepool_mapping) > 0:
+        cell_list_id_not_in_davepool_mapping = list(cell_list_id_not_in_davepool_mapping)
+        cell_list_id_not_in_davepool_mapping.sort()
+        message2 = ("some cell ids were found in the cell set but not in the davepool mapping - IDs: {}".format(cell_list_id_not_in_davepool_mapping))
+        raise Exception ("assemble build_prism_cell_list " + message2)
     return prism_cell_list
 
 
