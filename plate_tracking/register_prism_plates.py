@@ -1,5 +1,5 @@
 import logging
-import setup_logger
+from prism_pipeline import setup_logger
 import argparse
 import sys
 import plate_tracking_metadata

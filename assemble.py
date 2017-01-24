@@ -54,7 +54,7 @@ def build_parser():
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
     parser.add_argument("-plates_mapping_path", "-ptp",
-                        help="path to file containing the mapping between assasy plates and det_plates",
+                        help="path to file containing the mapping between assasy plates and det plates",
                         type=str, required=True)
     parser.add_argument("-davepool_id_csv_filepath_pairs", "-dp_csv",
                         help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
@@ -70,6 +70,12 @@ def build_parser():
                         " ignored / excluded from the assemble", nargs="+", default=None)
     parser.add_argument("-plate_map_type", "-pmt", help="type of the plate map", choices=prism_metadata.plate_map_types,
                         default=prism_metadata.plate_map_type_CMap)
+    parser.add_argument("-outfile", "-out", help="location to write gct", type=str,
+                        default='')
+    parser.add_argument("-truncate_to_plate_map", "-trunc", help="True or false, if true truncate data to fit framework of platemap provided",
+                        action="store_true", default=False)
+
+
 
     return parser
 
@@ -130,12 +136,12 @@ def build_data_by_cell(cells, davepool_data_obj):
                 cell_header_map[c] = headers.index(c.analyte_id)
             cell_data_map[c] = []
 
-        for d in data:
-            wells.append(parse_location_to_well(d[0]))
+        for d in data.keys():
+            wells.append(d)
             for c in cells:
                 if c in cell_header_map:
                     datum_index = cell_header_map[c]
-                    datum = d[datum_index]
+                    datum = data[d][datum_index - 1]
                 else:
                     datum = float('nan')
 
@@ -315,7 +321,7 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
             cell_davepool = cell_id_davepool_map[pc.id]
             pc.analyte_id = cell_davepool.analyte_id
             pc.davepool_id = cell_davepool.davepool_id
-            if pc.pool_id not in cell_davepool.pool_id:
+            if pc.pool_id != cell_davepool.pool_id:
                 raise Exception ("Cell set pool id does not match davepool mapping pool id at cell id {}".format(pc.id))
         else:
             cell_list_id_not_in_davepool_mapping.add(pc.id)
@@ -325,8 +331,10 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
             pc.det_plate = assay_plate.det_plate
             pc.det_plate_scan_time = assay_plate.det_plate_scan_time
             pc.ignore = assay_plate.ignore
+
         else:
             pool_id_without_assay_plate.add(pc.pool_id)
+
 
     if len(pool_id_without_assay_plate) > 0:
         pool_id_without_assay_plate = list(pool_id_without_assay_plate)
@@ -376,6 +384,27 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
         ap.ignore = ap.assay_plate_barcode in ignore_assay_plate_barcodes
 
     return assay_plates
+def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, truncate_to_platemap):
+
+    platemap_well_list = set([p.well_id for p in all_perturbagens])
+
+    for davepool in davepool_data_objects:
+        if platemap_well_list == set(davepool.median_data.keys()):
+            return davepool_data_objects
+        elif truncate_to_platemap == True:
+            for d in davepool_data_objects[0].median_data.keys():
+                 if d not in platemap_well_list:
+                     del davepool_data_objects[0].median_data[d]
+
+            for c in davepool_data_objects[0].count_data.keys():
+                if c not in platemap_well_list:
+                    del davepool_data_objects[0].count_data[c]
+        else:
+            raise Exception("Assemble truncate data objects to plate map: Well lists of platemap and csv do not match")
+
+
+    return davepool_data_objects
+
 
 def main(args, all_perturbagens=None):
     if all_perturbagens is None:
@@ -399,13 +428,16 @@ def main(args, all_perturbagens=None):
     #build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
+    #truncate csv to plate map size if indicated by args.truncate_to_plate_map
+    truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, args.truncate_to_plate_map)
+
     (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects, davepool_id_to_cells_map)
 
-    median_outfile = args.prism_replicate_name + "_MEDIAN.gct"
+    median_outfile = args.outfile +  args.prism_replicate_name + "_MEDIAN.gct"
     median_gctoo = build_gctoo(args.prism_replicate_name, all_perturbagens, all_median_data_by_cell)
     write_gctoo.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
 
-    count_outfile = args.prism_replicate_name + "_COUNT.gct"
+    count_outfile = args.outfile + args.prism_replicate_name + "_COUNT.gct"
     count_gctoo = build_gctoo(args.prism_replicate_name, all_perturbagens, all_count_data_by_cell)
     write_gctoo.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
 

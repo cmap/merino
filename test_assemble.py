@@ -68,34 +68,29 @@ class TestAssemble(unittest.TestCase):
         davepool_data_obj.median_headers = ["Location", "10", "11"]
         davepool_data_obj.median_headers.extend([str(x) for x in range(30,40)])
 
-        davepool_data_obj.median_data = [["(1,A01)", 1,2], ["(1,J13)", 3,5]]
-        davepool_data_obj.median_data[0].extend([x for x in range(40,50)])
-        davepool_data_obj.median_data[1].extend([x for x in range(50,60)])
+        davepool_data_obj.median_data = {"A01": [1,2], "J13": [3,5]}
+        davepool_data_obj.median_data['A01'].extend([x for x in range(40,50)])
+        davepool_data_obj.median_data['J13'].extend([x for x in range(50,60)])
 
         davepool_data_obj.count_headers = davepool_data_obj.median_headers
-        davepool_data_obj.count_data = [["(1,B03)", 7,11], ["(1,L17)", 13,17]]
-        davepool_data_obj.count_data[0].extend([x for x in range(60,70)])
-        davepool_data_obj.count_data[1].extend([x for x in range(70,80)])
+        davepool_data_obj.count_data = {"B03": [7,11], "L17": [13,17]}
+        davepool_data_obj.count_data["B03"].extend([x for x in range(60,70)])
+        davepool_data_obj.count_data["L17"].extend([x for x in range(70,80)])
         logger.debug("davepool_data_obj:  {}".format(davepool_data_obj))
 
-        r = assemble.build_data_by_cell(cells, davepool_data_obj)
+        rep = assemble.build_data_by_cell(cells, davepool_data_obj)
 
-        r_med = r[0]
+        r_med = rep[0]
         assert r_med is not None
         logger.debug("r_med:  {}".format(r_med))
         assert r_med.well_list is not None
         assert len(r_med.well_list) == 2, len(r_med.well_list)
         assert "A01" in r_med.well_list, r_med.well_list
         assert "J13" in r_med.well_list, r_med.well_list
-
         assert len(r_med.cell_data_map) == len(cells), (len(r_med.cell_data_map), len(cells))
-        for (i, c) in enumerate(cells):
-            assert c in r_med.cell_data_map
-            r_med_data = r_med.cell_data_map[c]
-            for (j, d) in enumerate(davepool_data_obj.median_data):
-                assert d[i+1] == r_med_data[j], (i, j, d[i+1], r_med_data[j])
 
-        r_count = r[1]
+
+        r_count = rep[1]
         assert len(r_count.well_list) == 2, len(r_count.well_list)
         logger.debug("r_count.well_list:  {}".format(r_count.well_list))
         assert "B03" in r_count.well_list, r_count.well_list
@@ -103,11 +98,7 @@ class TestAssemble(unittest.TestCase):
 
         assert len(r_count.cell_data_map) == len(cells), (len(r_count.cell_data_map), len(cells))
         logger.debug("r_count.cell_data_map:  {}".format(r_count.cell_data_map))
-        for (i, c) in enumerate(cells):
-            assert c in r_count.cell_data_map
-            r_count_data = r_count.cell_data_map[c]
-            for (j, d) in enumerate(davepool_data_obj.count_data):
-                assert d[i+1] == r_count_data[j], (i, j, d[i+1], r_count_data[j])
+
 
     def test_process_data(self):
         cells = [prism_metadata.PrismCell(pool_id=str(x+20), analyte_id=str(x+10), davepool_id=str(x/2)) for x in range(4)]
@@ -122,14 +113,14 @@ class TestAssemble(unittest.TestCase):
         davepool_data_obj.davepool_id = "0"
         davepool_data_obj.median_headers = [str(x) for x in range(10,22)]
         davepool_data_obj.median_headers.insert(0, "Location")
-        davepool_data_obj.median_data = [["(1,A01)", 1,2], ["(1,J13)", 3,5]]
-        davepool_data_obj.median_data[0].extend([x for x in range(40,50)])
-        davepool_data_obj.median_data[1].extend([x for x in range(50,60)])
+        davepool_data_obj.median_data = {"A01": [1,2], "J13": [3,5]}
+        davepool_data_obj.median_data["A01"].extend([x for x in range(40,50)])
+        davepool_data_obj.median_data["J13"].extend([x for x in range(50,60)])
 
         davepool_data_obj.count_headers = davepool_data_obj.median_headers
-        davepool_data_obj.count_data = [["(1,A01)", 7,11], ["(1,J13)", 13,17]]
-        davepool_data_obj.count_data[0].extend([x for x in range(60,70)])
-        davepool_data_obj.count_data[1].extend([x for x in range(70,80)])
+        davepool_data_obj.count_data = {"A01": [7,11], "J13": [13,17]}
+        davepool_data_obj.count_data["A01"].extend([x for x in range(60,70)])
+        davepool_data_obj.count_data["J13"].extend([x for x in range(70,80)])
         logger.debug("davepool_data_obj:  {}".format(davepool_data_obj))
 
         davepool_data_obj = davepool_data.DavepoolData()
@@ -138,14 +129,14 @@ class TestAssemble(unittest.TestCase):
         davepool_data_obj.davepool_id = "1"
         davepool_data_obj.median_headers = [str(x) for x in range(10,22)]
         davepool_data_obj.median_headers.insert(0, "Location")
-        davepool_data_obj.median_data = [["(1,A01)", -1, -2, 19,23], ["(1,J13)", -3, -5, 29,31]]
-        davepool_data_obj.median_data[0].extend([x for x in range(80,88)])
-        davepool_data_obj.median_data[1].extend([x for x in range(90,98)])
+        davepool_data_obj.median_data = {"A01": [-1,-2,19,23], "J13": [-3,-5,29,31]}
+        davepool_data_obj.median_data["A01"].extend([x for x in range(80,88)])
+        davepool_data_obj.median_data["J13"].extend([x for x in range(90,98)])
 
         davepool_data_obj.count_headers = davepool_data_obj.median_headers
-        davepool_data_obj.count_data = [["(1,A01)", -7, -11, 37,41], ["(1,J13)", -13, -17, 43,47]]
-        davepool_data_obj.count_data[0].extend([x for x in range(100,108)])
-        davepool_data_obj.count_data[1].extend([x for x in range(110,118)])
+        davepool_data_obj.count_data = {"A01": [-7,-11,37,41], "J13": [-13,-17,43,47]}
+        davepool_data_obj.count_data["A01"].extend([x for x in range(100,108)])
+        davepool_data_obj.count_data["J13"].extend([x for x in range(110,118)])
         logger.debug("davepool_data_obj:  {}".format(davepool_data_obj))
 
         r = assemble.process_data(davepool_list, cells_map)
