@@ -27,7 +27,7 @@ class TestDavepoolData(unittest.TestCase):
     def test_read_data_from_jcsv(self):
         csv_filepath = "functional_tests/test_davepool_data/PMEL.A009_CS2_X3.csv"
         r = davepool_data.read_data(csv_filepath)
-        logger.debug("r.count_data[-2:]:  {}".format(r.count_data[-2:]))
+
         assert len(r.count_data) == 384, len(r.count_data)
 
     def test_get_datatype_range(self):

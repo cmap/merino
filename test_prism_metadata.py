@@ -17,14 +17,20 @@ class TestPrismMetadata(unittest.TestCase):
         assert hasattr(r, "analyte_id")
 
     def test_read_prism_cell_from_file(self):
+        cp = ConfigParser.RawConfigParser()
+        config_filepath = 'prism_pipeline.cfg'
+        cp.read(config_filepath)
+
+        prism_cell_list_items = cp.items("PrismCell column headers")
+        davepool_mapping_items = cp.items("DavepoolAnalyteMapping column headers")
+
         cell_set_definition = "/Users/elemire/Workspace/prism_pipeline/requirements_artifacts/CalicoTranche1PrimaryMetaData_02252016.txt"
-        r = pm.read_prism_cell_from_file("prism_pipeline.cfg", cell_set_definition, 'cell_set_definition')
+        r = pm.read_prism_cell_from_file(cell_set_definition, prism_cell_list_items)
         self.assertGreater(len(r), 20)
         logger.debug("r[0:10]:  {}".format(r[0:10]))
 
-        r = pm.read_prism_cell_from_file("prism_pipeline.cfg",
-                                         "functional_tests/test_prism_metadata/test_read_prism_cell_from_file/test_cell_definition.txt",
-                                         'cell_set_definition')
+        r = pm.read_prism_cell_from_file("functional_tests/test_prism_metadata/test_read_prism_cell_from_file/test_cell_definition.txt",
+                                         prism_cell_list_items)
         self.assertEqual(8, len(r))
         logger.debug("r[0:8]:  {}".format(r[0:10]))
 
