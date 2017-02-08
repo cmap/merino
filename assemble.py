@@ -15,11 +15,10 @@ import argparse
 import prism_pipeline
 import sys
 import os
-import broadinstitute_cmap.io.GCToo.GCToo as GCToo
+import python.broadinstitute_cmap.io.pandasGEXpress.GCToo as GCToo
 import pandas
-import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
+import python.broadinstitute_cmap.io.pandasGEXpress.write_gct as write_gctoo
 import ConfigParser
-from flask import Flask
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -74,8 +73,6 @@ def build_parser():
                         default='')
     parser.add_argument("-truncate_to_plate_map", "-trunc", help="True or false, if true truncate data to fit framework of platemap provided",
                         action="store_true", default=False)
-
-
 
     return parser
 
@@ -195,37 +192,37 @@ def process_data(davepool_data_objects, davepool_id_to_cells_map):
 
 
 def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
-    my_gctoo = GCToo.GCToo()
+
 
     #build column metadata dataframe:
     def column_ID_builder(perturbagen):
         return prism_replicate_name + ":" + perturbagen.well_id
 
-    my_gctoo.col_metadata_df = prism_metadata.convert_objects_to_metadata_df(column_ID_builder, perturbagen_list,
+    col_metadata_df = prism_metadata.convert_objects_to_metadata_df(column_ID_builder, perturbagen_list,
                                                                              {"well_id":"pert_well"})
     for col_annot in _remove_col_annotations:
-        if col_annot in my_gctoo.col_metadata_df.columns:
-            my_gctoo.col_metadata_df.drop(col_annot, axis=1, inplace=True)
+        if col_annot in col_metadata_df.columns:
+            col_metadata_df.drop(col_annot, axis=1, inplace=True)
 
-    my_gctoo.col_metadata_df.sort_index(inplace=True)
-    logger.info("my_gctoo.col_metadata_df.shape:  {}".format(my_gctoo.col_metadata_df.shape))
-    logger.debug("my_gctoo.col_metadata_df:  {}".format(my_gctoo.col_metadata_df))
+    col_metadata_df.sort_index(inplace=True)
+    logger.info("my_gctoo.col_metadata_df.shape:  {}".format(col_metadata_df.shape))
+    logger.debug("my_gctoo.col_metadata_df:  {}".format(col_metadata_df))
     ########################################
 
     #build row metadata dataframe:
     def row_ID_builder(prism_cell_obj):
         return prism_cell_obj.id
 
-    my_gctoo.row_metadata_df = prism_metadata.convert_objects_to_metadata_df(row_ID_builder,
+    row_metadata_df = prism_metadata.convert_objects_to_metadata_df(row_ID_builder,
         data_by_cell.cell_data_map.keys(), {})
 
     for row_annot in _remove_row_annotations:
-        if row_annot in my_gctoo.row_metadata_df.columns:
-            my_gctoo.row_metadata_df.drop(row_annot, axis=1, inplace=True)
+        if row_annot in row_metadata_df.columns:
+            row_metadata_df.drop(row_annot, axis=1, inplace=True)
 
-    my_gctoo.row_metadata_df.sort_index(inplace=True)
-    logger.info("my_gctoo.row_metadata_df.shape:  {}".format(my_gctoo.row_metadata_df.shape))
-    logger.debug("my_gctoo.row_metadata_df:  {}".format(my_gctoo.row_metadata_df))
+    row_metadata_df.sort_index(inplace=True)
+    logger.info("my_gctoo.row_metadata_df.shape:  {}".format(row_metadata_df.shape))
+    logger.debug("my_gctoo.row_metadata_df:  {}".format(row_metadata_df))
     ########################################
 
     #build data dataframe - will have the cells as columns and rows as wells, and then transpose
@@ -245,8 +242,10 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
         p = well_perturbagen_map[w]
         data_df_column_ids.append(column_ID_builder(p))
 
-    my_gctoo.data_df = build_gctoo_data_df(cell_id_data_map, data_df_column_ids)
+    data_df = build_gctoo_data_df(cell_id_data_map, data_df_column_ids)
     ########################################
+
+    my_gctoo = GCToo.GCToo(data_df=data_df, row_metadata_df=row_metadata_df, col_metadata_df=col_metadata_df)
 
     return my_gctoo
 
@@ -433,11 +432,11 @@ def main(args, all_perturbagens=None):
 
     (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects, davepool_id_to_cells_map)
 
-    median_outfile = args.outfile +  args.prism_replicate_name + "_MEDIAN.gct"
+    median_outfile = os.path.join(args.outfile, args.prism_replicate_name + "_MEDIAN.gct")
     median_gctoo = build_gctoo(args.prism_replicate_name, all_perturbagens, all_median_data_by_cell)
     write_gctoo.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
 
-    count_outfile = args.outfile + args.prism_replicate_name + "_COUNT.gct"
+    count_outfile = os.path.join(args.outfile, args.prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(args.prism_replicate_name, all_perturbagens, all_count_data_by_cell)
     write_gctoo.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
 
