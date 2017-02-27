@@ -27,7 +27,7 @@ class TestAssembleAutomationify(unittest.TestCase):
 
 
     def test_construct_plate_map_path(self):
-        map_path = aa.construct_plate_map_path(my_lapo)
+        map_path = aa.construct_plate_map_path('/cmap/obelix/pod/custom', my_lapo)
         self.assertEquals(map_path, '/cmap/obelix/pod/custom/PAVP/map_src/PAVP.A001.src')
 
     def test_construct_davepool_csv_path_pairs(self):

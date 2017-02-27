@@ -15,10 +15,14 @@ import argparse
 import prism_pipeline
 import sys
 import os
-import python.broadinstitute_cmap.io.pandasGEXpress.GCToo as GCToo
+import broadinstitute_cmap.io.GCToo.GCToo as GCToo
 import pandas
-import python.broadinstitute_cmap.io.pandasGEXpress.write_gct as write_gctoo
+import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
 import ConfigParser
+import utils.mysql_utils as mysql_utils
+import utils.orm.assay_plates_orm as ap_orm
+
+
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -52,9 +56,6 @@ def build_parser():
                         type=str, required=True)
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
-    parser.add_argument("-plates_mapping_path", "-ptp",
-                        help="path to file containing the mapping between assasy plates and det plates",
-                        type=str, required=True)
     parser.add_argument("-davepool_id_csv_filepath_pairs", "-dp_csv",
                         help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
                         type=str, nargs="+", required=True)
@@ -71,6 +72,8 @@ def build_parser():
                         default=prism_metadata.plate_map_type_CMap)
     parser.add_argument("-outfile", "-out", help="location to write gct", type=str,
                         default='')
+    parser.add_argument("-machine_barcode", "-bc", help="machine barcode for querying assay plate table", type=int,
+                        default=None, required=False)
     parser.add_argument("-truncate_to_plate_map", "-trunc", help="True or false, if true truncate data to fit framework of platemap provided",
                         action="store_true", default=False)
 
@@ -341,7 +344,7 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
         message1 = ("some pools were not found in the list of assay plates - pool_id_without_assay_plate:  {}".format(
             pool_id_without_assay_plate))
         logger.error(message1)
-        raise Exception ("assemble build_prism_cell_list " + message1)
+        #raise Exception ("assemble build_prism_cell_list " + message1)
     if len(cell_list_id_not_in_davepool_mapping) > 0:
         cell_list_id_not_in_davepool_mapping = list(cell_list_id_not_in_davepool_mapping)
         cell_list_id_not_in_davepool_mapping.sort()
@@ -350,7 +353,7 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
     return prism_cell_list
 
 
-def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objects, ignore_assay_plate_barcodes):
+def build_assay_plates(davepool_data_objects, ignore_assay_plate_barcodes, machine_barcode, cursor):
     '''
     read all assay plate meta data from provided file at plates_mapping_path then remove assay plates whose det_plate
     does not match those in the davepool_data_objects.  Add additional metadata to assay_plates indicating the
@@ -361,20 +364,24 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
     :param ignore_assay_plate_barcodes:
     :return:
     '''
-    all_assay_plates = prism_metadata.read_assay_plate_from_file(plates_mapping_path, config_filepath)
-    logger.info("len(all_assay_plates):  {}".format(len(all_assay_plates)))
 
-    #parse the csv filename to get the det_plate, build a map between det_plate and davepool object
+    assay_plates = []
+    #TODO COULD HAVE automationify get machine barcode as well as davepool names
     det_plate_davepool_data_objects_map = {}
     for dpdo in davepool_data_objects:
         filename = os.path.basename(dpdo.csv_filepath)
         det_plate = ".".join(filename.split(".")[0:-1])
         det_plate_davepool_data_objects_map[det_plate] = dpdo
+        #TODO get rid of this
+        if machine_barcode is None:
+            cursor.execute("""SELECT machine_barcode FROM plate WHERE det_plate = %s""", (det_plate,))
+            machine_barcode = cursor.fetchone()
+        det_plate_assay_plates = ap_orm.get_assay_plates(cursor, machine_barcode[0])
+        assay_plates = assay_plates.extend(det_plate_assay_plates)
+
+    logger.info("len(all_assay_plates):  {}".format(len(assay_plates)))
 
     logger.info("det_plate_davepool_data_objects_map.keys():  {}".format(det_plate_davepool_data_objects_map.keys()))
-
-    #only keep assay plates whose det_plate matches one of the loaded davepool
-    assay_plates = [x for x in all_assay_plates if x.det_plate in det_plate_davepool_data_objects_map]
 
     #add scan time to assay_plate metadata, and indicate if the assay plate should be ignored
     for ap in assay_plates:
@@ -383,6 +390,8 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
         ap.ignore = ap.assay_plate_barcode in ignore_assay_plate_barcodes
 
     return assay_plates
+
+
 def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, truncate_to_platemap):
 
     platemap_well_list = set([p.well_id for p in all_perturbagens])
@@ -406,6 +415,10 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
 
 
 def main(args, all_perturbagens=None):
+
+    db = mysql_utils.DB(host='localhost').db
+    cursor = db.cursor()
+    #TODO factor out plate_map_path
     if all_perturbagens is None:
         all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, args.plate_map_type, args.config_filepath)
 
@@ -416,8 +429,10 @@ def main(args, all_perturbagens=None):
     davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
     #read assay plate meta data relevant to current set of csv files / davepools
-    assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects,
-                                      args.ignore_assay_plate_barcodes)
+    import pdb
+    pdb.set_trace()
+    #TODO build this in the API
+    assay_plates = build_assay_plates(davepool_data_objects, args.ignore_assay_plate_barcodes, args.machine_barcode, cursor)
     logger.info("len(assay_plates):  {}".format(len(assay_plates)))
 
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
@@ -442,6 +457,8 @@ def main(args, all_perturbagens=None):
 
     validate_prism_gct.check_headers(median_outfile)
     validate_prism_gct.check_headers(count_outfile)
+
+    db.close()
 
 
 if __name__ == "__main__":

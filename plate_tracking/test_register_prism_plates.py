@@ -20,7 +20,7 @@ class TestRegisterPrismPlates(unittest.TestCase):
         output_file = tempfile.NamedTemporaryFile(mode="w")
         logger.debug("output_file.name:  {}".format(output_file.name))
 
-        arg_list = ["-config_filepath", config_filepath, "-output_file", output_file.name, "PCAL", "45", "CS3.1"]
+        arg_list = ["-config_filepath", config_filepath, "-output_file", output_file.name, "-dont", "PCAL", "45", "CS3.1"]
 
         search_str = os.path.join(cur_test_dir, "7159-03-A04-01-*_REPORT_dlahr.txt")
         input_files = glob.glob(search_str)
@@ -28,6 +28,7 @@ class TestRegisterPrismPlates(unittest.TestCase):
 
         args = rpp.build_parser().parse_args(arg_list)
         logger.debug("args:  {}".format(args))
+
 
         rpp.main(args)
 
@@ -48,7 +49,7 @@ class TestRegisterPrismPlates(unittest.TestCase):
         logger.debug("output_file.name:  {}".format(output_file.name))
 
         arg_list = ["-config_filepath", config_filepath, "-output_file", output_file.name,
-                    "-compound_plate_col_basename", "compound_plate", "PMEL", "35", "CS2.1"]
+                    "-compound_plate_col_basename", "compound_plate", "PMEL", "35", "CS2.1", "-dont"]
 
         search_str = os.path.join(cur_test_dir, "7159-03-A04-01-*_REPORT_dlahr.txt")
         input_files = glob.glob(search_str)

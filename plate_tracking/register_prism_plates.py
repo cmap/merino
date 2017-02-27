@@ -2,6 +2,8 @@ import logging
 from prism_pipeline import setup_logger
 import argparse
 import sys
+import utils.mysql_utils as mysql_utils
+import utils.orm.assay_plates_orm as ap_orm
 import plate_tracking_metadata
 import ConfigParser
 import math
@@ -34,6 +36,9 @@ def build_parser():
     parser.add_argument("-poscon_plate_col_basename", "-ppcb", help="base name to use when identifying the poscon plate(s) " +
                         "e.g. for the default value of poscon_map would use the column \"poscon_map\" but would also look " +
                         " for columns poscon_map_2, poscon_map_3 etc.", type=str, default="poscon_map")
+    parser.add_argument("-do_not_commit_to_db", "-dont",
+                        help="Do not commit updates to the database",
+                        action="store_true", default=False)
     return parser
 
 
@@ -85,6 +90,10 @@ def build_pool_id_to_davepool_id_mapping(config_filepath):
 
 
 def main(args):
+
+    db = mysql_utils.DB(host='localhost').db
+    cursor = db.cursor()
+
     (assay_plates, compound_plate_cols) = load_and_sort_assay_plates(args.input_files, args.config_filepath, args.compound_plate_col_basename,
                                               args.poscon_plate_col_basename)
 
@@ -154,12 +163,26 @@ def main(args):
     headers.extend(compound_plate_cols)
     headers.extend(["davepool_id", "det_plate", "prism_replicate"])
     rows.insert(0, headers)
+    dp_index = headers.index("det_plate")
+
+    count = 0
+    for r in rows[1:]:
+        count += 1
+        print count
+        ap_orm.insert_into_plate_tracking(cursor, r[0], r[1], r[dp_index])
+
+    if not args.do_not_commit_to_db:
+        db.commit()
 
     f = open(args.output_file, "w")
     for r in rows:
         f.write("\t".join(r) + "\n")
     f.close()
 
+    import pdb
+    pdb.set_trace()
+
+    db.close()
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])

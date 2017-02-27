@@ -2,8 +2,8 @@
 Script which checks that a GCT file has all the fields that we would expect.
 May add more methods in the future.
 '''
-
-import python.broadinstitute_cmap.io.pandasGEXpress.parse as parse
+import sys
+import python.broadinstitute_cmap.io.GCToo.parse as parse
 
 __author__ = "Evan Lemire"
 __email__ = "elemire@broadinstitute.org"
