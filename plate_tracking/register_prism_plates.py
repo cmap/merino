@@ -154,21 +154,18 @@ def main(args):
 
         cur_row = [ap.assay_plate_barcode, true_pool_id]
         cur_row.extend(ap.compound_plates)
-        cur_row.extend([davepool_id, det_plate, prism_replicate])
+        cur_row.extend([davepool_id, det_plate, prism_replicate, pert_plate])
         rows.append(cur_row)
 
     rows.sort(key=lambda x: (x[5], x[1]))
 
     headers = ["assay_plate_barcode", "pool_id"]
     headers.extend(compound_plate_cols)
-    headers.extend(["davepool_id", "det_plate", "prism_replicate"])
+    headers.extend(["davepool_id", "det_plate", "prism_replicate", "pert_plate"])
     rows.insert(0, headers)
     dp_index = headers.index("det_plate")
 
-    count = 0
     for r in rows[1:]:
-        count += 1
-        print count
         ap_orm.insert_into_plate_tracking(cursor, r[0], r[1], r[dp_index])
 
     if not args.do_not_commit_to_db:
@@ -178,10 +175,6 @@ def main(args):
     for r in rows:
         f.write("\t".join(r) + "\n")
     f.close()
-
-    import pdb
-    pdb.set_trace()
-
     db.close()
 
 if __name__ == "__main__":

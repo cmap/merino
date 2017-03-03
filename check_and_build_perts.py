@@ -104,13 +104,15 @@ def create_plate_map_dataframes(pertplate_perturbagens_map):
                 dataframe_indexed = dataframe.set_index("pert_well")
                 dataframe_indexed.drop('assay_plate_barcode', axis=1, inplace=True)
                 dataframe_indexed.sort_index(axis='index', inplace=True)
+                dataframe_indexed.fillna(value='-666', inplace=True)
                 dataframe_map[pertplate] = dataframe_indexed
 
         return dataframe_map
 
 
 def write_plate_maps(dataframe_map):
-
+        import pdb
+        pdb.set_trace()
         # Write plate maps to tab delimited text files
         for (pertplate, dataframe) in dataframe_map.items():
                 dataframe.to_csv('{}.src'.format(pertplate), sep='\t')
