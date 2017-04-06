@@ -39,7 +39,6 @@ class DavepoolData(object):
 def get_datatype_range(data, datatype_names):
     datatype_indexes = [i for (i,row) in enumerate(data) if len(row) > 0 and row[0] == datatype_header]
     datatypes = [data[i][1] for i in datatype_indexes]
-
     i = len(data) - 1
     while i > datatype_indexes[-1] and len(data[i]) == 0:
         i = i - 1
@@ -100,7 +99,11 @@ def read_data(csv_filepath):
     median_data = data[(median_range[0]+2):(median_range[1]-1)]
 
     for well in median_data:
-        pd.median_data[parse_location_to_well(well[0])] = well[1:]
+        if len(well) < len(pd.median_headers):
+            well.extend(['Nan'] * (len(pd.median_headers) - len(well)))
+            pd.median_data[parse_location_to_well(well[0])] = well[1:]
+        else:
+            pd.median_data[parse_location_to_well(well[0])] = well[1:]
 
     logger.info("len(pd.median_data):  {}".format(len(pd.median_data)))
     logger.debug("first line of median data - pd.median_data[0]:  {}".format(pd.median_data['A01']))
@@ -110,8 +113,14 @@ def read_data(csv_filepath):
     logger.info("len(pd.count_headers):  {}".format(len(pd.count_headers)))
 
     count_data = data[(count_range[0]+2):(count_range[1]-1)]
+
     for well in count_data:
-        pd.count_data[parse_location_to_well(well[0])] = well[1:]
+        if len(well) < len(pd.count_headers):
+            well.extend(['Nan'] * (len(pd.count_headers) - len(well)))
+            pd.count_data[parse_location_to_well(well[0])] = well[1:]
+        else:
+            pd.count_data[parse_location_to_well(well[0])] = well[1:]
+
     logger.info("len(pd.count_data):  {}".format(len(pd.count_data)))
     logger.debug("first line of count data - pd.count_data[0]:  {}".format(pd.count_data['A01']))
     logger.debug("last line of count data - pd.count_data[-1]:  {}".format(pd.count_data['P24']))

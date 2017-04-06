@@ -2,6 +2,7 @@ import sys
 sys.path.append('/Users/elemire/Workspace/caldaia_root/caldaia')
 import utils.mysql_utils as mu
 import utils.orm.lims_assemble_params_orm as lapo
+import utils.orm.lims_plate_orm as lpo
 import utils.orm.assay_plates_orm as ap_orm
 import os
 import argparse
@@ -11,9 +12,10 @@ import assemble
 import prism_metadata
 import assemble_core
 
-
+pod_dir = '/cmap/obelix/pod/custom'
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 default_config_filepath = os.path.expanduser('~/.prism_pipeline.cfg')
+
 
 def build_parser():
 
@@ -21,9 +23,10 @@ def build_parser():
     # The only required argument for automationify is -det_plate
     parser.add_argument("-det_plate", "-det", help="name of the prism replicate that is being processed",
                         type=str, required=True)
+    parser.add_argument("-host", help="server to connect to", type=str, default='localhost')
     parser.add_argument("-config_filepath", "-cfg", help="mapping of analytes to pools and davepools",
                         type=str, default = default_config_filepath)
-    parser.add_argument("-pod_dir_path", '-pod', help="Custom path to pod directory", type=str, default='/cmap/obelix/pod/custom')
+    parser.add_argument("-custom_map_path", '-pod', help="Custom path to map file", type=str, default=None)
     parser.add_argument("-custom_outfile_path", '-out', help="Custom outfile path", type=str, default=None)
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
@@ -39,17 +42,32 @@ def query_db(cursor, det_plate):
     return my_lapo
 
 
-def construct_plate_map_path(pod_dir, my_lapo):
+def create_det_plate_plate_orm_mapping(my_lapo, cursor):
+
+    det_plate_to_orm_mapping = {}
+
+    for det_plate in my_lapo.det_plate_list:
+
+        my_lpo = lpo.get_by_det_plate(cursor, det_plate)
+
+        det_plate_to_orm_mapping[det_plate] = my_lpo
+
+    return det_plate_to_orm_mapping
+
+
+def construct_plate_map_path(map_path, my_lapo):
     '''
     Use proj_id to get pod directory and pert plate name to get map file name.
     '''
-    #TODO  By using the optional pod_dir argument you can set a custom path (but as is, you need a folder called map_src and to name your platemap after the pert_plate. Might need changing
-    map_path = os.path.join(pod_dir, my_lapo.project_id, "map_src", my_lapo.pert_plate + ".src")
+    if map_path == None:
+        map_path = os.path.join(pod_dir, my_lapo.project_id, "map_src", my_lapo.pert_plate + ".src")
+    else:
+        map_path = os.path.join(map_path, my_lapo.pert_plate + ".src")
 
     return map_path
 
 
-def construct_davepool_csv_path_pairs(pod_dir, my_lapo):
+def construct_davepool_csv_path_pairs(det_plate_orm_map, my_lapo):
     '''
     Using project ID, prism replicate name, and list of connected davepools, construct paths to csv for each davepool.
     Concatenate davepool IDs and csv filepaths into a single string for passing to assemble as an arg.
@@ -58,12 +76,11 @@ def construct_davepool_csv_path_pairs(pod_dir, my_lapo):
     '''
     # We're going to make a list which we will then convert to a string
     dlist = []
-    for det_plate in my_lapo.det_plate_list:
-        davepool = det_plate.split('_')[1]
-        if davepool not in my_lapo.davepool_list:
-            raise Exception("det_plate davepool not in davepool list")
+
+    for det_plate in det_plate_orm_map:
+        davepool = det_plate_orm_map[det_plate].davepool
         csv_path = os.path.join(pod_dir, my_lapo.project_id, 'lxb', det_plate, det_plate + '.csv')
-        dlist.extend([(davepool, csv_path)])
+        dlist.append((davepool, csv_path))
 
     return dlist
 
@@ -77,7 +94,7 @@ def construct_outfile_path(my_lapo, custom_outfile, prism_replicate_name):
     if custom_outfile is not None:
         outdir = custom_outfile
     else:
-         outdir = os.path.join('/cmap/obelix/pod/custom', my_lapo.project_id, 'assemble',
+         outdir = os.path.join(pod_dir, my_lapo.project_id, 'assemble',
                            prism_replicate_name)
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -86,7 +103,7 @@ def construct_outfile_path(my_lapo, custom_outfile, prism_replicate_name):
 
 # put default in arg builder
 
-def build_assay_plates(davepool_data_objects, ignore_assay_plate_barcodes, machine_barcode, cursor):
+def build_assay_plates(det_plate_orm_mapping, davepool_data_objects, ignore_assay_plate_barcodes, cursor):
     '''
     read all assay plate meta data NOT from  file at plates_mapping_path but rather from the LIMS database.
     All informaation that would originally be put in the plate tracking file is now in the plate_assay_plate table.
@@ -100,11 +117,15 @@ def build_assay_plates(davepool_data_objects, ignore_assay_plate_barcodes, machi
     # Assay plates will be a list of assay plate objects associated with these det plates. det_plate_davepool_data_objects_map has det_plates as keys and corresponding dpdos as values.
     assay_plates = []
     det_plate_davepool_data_objects_map = {}
-    #TODO: Could not think of a good way to use the det_plate list here. Maybe I could check the one that they get from parsing the filepath against the list? Any suggestions appreciated!
+
+    # build a mapping between det_plate name and davepool data objects
     for dpdo in davepool_data_objects:
-        filename = os.path.basename(dpdo.csv_filepath)
-        det_plate = ".".join(filename.split(".")[0:-1])
-        det_plate_davepool_data_objects_map[det_plate] = dpdo
+        for det_plate in det_plate_orm_mapping:
+            if det_plate_orm_mapping[det_plate].davepool == dpdo.davepool_id:
+                det_plate_davepool_data_objects_map[det_plate] = dpdo
+
+    for det_plate in det_plate_orm_mapping:
+        machine_barcode = det_plate_orm_mapping[det_plate].machine_barcode
         det_plate_assay_plates = ap_orm.get_assay_plates(cursor, machine_barcode)
         assay_plates.extend(det_plate_assay_plates)
 
@@ -129,21 +150,23 @@ def main(args):
     '''
 
     # Open Connection
-    db = mu.DB(host="localhost").db
+    db = mu.DB(host=args.host).db
     cursor = db.cursor()
 
     # Uses lims_assemble_params_orm to query the lims database.
     my_lapo = query_db(cursor, args.det_plate)
 
+    det_plate_orm_map = create_det_plate_plate_orm_mapping(my_lapo, cursor)
+
     # Make the path to the plate map
-    map_path = construct_plate_map_path(args.pod_dir_path, my_lapo)
+    map_path = construct_plate_map_path(args.custom_map_path, my_lapo)
 
     # Read all perturbagens form plate map file
     all_perturbagens = prism_metadata.build_perturbagens_from_file(map_path, prism_metadata.plate_map_type_CMap,
                                                                    args.config_filepath)
 
     # This returns a list of tuples, davepool and csv path.
-    dp_csv_list = construct_davepool_csv_path_pairs(args.pod_dir_path, my_lapo)
+    dp_csv_list = construct_davepool_csv_path_pairs(det_plate_orm_map, my_lapo)
 
     # Construct davepool data objects using your list of tuples.
     davepool_data_objects = assemble.read_davepool_data_objects(dp_csv_list)
@@ -154,12 +177,12 @@ def main(args):
         args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
 
     # Build assay plates by querying the db prism_assay_plate table.
-    assay_plates = build_assay_plates(davepool_data_objects, args.ignore_assay_plate_barcodes, my_lapo.machine_barcode, cursor)
+    assay_plates = build_assay_plates(det_plate_orm_map, davepool_data_objects, args.ignore_assay_plate_barcodes, cursor)
 
     # Use function in assemble to build row metadata
     prism_cell_list = assemble.build_prism_cell_list(args.config_filepath, assay_plates, my_lapo.cell_set_definition_file, my_lapo.davepool_mapping_file)
 
-    #TODO I originally had this as a separate function, but seemed a little small. PRN is currently not in db, should it be?
+    #TODO add this to the database
     prism_replicate_name = my_lapo.pert_plate + '_' + my_lapo.prism_cellset_name + '_' + my_lapo.replicate
 
     # If not provided with a custom outfile, this will construct one using the plate info.
@@ -170,6 +193,8 @@ def main(args):
                        prism_cell_list)
 
     db.close()
+
+    return os.path.join(outfile, prism_replicate_name + "_MEDIAN.gct")
 
 
 if __name__ == "__main__":

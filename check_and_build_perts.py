@@ -77,7 +77,7 @@ def build_pertplate_perturbagen_map(all_perturbagens, assayplate_pertplate_map):
     # If there are plates missing from plate tracking, fail.
     if len(missing_plates) > 0:
             msg = "{} assay plates in plate map were missing from plate tracking file:  {}".format(
-                    len(missing_plates), missing_plates)
+                    len(missing_plates), set(missing_plates))
             logger.error(msg)
             raise Exception("check_and_build_perts build_pertplate_perturbagen_map " + msg)
 
@@ -111,8 +111,6 @@ def create_plate_map_dataframes(pertplate_perturbagens_map):
 
 
 def write_plate_maps(dataframe_map):
-        import pdb
-        pdb.set_trace()
         # Write plate maps to tab delimited text files
         for (pertplate, dataframe) in dataframe_map.items():
                 dataframe.to_csv('{}.src'.format(pertplate), sep='\t')

@@ -2,6 +2,7 @@ import logging
 from prism_pipeline import setup_logger
 import argparse
 import sys
+sys.path.append('/Users/elemire/Workspace/caldaia_root/caldaia')
 import utils.mysql_utils as mysql_utils
 import utils.orm.assay_plates_orm as ap_orm
 import plate_tracking_metadata
@@ -27,7 +28,7 @@ def build_parser():
     parser.add_argument("-config_filepath", help="path to configuration file", type=str,
                         default="register_prism_plates.cfg")
     parser.add_argument("-hostname", help="lims db host name", type=str, default="getafix-v")
-    parser.add_argument("-dont_assert_plate_numbers_match", 
+    parser.add_argument("-dont_assert_plate_numbers_match", "-dapnm",
         help="instead of asserting that len(assay_plates) %% len(pool_id_sorted) == 0 and len(assay_plates) %% len(compound_plates_sorted) == 0 just issue warnings",
         action="store_true", default=False)
     parser.add_argument("-compound_plate_col_basename", "-cpcb", help="base name to use when identifying the compound plate(s) " +
@@ -38,6 +39,9 @@ def build_parser():
                         " for columns poscon_map_2, poscon_map_3 etc.", type=str, default="poscon_map")
     parser.add_argument("-do_not_commit_to_db", "-dont",
                         help="Do not commit updates to the database",
+                        action="store_true", default=False)
+    parser.add_argument("-skip_database_sections", "-skip",
+                        help="Do not update the database",
                         action="store_true", default=False)
     return parser
 
@@ -94,6 +98,7 @@ def main(args):
     db = mysql_utils.DB(host='localhost').db
     cursor = db.cursor()
 
+
     (assay_plates, compound_plate_cols) = load_and_sort_assay_plates(args.input_files, args.config_filepath, args.compound_plate_col_basename,
                                               args.poscon_plate_col_basename)
 
@@ -126,6 +131,25 @@ def main(args):
 
     pool_id_to_davepool_id_map = build_pool_id_to_davepool_id_mapping(args.config_filepath)
 
+    cursor.execute("""SELECT id FROM prism_cellset WHERE name=%s""", (args.cellset_id,))
+    cellset_id_from_db = cursor.fetchone()[0]
+
+    if not args.skip_database_sections:
+        for (key, value) in pert_plate_mapping.iteritems():
+            cursor.execute("""INSERT INTO pert_plate (pert_plate, project_id, source_id) VALUES (%s, %s, %s)""", (value, args.project_id, key[0]))
+            for x in range(0, num_reps):
+                cursor.execute("""SELECT machine_barcode FROM plate WHERE rep_num = %s AND pert_plate = %s""", (x + 1, value))
+                barz = cursor.fetchall()
+                cursor.execute(
+                    """INSERT INTO prism_replicate (pert_plate, replicate_number, prism_cellset_id, replicate_attempt_number, replicate_attempt_from_id) VALUES (%s, %s, %s, 1, 1)""",
+                    (value, x+1, cellset_id_from_db))
+                pr_id = cursor.lastrowid
+                barz = [x[0] for x in barz]
+                for bar in barz:
+                    cursor.execute(
+                        """INSERT INTO prism_replicate_plate (prism_replicate_id, plate_machine_barcode) VALUES (%s, %s)""",
+                        (pr_id, bar))
+
     rep_counter = {}
     rows = []
     for ap in assay_plates:
@@ -139,7 +163,7 @@ def main(args):
 
         cur_rc = rep_counter[k]
         if len(cur_rc) == 0:
-            cur_rc[ap.assay_plate_barcode] = 1
+            cur_rc[ap.assay_plate_barcode] = 4
         else:
             if ap.assay_plate_barcode in cur_rc:
                 raise Exception("assay plate barcode appeared twice in rep_counter - cur_rc:  {}  ap:  {}".format(cur_rc, ap))
@@ -165,9 +189,9 @@ def main(args):
     rows.insert(0, headers)
     dp_index = headers.index("det_plate")
 
-    for r in rows[1:]:
-        ap_orm.insert_into_plate_tracking(cursor, r[0], r[1], r[dp_index])
-
+    if not args.skip_database_sections:
+        for rep in rows[1:]:
+            ap_orm.insert_into_plate_tracking(cursor, rep[0], rep[1], rep[dp_index])
     if not args.do_not_commit_to_db:
         db.commit()
 

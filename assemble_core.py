@@ -2,7 +2,6 @@ import setup_logger
 import logging
 import sys
 import os
-sys.path.append('/Users/elemire/Workspace/python')
 import broadinstitute_cmap.io.GCToo.GCToo as GCToo
 import validate_prism_gct
 import prism_metadata
@@ -161,6 +160,9 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
             col_metadata_df.drop(col_annot, axis=1, inplace=True)
 
     col_metadata_df.sort_index(inplace=True)
+    col_metadata_df['prism_replicate'] = prism_replicate_name
+    col_metadata_df['data_level'] = 'assemble'
+    col_metadata_df['provenance'] = 'assembled'
     logger.info("my_gctoo.col_metadata_df.shape:  {}".format(col_metadata_df.shape))
     logger.debug("my_gctoo.col_metadata_df:  {}".format(col_metadata_df))
     ########################################
@@ -228,8 +230,11 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
     # Put all the data in gct-able form
+
+
     (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects,
                                                                      davepool_id_to_cells_map)
+
     # Create full outfile, build the gct, and write it out!
     median_outfile = os.path.join(outfile, prism_replicate_name + "_MEDIAN.gct")
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)

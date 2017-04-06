@@ -56,7 +56,7 @@ def generate_header_map(headers, internal_header_file_header_pairs, do_keep_all)
 
 
 def read_data(tsv_filepath):
-    f = open(tsv_filepath)
+    f = open(tsv_filepath, "U")
     raw_data = f.read().strip().split("\n")
     f.close()
 

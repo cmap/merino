@@ -34,7 +34,7 @@ def build_parser():
                         type=str, required=True)
     parser.add_argument("-plates_mapping_path", "-ptp",
                         help="path to file containing the mapping between assasy plates and det plates",
-                        type=str, required=True)
+                        type=str, required=False)
     parser.add_argument("-davepool_mapping_file", "-dmf", help="mapping of analytes to pools and davepools",
                         type=str, required=True)
     parser.add_argument("-plate_map_path", "-pmp",
@@ -239,8 +239,7 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
     return davepool_data_objects
 
 
-def main(args, all_perturbagens=None):
-
+def main(args, all_perturbagens=None, assay_plates=None):
     if all_perturbagens is None:
         all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, prism_metadata.plate_map_type_CMap, args.config_filepath)
 
@@ -252,10 +251,10 @@ def main(args, all_perturbagens=None):
     davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
     #read assay plate meta data relevant to current set of csv files / davepools
-    assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects, args.ignore_assay_plate_barcodes)
+    if assay_plates is None:
+        assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects, args.ignore_assay_plate_barcodes)
+
     logger.info("len(assay_plates):  {}".format(len(assay_plates)))
-
-
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
     prism_cell_list = build_prism_cell_list(args.config_filepath, assay_plates, args.cell_set_definition_file, args.davepool_mapping_file)
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
