@@ -1,32 +1,87 @@
-import broadinstitute_cmap.io.GCToo.parse as parse
-import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
 import sys
 sys.path.append('/Users/elemire/Workspace/l1ktools')
-from python.broadinstitute_cmap.io.pandasGEXpress import GCToo
+import broadinstitute_cmap.io.GCToo.parse as parse
+import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
+from broadinstitute_cmap.io.pandasGEXpress import GCToo
+import numpy as np
 
-def normalize(filepath, outfile=None):
+invariant_rids = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670']
+
+def normalize(mfi_gctoo, log=True, inv=True):
 
     # Level 2-3 Normalization based on prism invariant
 
-    my_gctoo = parse.parse(filepath)
+    #mfi_gctoo = remove_low_bead_wells(mfi_gctoo, count_gctoo)
 
-    invariant_rids = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670']
+    #mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
 
-    for column in my_gctoo.data_df:
-        median = my_gctoo.data_df[column][invariant_rids].median()
+    mfi_gctoo.data_df[mfi_gctoo.data_df < 1] = 1
 
-        for index in my_gctoo.data_df[column].index:
-            if index not in invariant_rids:
-                my_gctoo.data_df[column][index] = my_gctoo.data_df[column][index] / median
+    if log is True:
+        data_df = np.log2(mfi_gctoo.data_df)
+        mfi_gctoo.col_metadata_df['provenance'] = 'assembled | log2 | median normalized'
 
-    my_gctoo.col_metadata_df['provenance'] = 'assembled | median normalized'
-    my_gctoo.col_metadata_df['data_level'] = 'normalized'
+    else:
+        data_df = mfi_gctoo.data_df
+        mfi_gctoo.col_metadata_df['provenance'] = 'assembled | median normalized'
 
-    if outfile is None:
-        outfile = filepath[:-10] + 'NORM.gct'
+    data_df.round(2)
+
+    if inv is True:
+        for column in data_df:
+            median = data_df[column][invariant_rids].median()
+
+            for index in data_df[column].index:
+                if index not in invariant_rids:
+                    data_df[column][index] = data_df[column][index] / median
 
 
-    write_gctoo.write(my_gctoo, outfile)
+    mfi_gctoo.col_metadata_df['data_level'] = 'normalized'
+
+    data_df = data_df.loc[~data_df.index.isin(invariant_rids)]
+    row_metadata_df = mfi_gctoo.row_metadata_df.loc[~mfi_gctoo.row_metadata_df.index.isin(invariant_rids)]
+
+    new_gctoo = GCToo.GCToo(data_df=data_df, row_metadata_df=row_metadata_df, col_metadata_df=mfi_gctoo.col_metadata_df)
+
+    return new_gctoo
+
+    #if outfile is None:
+    #    outfile = filepath[:-10] + 'NORM.gct'
+    #else:
+    #    outfile = outfile + '_NORM.gct'
+
+    #write_gctoo.write(new_gctoo, outfile)
+
+
+def remove_low_bead_wells(mfi_gct, count_gct):
+
+    medians = count_gct.data_df.median(axis=0)
+
+    bad_wells = medians[medians < 20].index
+
+    data = mfi_gct.data_df.drop(bad_wells, axis=1)
+    col_data = mfi_gct.col_metadata_df.drop(bad_wells, axis=0)
+
+    new_gctoo = GCToo.GCToo(data_df=data, col_metadata_df=col_data, row_metadata_df=mfi_gct.row_metadata_df)
+
+    return new_gctoo
+
+
+def remove_outlier_invariants(gctoo):
+
+    invdata = gctoo.data_df.loc[invariant_rids]
+
+    dmso_inv = invdata.loc[:, gctoo.col_metadata_df.loc[gctoo.col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()]
+
+    bad_wells = invdata.median()[invdata.median() < dmso_inv.median().quantile(0.005)].index
+
+    data = gctoo.data_df.drop(bad_wells, axis=1)
+    col_data = gctoo.col_metadata_df.drop(bad_wells, axis=0)
+
+    new_gctoo = GCToo.GCToo(data_df=data, col_metadata_df=col_data, row_metadata_df=gctoo.row_metadata_df)
+
+    return new_gctoo
+
 
 def dp_normalize(filepath, outfile):
 
