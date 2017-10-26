@@ -1,6 +1,6 @@
-import prism_pipeline.assemble as assemble
-import prism_pipeline.setup_logger as setup_logger
-import prism_pipeline.prism_metadata as prism_metadata
+import merino.assemble as assemble
+import merino.setup_logger as setup_logger
+import merino.prism_metadata as prism_metadata
 import logging
 import os
 import glob

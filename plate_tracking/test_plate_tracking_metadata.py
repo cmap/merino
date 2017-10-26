@@ -1,6 +1,6 @@
 import unittest
 import logging
-import prism_pipeline.setup_logger as setup_logger
+import merino.setup_logger as setup_logger
 import os.path
 import glob
 import plate_tracking_metadata as ptm

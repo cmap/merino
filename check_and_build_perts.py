@@ -20,7 +20,7 @@ import logging
 import setup_logger
 import argparse
 import sys
-import prism_pipeline
+import merino
 
 __author__ = "Evan Lemire"
 __email__ = "elemire@broadinstitute.org"
@@ -33,7 +33,7 @@ def build_parser():
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     # Next three required
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
-                        default=prism_pipeline.default_config_filepath)
+                        default=merino.default_config_filepath)
     parser.add_argument("-plate_map_path", "-pmp", help="path to file containing plate map describing perturbagens used", type=str, required=True)
     parser.add_argument("-plate_tracking_path", "-ptp", help="path to file containing the mapping between assasy plates and det_plates",
                         type=str, required=True)

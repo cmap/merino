@@ -1,7 +1,7 @@
 import setup_logger
 import logging
 import ConfigParser
-import prism_pipeline
+import merino
 import json
 import pandas
 import parse_data
@@ -75,7 +75,7 @@ def read_prism_cell_from_file(row_metadata_file, items):
     return parse_data.parse_data(header_map, data, PrismCell)
 
 
-def build_perturbagens_from_file(filepath, plate_map_type, config_filepath = prism_pipeline.default_config_filepath):
+def build_perturbagens_from_file(filepath, plate_map_type, config_filepath = merino.default_config_filepath):
     if plate_map_type == plate_map_type_CM:
         config_section = _perturbagen_CM_input_config_file_section
         do_build_additional = True
@@ -96,7 +96,7 @@ def build_perturbagens_from_file(filepath, plate_map_type, config_filepath = pri
 
 
 def _read_perturbagen_from_file(filepath, config_section, do_keep_all,
-                                config_filepath = prism_pipeline.default_config_filepath):
+                                config_filepath = merino.default_config_filepath):
 
     logger.debug("config_filepath:  {}".format(config_filepath))
     cp = ConfigParser.RawConfigParser()
@@ -110,7 +110,7 @@ def _read_perturbagen_from_file(filepath, config_section, do_keep_all,
     return parse_data.parse_data(header_map, data, Perturbagen)
 
 
-def read_assay_plate_from_file(filepath, config_filepath = prism_pipeline.default_config_filepath):
+def read_assay_plate_from_file(filepath, config_filepath = merino.default_config_filepath):
     '''
     read
     :param filepath:
