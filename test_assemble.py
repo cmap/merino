@@ -79,7 +79,7 @@ class TestAssemble(unittest.TestCase):
         dmf_path = "/Users/elemire/Workspace/prism_pipeline/requirements_artifacts/test_davepool_analyte_mapping.txt"
 
         args = assemble.build_parser().parse_args(["-config_filepath", config_filepath, "-prn", prism_replicate_name,
-            "-pmp", plate_map_path, "-ptp", plates_mapping_path, "-dp_csv", "DP7", dp7_csv_path, "DP8", dp8_csv_path, '-plate_map_type', 'CMap',
+            "-pmp", plate_map_path, "-ptp", plates_mapping_path, "-dp_csv", "DP7", dp7_csv_path, "DP8", dp8_csv_path,
                                                    "-csdf", csdf_path, "-dmf", dmf_path])
 
         logger.debug("args:  {}".format(args))
