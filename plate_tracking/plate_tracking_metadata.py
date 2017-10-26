@@ -1,8 +1,8 @@
 import logging
-import prism_pipeline.setup_logger as setup_logger
+import merino.setup_logger as setup_logger
 import ConfigParser
-import prism_pipeline.prism_metadata as prism_metadata
-import prism_pipeline.parse_data as parse_data
+import merino.prism_metadata as prism_metadata
+import merino.parse_data as parse_data
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)

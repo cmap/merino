@@ -2,11 +2,11 @@ import setup_logger
 import logging
 import sys
 import os
-import broadinstitute_cmap.io.GCToo.GCToo as GCToo
+import cmapPy.pandasGEXpress.GCToo as GCToo
 import validate_prism_gct
 import prism_metadata
 import pandas
-import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
+import cmapPy.pandasGEXpress.write_gct as write_gct
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -238,11 +238,11 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     # Create full outfile, build the gct, and write it out!
     median_outfile = os.path.join(outfile, prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)
-    write_gctoo.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
+    write_gct.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
 
     count_outfile = os.path.join(outfile, prism_replicate_name, prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_count_data_by_cell)
-    write_gctoo.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
+    write_gct.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
 
     # Validate that all the expected meta-data is present
     validate_prism_gct.check_headers(median_outfile)

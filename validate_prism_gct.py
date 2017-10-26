@@ -2,14 +2,14 @@
 Script which checks that a GCT file has all the fields that we would expect.
 May add more methods in the future.
 '''
-import broadinstitute_cmap.io.GCToo.parse as parse
+import cmapPy.pandasGEXpress.parse as parse
 
 __author__ = "Evan Lemire"
 __email__ = "elemire@broadinstitute.org"
 
 def check_headers(filepath):
 
-    my_gctoo = parse.parse(filepath)
+    my_gctoo = parse(filepath)
 
     row_metadata_fields = ['ccle_name', 'davepool_id', 'assay_plate_barcode', 'analyte_id', 'det_plate', 'det_plate_scan_time',
                            'lua', 'minipool_id', 'name', 'pool_id']

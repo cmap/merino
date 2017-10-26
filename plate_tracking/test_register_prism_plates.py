@@ -1,11 +1,11 @@
 import unittest
 import logging
-import prism_pipeline.setup_logger as setup_logger
+import merino.setup_logger as setup_logger
 import register_prism_plates as rpp
 import os.path
 import glob
 import tempfile
-import prism_pipeline.prism_metadata as prism_metadata
+import merino.prism_metadata as prism_metadata
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)

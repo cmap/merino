@@ -1,5 +1,5 @@
 import logging
-from prism_pipeline import setup_logger
+import merino.setup_logger
 import argparse
 import sys
 sys.path.append('/Users/elemire/Workspace/caldaia_root/caldaia')

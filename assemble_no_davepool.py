@@ -1,12 +1,12 @@
 import argparse
-import prism_pipeline
+import merino
 import prism_metadata
 import assemble
 import setup_logger
 import logging
 import davepool_data
 import sys
-import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
+import cmapPy.pandasGEXpress.write_gct as write_gct
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -16,7 +16,7 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-config_filepath", help="path to the location of the configuration file", type=str,
-                        default=prism_pipeline.default_config_filepath)
+                        default=merino.default_config_filepath)
     parser.add_argument("prism_replicate_name", help="name of the prism replicate that is being processed", type=str)
     parser.add_argument("plate_map_path", help="path to file containing plate map describing perturbagens used", type=str)
     parser.add_argument("csv_filepath", help="path to csv file containing data", type=str)
@@ -43,11 +43,11 @@ def main(args):
     (median_data_by_cell, count_data_by_cell) = assemble.build_data_by_cell(prism_cell_list, my_davepool)
 
     median_gctoo = assemble.build_gctoo(args.prism_replicate_name, perturbagen_list, median_data_by_cell)
-    write_gctoo.write(median_gctoo, args.prism_replicate_name + "_MEDIAN.gct", data_null=assemble._NaN,
+    write_gct.write(median_gctoo, args.prism_replicate_name + "_MEDIAN.gct", data_null=assemble._NaN,
                       filler_null=assemble._null)
 
     count_gctoo = assemble.build_gctoo(args.prism_replicate_name, perturbagen_list, count_data_by_cell)
-    write_gctoo.write(count_gctoo, args.prism_replicate_name + "_COUNT.gct", data_null=assemble._NaN,
+    write_gct.write(count_gctoo, args.prism_replicate_name + "_COUNT.gct", data_null=assemble._NaN,
                       filler_null=assemble._null)
 
     return (median_gctoo, count_gctoo)

@@ -11,7 +11,7 @@ import davepool_data
 import prism_metadata
 import numpy
 import argparse
-import prism_pipeline
+import merino
 import sys
 import ConfigParser
 import assemble_core
@@ -48,7 +48,7 @@ def build_parser():
     # These arguments are optional. Some may be superfluous now and might be removed.
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
-                        default=prism_pipeline.default_config_filepath)
+                        default=merino.default_config_filepath)
     parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
                         " ignored / excluded from the assemble", nargs="+", default=None)
     parser.add_argument("-outfile", "-out", help="location to write gct", type=str,
