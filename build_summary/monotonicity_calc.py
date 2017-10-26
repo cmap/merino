@@ -13,10 +13,11 @@ def calc_mono(pert_plates, project_folder):
     mono_list = []
     for plate in pert_plates:
         gct_list = []
-        for gct in glob.glob(os.path.join(project_folder, plate + '*.gct')):
+        for gct in glob.glob(os.path.join(project_folder, plate + '.gct')):
             curr_gct = parse.parse(gct, make_multiindex=True)
             gct_list.append(curr_gct)
-
+        import pdb
+        pdb.set_trace()
         if len(gct_list) == 3:
             merged_gcts = concat_gctoo.hstack(gct_list,
                                         fields_to_remove=['det_plate', 'det_plate_scan_time', 'assay_plate_barcode'])
@@ -61,35 +62,4 @@ def calc_mono(pert_plates, project_folder):
 
 def plot_monotonicity_boxes(PR500_mono, DP_mono, outfile, plot_title):
 
-    norm_ssmds = go.Box(
-        y=PR500_mono, name='Monotonicity for PR500, n={}'.format(len(PR500_mono))
-    )
-    med_ssmds = go.Box(
-        y=DP_mono, name='Monotonicity for DP, n={}'.format(len(DP_mono))
-    )
 
-    layout = go.Layout(
-        title=plot_title,
-        xaxis=dict(
-            title='Monotonicity of PR500 vs. DP7 & 8',
-            titlefont=dict(
-                family='Courier New, monospace',
-                size=18,
-                color='#7f7f7f'
-            )
-        ),
-        yaxis=dict(
-            title='Monotonicity Value',
-            titlefont=dict(
-                family='Courier New, monospace',
-                size=18,
-                color='#7f7f7f'
-            )
-        )
-    )
-
-    data = [norm_ssmds, med_ssmds]
-    fig = go.Figure(data=data, layout=layout)
-    plot_url = py.plot(fig, filename=outfile)
-
-    print plot_url

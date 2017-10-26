@@ -77,7 +77,11 @@ def determine_compound_plates(assay_plates):
 def build_pert_plate_mapping(compound_plates_sorted, pert_plate_start_number, project_id):
     pert_plate_mapping = {}
     for (i, cp) in enumerate(compound_plates_sorted):
-        pert_plate = project_id + str(i + pert_plate_start_number).zfill(3)
+        if cp[0] == 'BASE':
+            pert_plate = project_id + '075'
+            pert_plate_mapping[cp] = pert_plate
+            continue
+        pert_plate = project_id + str(i -1 + pert_plate_start_number).zfill(3)
         pert_plate_mapping[cp] = pert_plate
     logger.info("pert_plate_mapping:  {}".format(pert_plate_mapping))
     return pert_plate_mapping
@@ -162,8 +166,10 @@ def main(args):
             rep_counter[k] = {}
 
         cur_rc = rep_counter[k]
-        if len(cur_rc) == 0:
-            cur_rc[ap.assay_plate_barcode] = 4
+        if len(cur_rc) == 0 and ap.compound_plates[0] == 'BASE':
+            cur_rc[ap.assay_plate_barcode] = 10
+        elif len(cur_rc) == 0:
+            cur_rc[ap.assay_plate_barcode] = 1
         else:
             if ap.assay_plate_barcode in cur_rc:
                 raise Exception("assay plate barcode appeared twice in rep_counter - cur_rc:  {}  ap:  {}".format(cur_rc, ap))
@@ -200,6 +206,8 @@ def main(args):
         f.write("\t".join(r) + "\n")
     f.close()
     db.close()
+
+
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])

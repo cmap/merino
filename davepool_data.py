@@ -68,7 +68,7 @@ def get_datetime_from_header_rows(header_rows, csv_filepath):
 
 
 def read_data(csv_filepath):
-    f = open(csv_filepath)
+    f = open(csv_filepath, 'rU')
     reader = csv.reader(f)
 
     data = list()

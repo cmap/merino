@@ -202,7 +202,6 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
 
     data_df = build_gctoo_data_df(cell_id_data_map, data_df_column_ids)
     ########################################
-
     my_gctoo = GCToo.GCToo(data_df=data_df, row_metadata_df=row_metadata_df, col_metadata_df=col_metadata_df)
 
     return my_gctoo
@@ -230,17 +229,18 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
     # Put all the data in gct-able form
-
-
     (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects,
                                                                      davepool_id_to_cells_map)
 
+    if not os.path.exists(os.path.join(outfile, prism_replicate_name)):
+        os.mkdir(os.path.join(outfile, prism_replicate_name))
+
     # Create full outfile, build the gct, and write it out!
-    median_outfile = os.path.join(outfile, prism_replicate_name + "_MEDIAN.gct")
+    median_outfile = os.path.join(outfile, prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)
     write_gctoo.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
 
-    count_outfile = os.path.join(outfile, prism_replicate_name + "_COUNT.gct")
+    count_outfile = os.path.join(outfile, prism_replicate_name, prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_count_data_by_cell)
     write_gctoo.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
 

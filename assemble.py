@@ -127,6 +127,7 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
     cp = ConfigParser.RawConfigParser()
     cp.read(config_filepath)
 
+
     prism_cell_list_items = cp.items(_prism_cell_config_file_section)
     davepool_mapping_items = cp.items(_davepool_analyte_mapping_file_section)
 
@@ -143,6 +144,7 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
     cell_list_id_not_in_davepool_mapping = set()
 
     # Assign davepool mapping info to respective cell IDs
+
     cell_id_davepool_map = {}
     for dp in davepool_mapping:
         cell_id_davepool_map[dp.id] = dp
@@ -162,7 +164,12 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
             pc.det_plate = assay_plate.det_plate
             pc.det_plate_scan_time = assay_plate.det_plate_scan_time
             pc.ignore = assay_plate.ignore
-
+        elif pc.pool_id == '-666':
+            assay_plate = pool_id_assay_plate_map[pc.pool_id]
+            pc.assay_plate_barcode = assay_plate.assay_plate_barcode
+            pc.det_plate = assay_plate.det_plate
+            pc.det_plate_scan_time = assay_plate.det_plate_scan_time
+            pc.ignore = assay_plate.ignore
         else:
             pool_id_without_assay_plate.add(pc.pool_id)
 
@@ -252,6 +259,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
 
     #read assay plate meta data relevant to current set of csv files / davepools
     if assay_plates is None:
+
         assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects, args.ignore_assay_plate_barcodes)
 
     logger.info("len(assay_plates):  {}".format(len(assay_plates)))
