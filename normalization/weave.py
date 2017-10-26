@@ -5,35 +5,36 @@ import os
 
 def weave(proj_dir, rep_set, input_folder='zscorepc'):
 
-    print rep_set
-    files = glob.glob(os.path.join(proj_dir, input_folder, rep_set + '*'))
-    plate_names = [os.path.basename(x) for x in files]
-    replicate_ids = [x.split("_")[2] for x in plate_names]
-    short_reps = [x[:2] for x in replicate_ids]
-    keep = []
+        print rep_set
+        files = glob.glob(os.path.join(proj_dir, input_folder, rep_set + '*'))
+        plate_names = [os.path.basename(x) for x in files]
+        replicate_ids = [x.split("_")[2] for x in plate_names]
+        short_reps = [x.split('.')[0] for x in replicate_ids]
+        keep = []
 
-    for r in set(short_reps):
-        temp = [y for y in replicate_ids if y.startswith(r)]
+        for r in set(short_reps):
+            temp = [y for y in replicate_ids if y.startswith(r)]
 
-        if len(temp) == 1:
-            keep.append(temp[0])
-        else:
+            if len(temp) == 1:
+                keep.append(temp[0])
+            else:
 
-            temp2 = [z for z in temp if "." in z]
+                temp2 = [z for z in temp if "." in z]
 
-            max_l = max([int(x[-1]) for x in temp2])
-            temp3 = [b for b in temp2 if b.endswith(str(max_l))]
-            keep.append(temp3[0])
+                max_l = max([int(x[-1]) for x in temp2])
+                temp3 = [b for b in temp2 if b.endswith(str(max_l))]
+                keep.append(temp3[0])
 
-    keep_perts = [x for x in plate_names if x.split('_')[2] in keep]
-    keep_files = [glob.glob(path + '/*')[0] for path in files if os.path.basename(path) in keep_perts]
+        keep_perts = [x for x in plate_names if x.split('_')[2] in keep]
+        keep_files = [glob.glob(path + '/*')[0] for path in files if os.path.basename(path) in keep_perts]
 
-    pert = plate_names[0].split('_')[0] + '_' + plate_names[0].split('_')[1]
+        pert = plate_names[0].split('_')[0] + '_' + plate_names[0].split('_')[1]
 
-    if not os.path.exists(os.path.join(proj_dir, 'modz', pert)):
-        os.mkdir(os.path.join(proj_dir, 'modz', pert))
+        if not os.path.exists(os.path.join(proj_dir, 'modz', pert)):
+            os.mkdir(os.path.join(proj_dir, 'modz', pert))
 
-    modz.calculate_modz(keep_files, proj_dir)
+        reload(modz)
+        modz.calculate_modz(keep_files, proj_dir)
 
 
 def weave_all(proj_dir):

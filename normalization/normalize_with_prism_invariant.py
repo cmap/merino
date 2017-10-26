@@ -13,7 +13,7 @@ def normalize(mfi_gctoo, log=True, inv=True):
 
     #mfi_gctoo = remove_low_bead_wells(mfi_gctoo, count_gctoo)
 
-    #mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
+    mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
 
     mfi_gctoo.data_df[mfi_gctoo.data_df < 1] = 1
 
@@ -59,6 +59,8 @@ def remove_low_bead_wells(mfi_gct, count_gct):
 
     bad_wells = medians[medians < 20].index
 
+    bad_wells = [x for x in bad_wells if x in mfi_gct.data_df.columns]
+
     data = mfi_gct.data_df.drop(bad_wells, axis=1)
     col_data = mfi_gct.col_metadata_df.drop(bad_wells, axis=0)
 
@@ -73,7 +75,9 @@ def remove_outlier_invariants(gctoo):
 
     dmso_inv = invdata.loc[:, gctoo.col_metadata_df.loc[gctoo.col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()]
 
-    bad_wells = invdata.median()[invdata.median() < dmso_inv.median().quantile(0.005)].index
+    #bad_wells = invdata.median()[invdata.median() < dmso_inv.median().quantile(0.005)].index
+
+    bad_wells = invdata.median()[invdata.median() < 600].index
 
     data = gctoo.data_df.drop(bad_wells, axis=1)
     col_data = gctoo.col_metadata_df.drop(bad_wells, axis=0)

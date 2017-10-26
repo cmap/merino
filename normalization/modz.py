@@ -135,7 +135,7 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
         #TODO just use sig_id here
         modz_values[modz_values < -10] = -10
         modz_values[modz_values > 10] = 10
-        modZ_mat[mat.columns[0][:11] + mat.columns[0][-4:]] = modz_values
+        modZ_mat[mat.columns[0].split('_')[0] + '_' + mat.columns[0].split('_')[1] + mat.columns[0][-4:]] = modz_values
 
 
     col_meta = master_gct.col_metadata_df.drop_duplicates(subset=group_by, keep="last")
