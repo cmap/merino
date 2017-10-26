@@ -1,8 +1,5 @@
-import sys
-sys.path.append('/Users/elemire/Workspace/l1ktools')
-import broadinstitute_cmap.io.GCToo.parse as parse
-import broadinstitute_cmap.io.GCToo.write_gctoo as write_gctoo
-from broadinstitute_cmap.io.pandasGEXpress import GCToo
+import cmapPy.pandasGEXpress.parse as parse
+import cmapPy.pandasGEXpress.GCToo as GCToo
 import numpy as np
 
 invariant_rids = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670']
@@ -44,13 +41,6 @@ def normalize(mfi_gctoo, log=True, inv=True):
     new_gctoo = GCToo.GCToo(data_df=data_df, row_metadata_df=row_metadata_df, col_metadata_df=mfi_gctoo.col_metadata_df)
 
     return new_gctoo
-
-    #if outfile is None:
-    #    outfile = filepath[:-10] + 'NORM.gct'
-    #else:
-    #    outfile = outfile + '_NORM.gct'
-
-    #write_gctoo.write(new_gctoo, outfile)
 
 
 def remove_low_bead_wells(mfi_gct, count_gct):
@@ -124,4 +114,4 @@ def dp_normalize(filepath, outfile):
 
     my_gctoo = GCToo.GCToo(data_df=recombine, row_metadata_df=df.row_metadata_df, col_metadata_df=df.col_metadata_df)
 
-    write_gctoo.write(my_gctoo, outfile)
+    write_gct.write(my_gctoo, outfile)

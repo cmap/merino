@@ -1,9 +1,8 @@
 import sys
-sys.path.append('/Users/elemire/Workspace/l1ktools')
-import python.broadinstitute_cmap.io.pandasGEXpress.parse as pe
-import python.broadinstitute_cmap.io.pandasGEXpress.write_gct as wg
-from python.broadinstitute_cmap.io.pandasGEXpress import GCToo
-from broadinstitute_cmap.io.pandasGEXpress import concat_gctoo as cg
+import cmapPy.pandasGEXpress.parse as pe
+import cmapPy.pandasGEXpress.write_gct as wg
+import cmapPy.pandasGEXpress.GCToo as GCToo
+import cmapPy.pandasGEXpress.concat_gctoo as cg
 import pandas as pd
 import numpy as np
 import os
