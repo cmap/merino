@@ -17,6 +17,7 @@ def read_assay_plates(tsv_filepaths, config_filepath, compound_plate_col_basenam
 
     compound_plate_cols_first = None
     for tsv_filepath in tsv_filepaths:
+        print tsv_filepath
         (headers, data) = parse_data.read_data(tsv_filepath)
 
         compound_plate_cols = get_all_related_plate_cols(compound_plate_col_basename, headers)
@@ -31,6 +32,9 @@ def read_assay_plates(tsv_filepaths, config_filepath, compound_plate_col_basenam
 
         for (i, row) in enumerate(data):
             apb = row[header_map["assay_plate_barcode"]]
+
+            print apb
+
             pool_id = row[header_map["pool_id"]]
 
             compound_plates = build_plates_from_row(row, header_map, compound_plate_cols)
