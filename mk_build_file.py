@@ -17,7 +17,8 @@ import os
 def build(search_pattern, outfile, file_suffix):
     gct_list = glob.glob(search_pattern)
     old_len = len(gct_list)
-    #gct_list = cut_to_l2.cut_l1(gct_list)
+    reload(cut_to_l2)
+    gct_list = cut_to_l2.cut_l1(gct_list)
     new_len = len(gct_list)
 
     print 'Number of old lysate plates removed = {}'.format(old_len - new_len)
