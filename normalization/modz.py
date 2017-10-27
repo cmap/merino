@@ -61,7 +61,7 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
 
     gct_list = []
     for path in zscorepc_paths:
-        gct = pe.parse(path)
+        gct = pe(path)
         print gct.data_df.shape
         gct_list.append(gct)
 
