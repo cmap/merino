@@ -20,10 +20,10 @@ def calculate_zscore(df, plate_control=False):
 
         dmso_medians = neg_df.median(axis=1)
         dmso_median_devs = abs(neg_df.subtract(dmso_medians, axis=0))
-        dmso_mads = dmso_median_devs.median(axis=1) * 1.4826
+        dmso_mads = dmso_median_devs.median(axis=1) 
         dmso_mads[dmso_mads < .1] = .1
 
-        zscore_data = sub.divide(dmso_mads, axis='index')
+        zscore_data = sub.divide(dmso_mads * 1.4826, axis='index')
 
         df.col_metadata_df['data_level'] = 'ZSVC'
         df.col_metadata_df['provenance'] = [x + ' | ZSVC' for x in df.col_metadata_df['provenance']]
@@ -35,10 +35,10 @@ def calculate_zscore(df, plate_control=False):
         sub = df.data_df.subtract(medians, axis='index')
 
         median_devs = abs(df.data_df.subtract(medians, axis=0))
-        mads = median_devs.median(axis=1) * 1.4826
+        mads = median_devs.median(axis=1)
         mads[mads < .1] = .1
 
-        zscore_data = sub.divide(mads, axis='index')
+        zscore_data = sub.divide(mads  * 1.4826, axis='index')
 
         #sub = df.data_df.subtract(
         #    df.data_df.median(axis=1), axis='index')
