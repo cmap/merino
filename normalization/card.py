@@ -8,7 +8,6 @@ import merino.cut_to_l2 as cut
 import cmapPy.pandasGEXpress.write_gct as wgx
 import cmapPy.pandasGEXpress.parse as pe
 import functools
-import merino.flip_cells as flip
 import shear
 import pandas as pd
 
