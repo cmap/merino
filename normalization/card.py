@@ -4,11 +4,11 @@ import zscore
 import os
 import glob
 import modz
-import prism_pipeline.cut_to_l2 as cut
+import merino.cut_to_l2 as cut
 import cmapPy.pandasGEXpress.write_gct as wgx
 import cmapPy.pandasGEXpress.parse as pe
 import functools
-import prism_pipeline.flip_cells as flip
+import merino.flip_cells as flip
 import shear
 import pandas as pd
 

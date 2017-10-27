@@ -20,7 +20,7 @@ def calculate_zscore(df, plate_control=False):
 
         dmso_medians = neg_df.median(axis=1)
         dmso_median_devs = abs(neg_df.subtract(dmso_medians, axis=0))
-        dmso_mads = dmso_median_devs.median(axis=1) 
+        dmso_mads = dmso_median_devs.median(axis=1)
         dmso_mads[dmso_mads < .1] = .1
 
         zscore_data = sub.divide(dmso_mads * 1.4826, axis='index')
