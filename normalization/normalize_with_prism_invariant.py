@@ -2,6 +2,7 @@ import cmapPy.pandasGEXpress.parse as parse
 import cmapPy.pandasGEXpress.GCToo as GCToo
 import numpy as np
 
+# TODO add to metadata
 invariant_rids = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670']
 
 def normalize(mfi_gctoo, log=True, inv=True):
@@ -18,12 +19,8 @@ def normalize(mfi_gctoo, log=True, inv=True):
     data_df.round(2)
 
     if inv is True:
-        for column in data_df:
-            median = data_df[column][invariant_rids].median()
-
-            for index in data_df[column].index:
-                if index not in invariant_rids:
-                    data_df[column][index] = data_df[column][index] / median
+        invs = data_df.loc[invariant_rids].median(axis=0)
+        data_df = data_df.divide(invs, axis='columns')
 
     if log is True:
         data_df = np.log2(data_df)
