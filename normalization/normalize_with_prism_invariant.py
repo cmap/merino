@@ -13,14 +13,7 @@ def normalize(mfi_gctoo, log=True, inv=True):
     mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
 
     mfi_gctoo.data_df[mfi_gctoo.data_df < 1] = 1
-
-    if log is True:
-        data_df = np.log2(mfi_gctoo.data_df)
-        mfi_gctoo.col_metadata_df['provenance'] = 'assembled | log2 | median normalized'
-
-    else:
-        data_df = mfi_gctoo.data_df
-        mfi_gctoo.col_metadata_df['provenance'] = 'assembled | median normalized'
+    data_df = mfi_gctoo.data_df
 
     data_df.round(2)
 
@@ -32,6 +25,13 @@ def normalize(mfi_gctoo, log=True, inv=True):
                 if index not in invariant_rids:
                     data_df[column][index] = data_df[column][index] / median
 
+    if log is True:
+        data_df = np.log2(data_df)
+        mfi_gctoo.col_metadata_df['provenance'] = 'assembled | log2 | median normalized'
+
+    else:
+        data_df = data_df
+        mfi_gctoo.col_metadata_df['provenance'] = 'assembled | median normalized'
 
     mfi_gctoo.col_metadata_df['data_level'] = 'normalized'
 
