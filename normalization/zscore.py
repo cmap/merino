@@ -38,7 +38,7 @@ def calculate_zscore(df, plate_control=False):
         mads = median_devs.median(axis=1)
         mads[mads < .1] = .1
 
-        zscore_data = sub.divide(mads  * 1.4826, axis='index')
+        zscore_data = sub.divide(mads * 1.4826, axis='index')
 
         #sub = df.data_df.subtract(
         #    df.data_df.median(axis=1), axis='index')

@@ -56,13 +56,19 @@ def card(proj_dir, plate_name, log_tf, bad_wells=[]):
         plate_failure = reader_writer(norm_path, norm_path, functools.partial(norm.remove_low_bead_wells, count_gct=count_gctoo), check_size=True)
         # Shear predetermined bad wells (if any exist)
         reader_writer(norm_path, norm_path, functools.partial(shear.shear, bad_wells=bad_wells))
-
-
+    reload(viability)
+    if log_tf==True:
     # Map denoting each type of LEVEL4 data, its folder name, the function to create it, and the file ending.
-    lvl4_card_map = {'zscorevc': [zscore.calculate_zscore, '_ZSVC.gct'],
+        lvl4_card_map = {'zscorevc': [zscore.calculate_zscore, '_ZSVC.gct'],
                      'zscorepc': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
-                     'viabilitypc': [functools.partial(viability.calculate_viability, plate_control=True), '_FCPC.gct'],
-                     'viabilityvc': [viability.calculate_viability, '_FCVC.gct']}
+                     'viabilitypc': [functools.partial(viability.log_viability, plate_control=True), '_FCPC.gct'],
+                     'viabilityvc': [viability.log_viability, '_FCVC.gct']}
+
+    else:
+        lvl4_card_map = {'zscorevc': [zscore.calculate_zscore, '_ZSVC.gct'],
+                         'zscorepc': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
+                         'viabilitypc': [functools.partial(viability.calculate_viability, plate_control=True), '_FCPC.gct'],
+                         'viabilityvc': [viability.calculate_viability, '_FCVC.gct']}
 
     # Loop through this map to output all level 4 data
     for x in lvl4_card_map.keys():

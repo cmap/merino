@@ -33,8 +33,8 @@ def weave(proj_dir, rep_set, input_folder='zscorepc'):
         if not os.path.exists(os.path.join(proj_dir, 'modz', pert)):
             os.mkdir(os.path.join(proj_dir, 'modz', pert))
 
-        reload(modz)
-        modz.calculate_modz(keep_files, proj_dir)
+            reload(modz)
+            modz.calculate_modz(keep_files, proj_dir)
 
 
 def weave_all(proj_dir):

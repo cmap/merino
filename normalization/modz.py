@@ -1,4 +1,3 @@
-import sys
 import cmapPy.pandasGEXpress.parse as pe
 import cmapPy.pandasGEXpress.write_gct as wg
 import cmapPy.pandasGEXpress.GCToo as GCToo
@@ -65,6 +64,8 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
         print gct.data_df.shape
         gct_list.append(gct)
 
+    gct_list[1].row_metadata_df = gct_list[0].row_metadata_df
+    gct_list[2].row_metadata_df = gct_list[0].row_metadata_df
     fields_to_remove = [x for x in gct_list[0].row_metadata_df.columns if x in ['det_plate', 'det_plate_scan_time', 'assay_plate_barcode']]
     master_gct = cg.hstack(gct_list, fields_to_remove=fields_to_remove)
 
