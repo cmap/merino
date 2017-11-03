@@ -21,7 +21,7 @@ def build(search_pattern, outfile, file_suffix):
     for gct in gct_list:
         if gct.endswith('X4'):
             continue
-        temp = pe.parse(gct)
+        temp = pe(gct)
         gcts.append(temp)
 
 
