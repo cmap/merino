@@ -75,7 +75,7 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
 
     cc_q75_df = pd.DataFrame(
         columns=['weave_prefix', 'det_well', 'profile_ids', 'cc_ut', 'cc_q75', 'nprofile', 'ss_ltn3', 'ss_ltn2',
-                 'ss_ltn1', 'cis_ltn3', 'cis_ltn12', 'cis_ltn1'])
+                 'ss_ltn1', 'cis_ltn3', 'cis_ltn2', 'cis_ltn1'])
 
     cc_q75_df.index.name = 'sig_id'
 
@@ -114,7 +114,7 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
 
         ss1_5, ss1, ss_5 = calculate_sig_strength(modz_values, n_reps=len(corr_mat.index))
 
-        q75 = calculate_q75(upper_tri_series['spearman_corr'])
+        q75 = calculate_q75(upper_tri_series['spearman_corr'].round(4))
 
         cis1_5, cis1, cis_5 = calculate_cis(ss1_5, ss1, ss_5, q75, len(weighted_values))
 
@@ -122,15 +122,15 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
                                                    gv_val,
                                                    ','.join(corr_mat.columns.values.tolist()),
                                                    ','.join([str(x) for x in
-                                                             upper_tri_series['spearman_corr'].values.tolist()]),
+                                                             upper_tri_series['spearman_corr'].round(4).values.tolist()]),
                                                    q75,
                                                    len(corr_mat.index),
                                                    ss1_5,
                                                    ss1,
                                                    ss_5,
-                                                   cis1_5,
-                                                   cis1,
-                                                   cis_5
+                                                   cis1_5.round(4),
+                                                   cis1.round(4),
+                                                   cis_5.round(4)
                                                    ]
         #TODO just use sig_id here
         modz_values[modz_values < -10] = -10

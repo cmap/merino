@@ -1,16 +1,10 @@
 import cut_to_l2
 import glob
 import sys
-sys.path.append('/Users/elemire/Workspace/cmapPy/cmapPy')
-sys.path.append('/Users/elemire/Workspace/l1ktools')
-from broadinstitute_cmap.io.pandasGEXpress import concat_gctoo as cg
-#import pandasGEXpress.concat_gctoo as cg
-#import pandasGEXpress.GCToo as GCToo
-from broadinstitute_cmap.io.pandasGEXpress import GCToo as GCToo
-#import pandasGEXpress.parse as pe
-from broadinstitute_cmap.io.pandasGEXpress import parse as pe
-import broadinstitute_cmap.io.pandasGEXpress.write_gctx as wg
-#import pandasGEXpress.write_gct as wg
+import cmapPy.pandasGEXpress.concat_gctoo as cg
+import cmapPy.pandasGEXpress.GCToo as GCToo
+import cmapPy.pandasGEXpress.parse as pe
+import cmapPy.pandasGEXpress.write_gctx as wg
 import pandas as pd
 import os
 
@@ -25,6 +19,8 @@ def build(search_pattern, outfile, file_suffix):
 
     gcts = []
     for gct in gct_list:
+        if gct.endswith('X4'):
+            continue
         temp = pe.parse(gct)
         gcts.append(temp)
 
@@ -83,7 +79,6 @@ def complete_build(pod_dir, search_pattern, cohort_name, build_folder):
 
     inst_info.to_csv(os.path.join(build_folder, 'inst_info.txt'), sep='\t')
 
-
     jon = pd.DataFrame()
 
     for y in glob.glob(os.path.join(pod_dir, 'modz', search_pattern, '*cc_q75.txt')):
@@ -96,7 +91,7 @@ def complete_build(pod_dir, search_pattern, cohort_name, build_folder):
 
     sig_info = sig_data.col_metadata_df.join(jon)
 
-    for x in ['data_level', 'prism_replicate', 'provenance', 'det_well']:
+    for x in ['data_level', 'prism_replicate', 'det_well']:
         del sig_info[x]
 
     sig_info.to_csv(os.path.join(build_folder, 'sig_info.txt'), sep='\t')
