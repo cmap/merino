@@ -4,12 +4,39 @@ import zscore
 import os
 import glob
 import modz
-import merino.cut_to_l2 as cut
+import merino.cut_to_l2
 import cmapPy.pandasGEXpress.write_gct as wgx
 import cmapPy.pandasGEXpress.parse as pe
 import functools
 import shear
 import pandas as pd
+import merino.setup_logger as setup_logger
+import logging
+import argparse
+import sys
+import ConfigParser
+
+
+logger = logging.getLogger(setup_logger.LOGGER_NAME)
+
+def build_parser():
+
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # The following arguments are required. These are files that are necessary for assembly and which change
+    # frequently between cohorts, replicates, etc.
+    parser.add_argument("-proj_dir", "-pd", help="path to the pod directory you want to run card on",
+                        type=str, required=True)
+    parser.add_argument("-search_pattern", "-sp",
+                        help="Search for this string in the directory, only run plates which contain it. "
+                             "Default is wildcard",
+                        type=str, default='*', required=False)
+    parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
+    parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
+                        default=[])
+    parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data",
+                        action="store_true", default=True)
+
+    return parser
 
 
 def reader_writer(input_file, output_file, function, check_size=False):
@@ -86,7 +113,7 @@ def card(proj_dir, plate_name, log_tf, bad_wells=[]):
     return plate_failure
 
 
-def all(proj_dir, search_pattern='*', log_tf=True, bad_wells=[]):
+def oldmain(proj_dir, search_pattern='*', log_tf=True, bad_wells=[]):
     failure_list = []
     for folder in glob.glob(os.path.join(proj_dir, 'assemble', search_pattern)):
         name = os.path.basename(folder)
@@ -96,4 +123,25 @@ def all(proj_dir, search_pattern='*', log_tf=True, bad_wells=[]):
 
     print failure_list
     pd.Series(failure_list).to_csv(os.path.join(proj_dir, 'failed_plates.txt'), sep='\t')
+
+def main(args):
+    failure_list = []
+    print glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern))
+    for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
+        name = os.path.basename(folder)
+        plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, bad_wells=args.bad_wells)
+        if plate_failure == True:
+            failure_list.append(name)
+
+    print failure_list
+    pd.Series(failure_list).to_csv(os.path.join(args.proj_dir, 'failed_plates.txt'), sep='\t')
+
+
+if __name__ == "__main__":
+    args = build_parser().parse_args(sys.argv[1:])
+    setup_logger.setup(verbose=args.verbose)
+
+    logger.debug("args:  {}".format(args))
+
+    main(args)
 
