@@ -4,6 +4,7 @@ import modz
 import functools
 import shear
 import pandas as pd
+import cmapPy.pandasGEXpress.parse as pe
 import merino.setup_logger as setup_logger
 import logging
 import argparse
@@ -64,8 +65,21 @@ def weave(proj_dir, rep_set, input_folder='zscorepc'):
             os.mkdir(os.path.join(proj_dir, 'modz', pert))
 
         reload(modz)
-        modz.calculate_modz(keep_files, proj_dir)
+        gct_list = []
+        for path in keep_files:
+            gct = pe(path)
+            print gct.data_df.shape
+            gct_list.append(gct)
 
+        modZ_GCT, cc_q75_df, weights = modz.calculate_modz(gct_list)
+
+        outfile = os.path.join(proj_dir, 'modZ', rep_set)
+
+        if not os.path.exists(outfile):
+            os.mkdir(outfile)
+
+        weights[0].to_csv(os.path.join(outfile, rep_set + '_norm_weights.txt'), sep='\t')
+        weights[1].to_csv(os.path.join(outfile, rep_set + '_raw_weights.txt'), sep='\t')
 
 def main(args):
 

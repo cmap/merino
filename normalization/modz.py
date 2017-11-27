@@ -56,13 +56,8 @@ def calculate_q75(spearman):
     return spearman.quantile(0.75)
 
 
-def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
+def calculate_modz(gct_list, group_by='pert_well'):
 
-    gct_list = []
-    for path in zscorepc_paths:
-        gct = pe(path)
-        print gct.data_df.shape
-        gct_list.append(gct)
 
     gct_list[1].row_metadata_df = gct_list[0].row_metadata_df
     gct_list[2].row_metadata_df = gct_list[0].row_metadata_df
@@ -71,7 +66,7 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
 
     #TODO Change to replicate set ID when we have it in assemble
     #TODO change prism_replicate to replicate_id in assemble
-    replicate_set_id = gct.col_metadata_df.index[0].split('_')[0] + '_' + gct.col_metadata_df.index[0].split('_')[1]
+    replicate_set_id = gct_list[2].col_metadata_df.index[0].split('_')[0] + '_' + gct_list[2].col_metadata_df.index[0].split('_')[1]
 
     cc_q75_df = pd.DataFrame(
         columns=['weave_prefix', 'det_well', 'profile_ids', 'cc_ut', 'cc_q75', 'nprofile', 'ss_ltn3', 'ss_ltn2',
@@ -139,10 +134,11 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
 
 
     col_meta = master_gct.col_metadata_df.drop_duplicates(subset=group_by, keep="last")
-    col_meta.sort('pert_well', inplace=True)
+    col_meta.sort(group_by, inplace=True)
     col_meta.index = modZ_mat.columns
     col_meta['data_level'] = 'modZ'
-    col_meta['provenance'] = gct.col_metadata_df['provenance'] + ' | modZ'
+    if 'provenance' in col_meta:
+        col_meta['provenance'] = gct_list[2].col_metadata_df['provenance'] + ' | modZ'
 
     modZ_mat.index = modZ_mat.index.astype(str)
     master_gct.row_metadata_df.index = master_gct.row_metadata_df.index.astype(str)
@@ -150,16 +146,10 @@ def calculate_modz(zscorepc_paths, project_folder, group_by='pert_well'):
     modZ_GCT = GCToo.GCToo(data_df=modZ_mat, row_metadata_df=master_gct.row_metadata_df,
                            col_metadata_df=col_meta)
 
-    outfile = os.path.join(project_folder, 'modZ', replicate_set_id)
 
-    if not os.path.exists(outfile):
-        os.mkdir(outfile)
-
-    all_weights.to_csv(os.path.join(outfile, replicate_set_id + '_norm_weights.txt'), sep='\t')
-    all_raw_weights.to_csv(os.path.join(outfile, replicate_set_id + '_raw_weights.txt'), sep='\t')
     all_corr_values.set_index(all_corr_values['weave_prefix'], inplace=True)
     del all_corr_values['weave_prefix']
-    all_corr_values.to_csv(os.path.join(outfile, replicate_set_id + '_corr_values.txt'), sep='\t')
 
-    wg.write(modZ_GCT, os.path.join(outfile, replicate_set_id + '_MODZ.gct'))
-    cc_q75_df.to_csv(os.path.join(outfile, replicate_set_id + 'cc_q75.txt'), sep='\t')
+
+
+    return modZ_GCT, cc_q75_df, [all_weights, all_raw_weights]
