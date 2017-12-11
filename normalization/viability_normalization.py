@@ -5,6 +5,7 @@ def calculate_viability(df, plate_control=False):
     # Calculation of level 3 to level 4 data
     # TODO make this use a metadata file
 
+
     neg_dex = df.col_metadata_df[df.col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
     neg_df = df.data_df[neg_dex]
     neg_df.median(axis=1)

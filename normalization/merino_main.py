@@ -29,12 +29,17 @@ def build_parser():
                         default=[])
     parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data",
                         action="store_true", default=True)
+    parser.add_argument("-input_folder", "-if",
+                        help="The directory from which to produce level 5 data.",
+                        type=str, default='ZSPC', required=False)
 
     return parser
 
 
 def main(args):
     card.main(args)
+    weave.main(args)
+    args.input_folder = 'LFCPC'
     weave.main(args)
     mk.main(args)
 

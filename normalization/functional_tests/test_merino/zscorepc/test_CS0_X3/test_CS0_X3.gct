@@ -1,0 +1,10 @@
+#1.3
+5	5	0	2
+id	test_CS0_X3:A	test_CS0_X3:B	test_CS0_X3:C	test_CS0_X3:D	test_CS0_X3:E
+pert_type	trt_cp	trt_cp	trt_cp	ctl_vehicle	ctl_vehicle
+pert_well	A	B	C	D	E
+1	4150	11500	2000	5222	6202
+2	6200	7230	3500	9333	8406
+3	2800	5990	1500	7555	6212
+661	1500	4710	1450	710	1015
+662	1100	2200	1120	928	2010

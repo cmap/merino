@@ -58,9 +58,6 @@ def calculate_q75(spearman):
 
 def calculate_modz(gct_list, group_by='pert_well'):
 
-
-    gct_list[1].row_metadata_df = gct_list[0].row_metadata_df
-    gct_list[2].row_metadata_df = gct_list[0].row_metadata_df
     fields_to_remove = [x for x in gct_list[0].row_metadata_df.columns if x in ['det_plate', 'det_plate_scan_time', 'assay_plate_barcode']]
     master_gct = cg.hstack(gct_list, fields_to_remove=fields_to_remove)
 
@@ -140,8 +137,16 @@ def calculate_modz(gct_list, group_by='pert_well'):
     if 'provenance' in col_meta:
         col_meta['provenance'] = gct_list[2].col_metadata_df['provenance'] + ' | modZ'
 
+
+
     modZ_mat.index = modZ_mat.index.astype(str)
     master_gct.row_metadata_df.index = master_gct.row_metadata_df.index.astype(str)
+
+    # Drop sigs where nprofile =1
+    modZ_mat.drop(cc_q75_df[cc_q75_df['nprofile'] < 2].index, inplace=True, axis=1)
+    col_meta.drop(cc_q75_df[cc_q75_df['nprofile'] < 2].index, inplace=True)
+    cc_q75_df.drop(cc_q75_df[cc_q75_df['nprofile'] < 2].index, inplace=True)
+
 
     modZ_GCT = GCToo.GCToo(data_df=modZ_mat, row_metadata_df=master_gct.row_metadata_df,
                            col_metadata_df=col_meta)

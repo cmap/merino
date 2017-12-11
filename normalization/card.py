@@ -34,7 +34,7 @@ def build_parser():
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
     parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data",
-                        action="store_true", default=True)
+                        action="store_false")
 
     return parser
 
@@ -86,16 +86,16 @@ def card(proj_dir, plate_name, log_tf, bad_wells=[]):
     reload(viability)
     if log_tf==True:
     # Map denoting each type of LEVEL4 data, its folder name, the function to create it, and the file ending.
-        lvl4_card_map = {'zscorevc': [zscore.calculate_zscore, '_ZSVC.gct'],
-                     'zscorepc': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
-                     'viabilitypc': [functools.partial(viability.log_viability, plate_control=True), '_FCPC.gct'],
-                     'viabilityvc': [viability.log_viability, '_FCVC.gct']}
+        lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
+                     'ZSPC': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
+                     'LFCPC': [functools.partial(viability.log_viability, plate_control=True), '_FCPC.gct'],
+                     'LFCVC': [viability.log_viability, '_FCVC.gct']}
 
     else:
-        lvl4_card_map = {'zscorevc': [zscore.calculate_zscore, '_ZSVC.gct'],
-                         'zscorepc': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
-                         'viabilitypc': [functools.partial(viability.calculate_viability, plate_control=True), '_FCPC.gct'],
-                         'viabilityvc': [viability.calculate_viability, '_FCVC.gct']}
+        lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
+                         'ZSPC': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
+                         'LFCPC': [functools.partial(viability.calculate_viability, plate_control=True), '_FCPC.gct'],
+                         'LFCVC': [viability.calculate_viability, '_FCVC.gct']}
 
     # Loop through this map to output all level 4 data
     for x in lvl4_card_map.keys():
@@ -126,9 +126,9 @@ def oldmain(proj_dir, search_pattern='*', log_tf=True, bad_wells=[]):
 
 def main(args):
     failure_list = []
-    print glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern))
     for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
         name = os.path.basename(folder)
+        print name
         plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, bad_wells=args.bad_wells)
         if plate_failure == True:
             failure_list.append(name)

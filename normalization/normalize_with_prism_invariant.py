@@ -60,8 +60,6 @@ def remove_outlier_invariants(gctoo):
 
     invdata = gctoo.data_df.loc[invariant_rids]
 
-    dmso_inv = invdata.loc[:, gctoo.col_metadata_df.loc[gctoo.col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()]
-
     #bad_wells = invdata.median()[invdata.median() < dmso_inv.median().quantile(0.005)].index
 
     bad_wells = invdata.median()[invdata.median() < 600].index
