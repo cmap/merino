@@ -1,0 +1,40 @@
+
+
+high level process
+1. plates are registered in database - det_plate name, poolset id
+2. plates are registered in queue_manager for PRISM analysis
+3. yank identifies finished plate, notifies queue_manager
+4. queue_manager puts plate in assemble queue
+5. assemblify_queue checks queue, gets plate to work on, calls assemblify for that plate
+      provides:
+          id of new plate
+          other plates that are part of the PRISM replicate and their yank status
+          project ID
+6. assemblify checks queue, gets plate to work on, prepares information for assemble
+7. assemble generates gct
+8. assemblify reports finish to queue_manager
+
+
+
+assemblify config file
+  contains prod and dev sections
+
+  location of cell_id table - has meta data for cells
+
+  database hostname - for use in mapping between filenames and plate meta data
+
+inputs
+  poolset information file - for each poolset, indicate the mapping between the
+      analyte and the cell id
+
+  location of csv files for each poolset
+
+database
+  extend lims_plate_orm to have new fields for PRISM
+
+
+process
+1.  load file mapping poolset to pools
+2.  load file mapping cells to pools (and poolsets)
+    look for consistency between these
+3.  load file containing mapping between csv file and poolset
