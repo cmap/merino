@@ -95,7 +95,7 @@ def weave(proj_dir, rep_set, input_folder='zscorepc'):
 def main(args):
     if not os.path.exists(os.path.join(args.proj_dir, 'modz.{}'.format(args.input_folder))):
         os.mkdir(os.path.join(args.proj_dir, 'modz.{}'.format(args.input_folder)))
-    for x in set([os.path.basename(y).split('_')[0] for y in glob.glob(os.path.join(args.proj_dir, 'ZSPC/*'))]):
+    for x in set([os.path.basename(y).split('_')[0] for y in glob.glob(os.path.join(args.proj_dir, '{}/*'.format(args.input_folder)))]):
 
         weave(args.proj_dir, x, input_folder=args.input_folder)
 

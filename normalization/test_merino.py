@@ -18,7 +18,7 @@ import pandas as pd
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
-l = pe('functional_tests/test_merino/assemble/test_CS0_X1/test_CS0_X1.gct')
+l = pe('functional_tests/test_merino/assemble/test_CS0_X1/test_CS0_X1_MEDIAN.gct')
 
 class TestMerino(unittest.TestCase):
     def test_norm(self):
@@ -46,8 +46,8 @@ class TestMerino(unittest.TestCase):
 
     def test_viability_normalization(self):
         r = norm.normalize(l)
-        fv = viability_normalization.calculate_viability(r,plate_control=False)
-        fp = viability_normalization.calculate_viability(r,plate_control=True)
+        fv = viability_normalization.calculate_viability(r, plate_control=False)
+        fp = viability_normalization.calculate_viability(r, plate_control=True)
 
         assert round(fv.data_df['test_CS0_X1:A'][0], 4) == 0.4837
         assert round(fv.data_df['test_CS0_X1:B'][2], 4) == 0.2704
@@ -58,8 +58,8 @@ class TestMerino(unittest.TestCase):
         assert round(fp.data_df['test_CS0_X1:D'][1], 4) == 1.4367
 
     def test_modz(self):
-        l2 = pe('functional_tests/test_merino/assemble/test_CS0_X2/test_CS0_X2.gct')
-        l3 = pe('functional_tests/test_merino/assemble/test_CS0_X3/test_CS0_X3.gct')
+        l2 = pe('functional_tests/test_merino/assemble/test_CS0_X2/test_CS0_X2_MEDIAN.gct')
+        l3 = pe('functional_tests/test_merino/assemble/test_CS0_X3/test_CS0_X3_MEDIAN.gct')
 
         r = norm.normalize(l)
         r2 = norm.normalize(l2)
@@ -88,7 +88,7 @@ class TestMerino(unittest.TestCase):
         assert len(shear.data_df.columns) == 4
 
     def test_card(self):
-        card.card('functional_tests/test_merino/assemble/test_CS0_X2')
+        card.card('functional_tests/test_merino/', 'test_CS0_X2')
 
 
 

@@ -8,12 +8,11 @@ import os
 import pandas as pd
 import seaborn as sns
 
-def median_ZSPC_histogram(filepath, outfile, det ='', norm_data=False):
+def median_ZSPC_histogram(df, col_metadata_df, outfile, det =''):
 
     # Make histogram of median ZSPC by compound and mark the location of bortezomib
-    df = pe.parse(filepath)
 
-    pos_dex = df.col_metadata_df[df.col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
+    pos_dex = col_metadata_df[col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
 
 
 
@@ -33,16 +32,14 @@ def median_ZSPC_histogram(filepath, outfile, det ='', norm_data=False):
     axes = plt.gca()
     axes.legend(bbox_to_anchor=(0., 0.9, 0.8, .102), loc=3, borderaxespad=0.)
 
-    plt.savefig(os.path.join(outfile, '{}median_zspc_hist.png'.format(det)))
+    plt.savefig(os.path.join(outfile, '{}_median_zspc_hist.png'.format(det)))
 
     plt.clf()
 
-def median_ZSPC_ecdf(filepath, outfile, det='', norm_data=False):
+def median_ZSPC_ecdf(df, col_metadata_df, outfile, det=''):
     # Make ECDF of median ZSPC by compound and mark the location of bortezomib
-    df = pe.parse(filepath)
 
-
-    pos_dex = df.col_metadata_df[df.col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
+    pos_dex = col_metadata_df[col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
 
 
     ecdf = ECDF(df.data_df.median(axis=0))

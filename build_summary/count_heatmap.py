@@ -11,12 +11,8 @@ Make heatmap of median beadcount per well - used for cohort level analysis. Take
 associated metadata (most likely inst_info.txt)
 '''
 
-def make_count_heatmap(count_gct_path, metadata_path, title, output):
+def make_count_heatmap(count_gct, col_metadata_df, title, output):
 
-    print 'Reading GCT: {}'.format(count_gct_path)
-
-    count_gct = pe.parse(count_gct_path)
-    col_metadata_df = pd.read_table(metadata_path)
 
     concat_list = []
     print 'Rearranging by well'

@@ -9,6 +9,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import cmapPy.pandasGEXpress.GCToo as GCToo
+import generic_heatmap
 
 
 def spearmanwrapper(sequence):
@@ -21,6 +22,7 @@ def spearmanwrapper(sequence):
 
 def extract_invariants(gctoo):
 
+    #invariants = [str(x) for x in range(661,671)]
     invariants = range(661,671)
 
     invs = gctoo.data_df.loc[invariants]
@@ -46,16 +48,24 @@ def invariant_table(gct, count_gct):
 
     return final
 
-def invariant_heatmap(gct):
+def invariant_heatmap(gct, outfile, lims=[]):
     """
     Make heatmap of invariant medians here
     :return:
     """
     inv_gct = extract_invariants(gct)
 
-def invariant_monotonicity(filepath, metadata_path, outfile):
-    x = pe.parse(filepath)
-    col_metadata = pd.read_table(metadata_path)
+    reload(generic_heatmap)
+    generic_heatmap.mk_heatmap(inv_gct.data_df, 'Heatmap of Invariant Medians', outfile, lims=lims)
+
+def invariant_monotonicity(mfi_gct, col_metadata, outfile):
+
+    # reduce mfi_gct to only those columns in inst_info (ie exclude low beadcount and low inv median)
+    x = GCToo.GCToo(data_df=mfi_gct.data_df[col_metadata.index],
+                    col_metadata_df=pd.DataFrame(index=col_metadata.index),
+                    row_metadata_df=mfi_gct.row_metadata_df)
+
+    x = extract_invariants(x)
 
     # Find your controls
     neg_dex = col_metadata[col_metadata['pert_type'] == 'ctl_vehicle'].index.tolist()
@@ -94,6 +104,7 @@ def invariant_monotonicity(filepath, metadata_path, outfile):
     plt.xlabel('Compounds Type')
     plt.ylabel('Monotonicity of Invariants')
     plt.title('Monotonicity of Invariants')
+    plt.ylim(0, 1)
 
     plt.savefig(os.path.join(outfile, 'invariant_mono.png'))
     plt.clf()
@@ -102,221 +113,206 @@ def invariant_monotonicity(filepath, metadata_path, outfile):
     'DMSO': neg_mono_values.dropna()}
 
 
-def invariant_curves_plot(df, full_col_meta, outfile):
+def invariant_curves_plot(df, col_metadata_df, outfile):
 
-    master_inv_df = extract_invariants(df)
+    inv_df = extract_invariants(df)
 
-    for x in full_col_meta['prism_replicate'].unique():
+    neg_dex = col_metadata_df[col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
+    pos_dex = col_metadata_df[(col_metadata_df['pert_iname'] == 'Bortezomib') | (col_metadata_df['pert_iname'] == 'MG-132')].index.tolist()
 
-        col_metadata_df = full_col_meta[full_col_meta['prism_replicate'] == x]
+    dmso_invariants = inv_df.data_df[neg_dex]
+    poscon_invariants = inv_df.data_df[pos_dex]
 
-        inv_df = master_inv_df.data_df[col_metadata_df.index]
+    remainder_index = neg_dex + pos_dex
+    remainder_invariants = inv_df.data_df.drop(inv_df.data_df[remainder_index], axis=1)
 
-        neg_dex = col_metadata_df[col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
-        pos_dex = col_metadata_df[(col_metadata_df['pert_iname'] == 'Bortezomib') | (col_metadata_df['pert_iname'] == 'MG-132')].index.tolist()
-
-
-        dmso_invariants = inv_df[neg_dex]
-        poscon_invariants = inv_df[pos_dex]
-
-
-        remainder_index = neg_dex + pos_dex
-        remainder_invariants = inv_df.drop(inv_df[remainder_index], axis=1)
-
-
+    if len(remainder_invariants.unstack()) > 0:
         plt.plot(remainder_invariants, 'y', label='Treatment')
+
+    if len(dmso_invariants.unstack()) > 0:
         plt.plot(dmso_invariants, 'b', label='DMSO')
+
+    if len(poscon_invariants.unstack()) > 0:
         plt.plot(poscon_invariants, 'r', label='poscons')
 
-        plt.xlabel('Invariant ID')
-        plt.ylabel('MFI')
-        plt.title('PR500 Invariant Curves')
+    plt.xlabel('Invariant ID')
+    plt.ylabel('MFI')
+    plt.ylim(0,50000)
+    plt.title('PR500 Invariant Curves')
 
-        handles, labels = plt.gca().get_legend_handles_labels()
-        by_label = OrderedDict(zip(labels, handles))
-        plt.legend(by_label.values(), by_label.keys())
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = OrderedDict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
 
-        if not os.path.exists(os.path.join(outfile, x)):
-            os.mkdir(os.path.join(outfile, x))
+    plt.savefig(os.path.join(outfile,'invariant_curves.png'))
 
-        plt.savefig(os.path.join(outfile, x, 'invariant_curves.png'))
+    plt.clf()
 
-        plt.clf()
-
-def invariant_range_distributions(gctoo, full_col_meta, outfile):
+def invariant_range_distributions(gctoo, col_metadata_df, outfile):
     # We are making IQR boxplots and distributions for POSCON, DMSO, trt, and trt highest dose
 
-    master_inv_df = extract_invariants(gctoo)
-
-    for y in full_col_meta['prism_replicate'].unique():
-
-        col_metadata_df = full_col_meta[full_col_meta['prism_replicate'] == y]
-
-        inv_df = master_inv_df.data_df[col_metadata_df.index]
+    inv_df = extract_invariants(gctoo)
 
 
-        neg_dex = col_metadata_df[col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
-        pos_dex = col_metadata_df[col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
+    neg_dex = col_metadata_df[col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
+    pos_dex = col_metadata_df[col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
 
-        neg_df = inv_df[neg_dex]
-        pos_df = inv_df[pos_dex]
+    neg_df = inv_df.data_df[neg_dex]
+    pos_df = inv_df.data_df[pos_dex]
 
-        # Return if we are using an all DMSO plate
-        if len(pos_df.unstack()) == 0:
-            return
+    # Return if we are using an all DMSO plate
+    if len(pos_df.unstack()) == 0:
+        return
 
-        treatment = inv_df[inv_df.columns[~inv_df.columns.isin(neg_dex + pos_dex)]]
+    treatment = inv_df.data_df[inv_df.data_df.columns[~inv_df.data_df.columns.isin(neg_dex + pos_dex)]]
 
-        all_trt_IQRs = treatment.quantile(0.9, axis=0) - treatment.quantile(0.1, axis=0)
-        all_trt_q9_ratios = treatment.quantile(0.1, axis=0) / treatment.quantile(0.9, axis=0)
+    all_trt_IQRs = treatment.quantile(0.9, axis=0) - treatment.quantile(0.1, axis=0)
+    all_trt_q9_ratios = treatment.quantile(0.1, axis=0) / treatment.quantile(0.9, axis=0)
 
-        ####################################################################################################
-        # Find columns where treatment compounds are used at the maximum dose
+    ####################################################################################################
+    # Find columns where treatment compounds are used at the maximum dose
 
-        high_dose_dex = []
-        for compound in col_metadata_df[~inv_df.columns.isin(neg_dex + pos_dex)]['pert_id'].unique():
-            pert_df = col_metadata_df[(col_metadata_df['pert_id'] == compound) & (col_metadata_df['pert_type'] == 'trt_cp')]
-            high_dose_dex = high_dose_dex + pert_df[(pert_df['pert_dose'] == pert_df['pert_dose'].max())].index.tolist()
+    high_dose_dex = []
+    for compound in col_metadata_df[~inv_df.data_df.columns.isin(neg_dex + pos_dex)]['pert_id'].unique():
+        pert_df = col_metadata_df[(col_metadata_df['pert_id'] == compound) & (col_metadata_df['pert_type'] == 'trt_cp')]
+        high_dose_dex = high_dose_dex + pert_df[(pert_df['pert_dose'] == pert_df['pert_dose'].max())].index.tolist()
 
-        trt_high_dose = treatment[high_dose_dex]
-        all_high_trt_IQRs = trt_high_dose.quantile(0.9, axis=0) - trt_high_dose.quantile(0.1, axis=0)
-        all_high_trt_q9_ratios = trt_high_dose.quantile(0.1, axis=0) / trt_high_dose.quantile(0.9,axis=0)
+    trt_high_dose = treatment[high_dose_dex]
+    all_high_trt_IQRs = trt_high_dose.quantile(0.9, axis=0) - trt_high_dose.quantile(0.1, axis=0)
+    all_high_trt_q9_ratios = trt_high_dose.quantile(0.1, axis=0) / trt_high_dose.quantile(0.9,axis=0)
 
-        ########################################################################################################
+    ########################################################################################################
 
-        trt_lower_dose = treatment.drop(high_dose_dex, axis=1)
-        all_lower_trt_IQRs = trt_lower_dose.quantile(0.9, axis=0) - trt_lower_dose.quantile(0.1,axis=0)
-        all_lower_trt_q9_ratios = trt_lower_dose.quantile(0.1, axis=0) / trt_lower_dose.quantile(0.9,axis=0)
-        #########################################################
+    trt_lower_dose = treatment.drop(high_dose_dex, axis=1)
+    all_lower_trt_IQRs = trt_lower_dose.quantile(0.9, axis=0) - trt_lower_dose.quantile(0.1,axis=0)
+    all_lower_trt_q9_ratios = trt_lower_dose.quantile(0.1, axis=0) / trt_lower_dose.quantile(0.9,axis=0)
+    #########################################################
 
-        all_pos_invariant_IQRs = pos_df.quantile(0.9, axis=0) - pos_df.quantile(0.1, axis=0)
-        all_pos_invariant_q9_ratios = pos_df.quantile(0.1, axis=0) / pos_df.quantile(0.9, axis=0)
+    all_pos_invariant_IQRs = pos_df.quantile(0.9, axis=0) - pos_df.quantile(0.1, axis=0)
+    all_pos_invariant_q9_ratios = pos_df.quantile(0.1, axis=0) / pos_df.quantile(0.9, axis=0)
 
-        all_neg_invariant_IQRs = neg_df.quantile(0.9, axis=0) - neg_df.quantile(0.1, axis=0)
-        all_neg_invariant_q9_ratios = neg_df.quantile(0.1, axis=0) / neg_df.quantile(0.9, axis=0)
+    all_neg_invariant_IQRs = neg_df.quantile(0.9, axis=0) - neg_df.quantile(0.1, axis=0)
+    all_neg_invariant_q9_ratios = neg_df.quantile(0.1, axis=0) / neg_df.quantile(0.9, axis=0)
 
-        all_IQRs = all_trt_IQRs + all_high_trt_IQRs + all_pos_invariant_IQRs + all_neg_invariant_IQRs
-        bines = numpy.linspace(0, max(all_IQRs), 50)
-        sns.distplot(all_trt_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='green',  label='Trt, n={}'.format(len(all_trt_IQRs)))
-        sns.distplot(all_high_trt_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='yellow', label='Trt_high_dose, n={}'.format(len(all_high_trt_IQRs)))
-        sns.distplot(all_pos_invariant_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='red', label='Poscon, n={}'.format(len(all_pos_invariant_IQRs)))
-        sns.distplot(all_neg_invariant_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True,color='blue', label='DMSO, n={}'.format(len(all_neg_invariant_IQRs)))
+    all_IQRs = all_trt_IQRs.tolist() + all_high_trt_IQRs.tolist() + all_pos_invariant_IQRs.tolist() + all_neg_invariant_IQRs.tolist()
+    bines = numpy.linspace(0, max(all_IQRs), 50)
+    sns.distplot(all_trt_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='green',  label='Trt, n={}'.format(len(all_trt_IQRs)))
+    sns.distplot(all_high_trt_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='yellow', label='Trt_high_dose, n={}'.format(len(all_high_trt_IQRs)))
+    sns.distplot(all_pos_invariant_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='red', label='Poscon, n={}'.format(len(all_pos_invariant_IQRs)))
+    sns.distplot(all_neg_invariant_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True,color='blue', label='DMSO, n={}'.format(len(all_neg_invariant_IQRs)))
 
-        plt.xlabel('Interquartile Range of Invariants')
-        plt.ylabel('Frequency')
-        plt.title('Distribution of IQRs for Invariants')
+    plt.xlabel('Interquartile Range of Invariants')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of IQRs for Invariants')
 
-        axes = plt.gca()
-        axes.legend(bbox_to_anchor=(.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
+    axes = plt.gca()
+    axes.legend(bbox_to_anchor=(.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
 
+    plt.savefig(os.path.join(outfile,'Invariant_IQR_Distributions.png'))
+    plt.clf()
 
-        if not os.path.exists(os.path.join(outfile, y)):
-            os.mkdir(os.path.join(outfile, y))
+    all_q9 = all_trt_q9_ratios.tolist() + all_high_trt_q9_ratios.tolist() + all_pos_invariant_q9_ratios.tolist() + all_neg_invariant_q9_ratios.tolist()
+    bines = numpy.linspace(0, max(all_q9), 50)
+    sns.distplot(all_trt_q9_ratios.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='green', label='Trt, n={}'.format(len(all_trt_q9_ratios)))
+    sns.distplot(all_high_trt_q9_ratios.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True,color='yellow', label='Trt_high_dose, n={}'.format(len(all_high_trt_q9_ratios)))
+    sns.distplot(all_pos_invariant_q9_ratios.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='red', label='Poscon, n={}'.format(len(all_pos_invariant_q9_ratios)))
+    sns.distplot(all_neg_invariant_q9_ratios.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True,color='blue', label='DMSO, n={}'.format(len(all_neg_invariant_q9_ratios)))
 
-        plt.savefig(os.path.join(outfile, y, 'Invariant_IQR_Distributions.png'))
-        plt.clf()
+    plt.xlabel('Ratio of q1 to q9 of Invariants')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of q1/q9 for Invariants')
+    plt.xlim(0, max(all_q9))
 
-        all_q9 = all_trt_q9_ratios + all_high_trt_q9_ratios + all_pos_invariant_q9_ratios + all_neg_invariant_q9_ratios
-        bines = numpy.linspace(0, max(all_q9), 50)
-        sns.distplot(all_trt_q9_ratios.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='green', label='Trt, n={}'.format(len(all_trt_q9_ratios)))
-        sns.distplot(all_high_trt_q9_ratios.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True,color='yellow', label='Trt_high_dose, n={}'.format(len(all_high_trt_q9_ratios)))
-        sns.distplot(all_pos_invariant_q9_ratios.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='red', label='Poscon, n={}'.format(len(all_pos_invariant_q9_ratios)))
-        sns.distplot(all_neg_invariant_q9_ratios.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True,color='blue', label='DMSO, n={}'.format(len(all_neg_invariant_q9_ratios)))
+    axes = plt.gca()
+    axes.legend(bbox_to_anchor=(0.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
 
-        plt.xlabel('Ratio of q1 to q9 of Invariants')
-        plt.ylabel('Frequency')
-        plt.title('Distribution of q1/q9 for Invariants')
+    plt.savefig(os.path.join(outfile, 'Invariant_Fold_Change_Distributions.png'))
+    plt.clf()
 
-        axes = plt.gca()
-        axes.legend(bbox_to_anchor=(0.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
+    IQR_data = [all_trt_IQRs, all_high_trt_IQRs, all_pos_invariant_IQRs, all_neg_invariant_IQRs]
+    labels = ['All Treatment, n={}'.format(len(all_trt_IQRs)),
+              'Max Dose, n={}'.format(len(all_high_trt_IQRs)),
+              'Poscons, n={}'.format(len(all_pos_invariant_IQRs)),
+              'DMSO, n={}'.format(len(all_neg_invariant_IQRs))]
+    plt.boxplot(IQR_data, labels=labels)
 
-        plt.savefig(os.path.join(outfile, y, 'Invariant_Fold_Change_Distributions.png'))
-        plt.clf()
+    plt.xlabel('Compounds Type')
+    plt.ylabel('Interquartile Range of Invariants')
+    plt.title('Distribution of IQRs for Invariants')
 
-        IQR_data = [all_trt_IQRs, all_high_trt_IQRs, all_pos_invariant_IQRs, all_neg_invariant_IQRs]
-        labels = ['All Treatment, n={}'.format(len(all_trt_IQRs)),
-                  'Max Dose, n={}'.format(len(all_high_trt_IQRs)),
-                  'Poscons, n={}'.format(len(all_pos_invariant_IQRs)),
-                  'DMSO, n={}'.format(len(all_neg_invariant_IQRs))]
-        plt.boxplot(IQR_data, labels=labels)
+    plt.savefig(os.path.join(outfile, 'Invariant_IQR_Boxplots.png'))
 
-        plt.xlabel('Compounds Type')
-        plt.ylabel('Interquartile Range of Invariants')
-        plt.title('Distribution of IQRs for Invariants')
+    plt.clf()
 
-        plt.savefig(os.path.join(outfile, y, 'Invariant_IQR_Boxplots.png'))
+    q9_data = [all_trt_q9_ratios, all_high_trt_q9_ratios, all_pos_invariant_q9_ratios, all_neg_invariant_q9_ratios]
+    labels = ['All Treatment, n={}'.format(len(all_trt_q9_ratios)),
+              'Max Dose, n={}'.format(len(all_high_trt_q9_ratios)),
+              'Poscons, n={}'.format(len(all_pos_invariant_q9_ratios)),
+              'DMSO, n={}'.format(len(all_neg_invariant_q9_ratios))]
+    plt.boxplot(q9_data, labels=labels)
 
-        plt.clf()
+    plt.xlabel('Compounds Type')
+    plt.ylabel('Ratio of q1 to q9 of Invariants')
+    plt.title('Distribution of q1/q9 for Invariants')
 
-        q9_data = [all_trt_q9_ratios, all_high_trt_q9_ratios, all_pos_invariant_q9_ratios, all_neg_invariant_q9_ratios]
-        labels = ['All Treatment, n={}'.format(len(all_trt_q9_ratios)),
-                  'Max Dose, n={}'.format(len(all_high_trt_q9_ratios)),
-                  'Poscons, n={}'.format(len(all_pos_invariant_q9_ratios)),
-                  'DMSO, n={}'.format(len(all_neg_invariant_q9_ratios))]
-        plt.boxplot(q9_data, labels=labels)
+    plt.savefig(os.path.join(outfile,'Invariant_Fold_Change_Boxplots.png'))
 
-        plt.xlabel('Compounds Type')
-        plt.ylabel('Ratio of q1 to q9 of Invariants')
-        plt.title('Distribution of q1/q9 for Invariants')
+    plt.clf()
 
-        plt.savefig(os.path.join(outfile, y, 'Invariant_Fold_Change_Boxplots.png'))
+    all_high_low_q9 = all_high_trt_q9_ratios.tolist() + all_lower_trt_q9_ratios.tolist()
+    bines = numpy.linspace(0, max(all_high_low_q9), 50)
+    sns.distplot(all_lower_trt_q9_ratios.dropna(), bines, hist=True, kde=False, norm_hist=True, color='green',
+                 label='Trt_lower_doses, n={}'.format(len(all_lower_trt_q9_ratios)))
+    sns.distplot(all_high_trt_q9_ratios.dropna(), bines, hist=True, kde=False, norm_hist=True, color='yellow',
+                 label='Trt_high_dose, n={}'.format(len(all_high_trt_q9_ratios)))
 
-        plt.clf()
+    plt.xlabel('Ratio of q1 to q9 of Invariants')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of q1/q9 for Invariants')
 
-        all_high_low_q9 = all_high_trt_q9_ratios + all_lower_trt_q9_ratios
-        bines = numpy.linspace(0, max(all_high_low_q9), 50)
-        sns.distplot(all_lower_trt_q9_ratios.dropna(), bines, hist=True, kde=False, norm_hist=True, color='green',
-                     label='Trt_lower_doses, n={}'.format(len(all_lower_trt_q9_ratios)))
-        sns.distplot(all_high_trt_q9_ratios.dropna(), bines, hist=True, kde=False, norm_hist=True, color='yellow',
-                     label='Trt_high_dose, n={}'.format(len(all_high_trt_q9_ratios)))
+    axes = plt.gca()
+    axes.legend(bbox_to_anchor=(0.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
 
-        plt.xlabel('Ratio of q1 to q9 of Invariants')
-        plt.ylabel('Frequency')
-        plt.title('Distribution of q1/q9 for Invariants')
+    plt.savefig(os.path.join(outfile, 'Low_vs_High_Fold_Change_Distributions.png'))
+    plt.clf()
 
-        axes = plt.gca()
-        axes.legend(bbox_to_anchor=(0.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
-
-        plt.savefig(os.path.join(outfile, 'Low_vs_High_Fold_Change_Distributions.png'))
-        plt.clf()
-
-        all_high_low_IQRs = all_high_trt_IQRs + all_lower_trt_IQRs
-        bines = numpy.linspace(0, max(all_high_low_IQRs), 50)
-        sns.distplot(all_lower_trt_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='green',
-                     label='Trt_lower_doses, n={}'.format(len(all_lower_trt_IQRs)))
-        sns.distplot(all_high_trt_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='yellow',
-                     label='Trt_high_dose, n={}'.format(len(all_high_trt_IQRs)))
+    all_high_low_IQRs = all_high_trt_IQRs.tolist() + all_lower_trt_IQRs.tolist()
+    bines = numpy.linspace(0, max(all_high_low_IQRs), 50)
+    sns.distplot(all_lower_trt_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='green',
+                 label='Trt_lower_doses, n={}'.format(len(all_lower_trt_IQRs)))
+    sns.distplot(all_high_trt_IQRs.dropna().tolist(), bines, hist=True, kde=False, norm_hist=True, color='yellow',
+                 label='Trt_high_dose, n={}'.format(len(all_high_trt_IQRs)))
 
 
-        plt.xlabel('Interquartile Range of Invariants')
-        plt.ylabel('Frequency')
-        plt.title('Distribution of IQRs for Invariants High Dose vs. Low Dose')
+    plt.xlabel('Interquartile Range of Invariants')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of IQRs for Invariants High Dose vs. Low Dose')
 
-        axes = plt.gca()
-        axes.legend(bbox_to_anchor=(.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
+    axes = plt.gca()
+    axes.legend(bbox_to_anchor=(.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
 
-        plt.savefig(os.path.join(outfile, y, 'Low_vs_High_Invariant_IQR_Distributions.png'))
-        plt.clf()
-        ##############################################################################################
-        all_lower_invariants = trt_lower_dose.unstack().dropna()
-        all_high_invariants = trt_high_dose.unstack().dropna()
+    plt.savefig(os.path.join(outfile,'Low_vs_High_Invariant_IQR_Distributions.png'))
+    plt.clf()
+    ##############################################################################################
+    all_lower_invariants = trt_lower_dose.unstack().dropna()
+    all_high_invariants = trt_high_dose.unstack().dropna()
 
-        all_invariants_low_v_high = all_lower_invariants.tolist() + all_high_invariants.tolist()
-        bines = numpy.linspace(0, max(all_invariants_low_v_high), 50)
+    all_invariants_low_v_high = all_lower_invariants.tolist() + all_high_invariants.tolist()
+    bines = numpy.linspace(0, max(all_invariants_low_v_high), 50)
 
-        sns.distplot(all_lower_invariants.dropna(), bines, hist=True, kde=False, norm_hist=True, color='green',
-                     label='Trt_lower_doses, n={}'.format(len(all_lower_invariants)))
-        sns.distplot(all_high_invariants.dropna(), bines, hist=True, kde=False, norm_hist=True, color='yellow',
-                     label='Trt_high_dose, n={}'.format(len(all_high_invariants)))
+    sns.distplot(all_lower_invariants.dropna(), bines, hist=True, kde=False, norm_hist=True, color='green',
+                 label='Trt_lower_doses, n={}'.format(len(all_lower_invariants)))
+    sns.distplot(all_high_invariants.dropna(), bines, hist=True, kde=False, norm_hist=True, color='yellow',
+                 label='Trt_high_dose, n={}'.format(len(all_high_invariants)))
 
-        plt.xlabel('Invariant MFI Values')
-        plt.ylabel('Frequency')
-        plt.title('Distribution of All Invariant Values High Dose vs. Low Dose')
+    plt.xlabel('Invariant MFI Values')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of All Invariant Values High Dose vs. Low Dose')
 
-        axes = plt.gca()
-        axes.legend(bbox_to_anchor=(.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
+    axes = plt.gca()
+    axes.legend(bbox_to_anchor=(.7, 0.7, 0.6, .6), loc=3, borderaxespad=0.)
 
-        plt.savefig(os.path.join(outfile, y, 'Low_vs_High_Invariant_Values_Distributions.png'))
-        plt.clf()
+    plt.savefig(os.path.join(outfile, 'Low_vs_High_Invariant_Values_Distributions.png'))
+    plt.clf()
 
     return all_lower_invariants, all_high_invariants, all_high_trt_IQRs, all_lower_trt_IQRs, q9_data, IQR_data

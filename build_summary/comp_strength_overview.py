@@ -16,7 +16,9 @@ def modz_dist(df, col_metadata_df, exclude_wells, outfile):
     neg_df = df.data_df[neg_dex]
     pos_df = df.data_df[pos_dex]
 
-    remove = df.col_metadata_df[col_metadata_df['pert_well'].isin(exclude_wells)].index
+    remove = col_metadata_df[col_metadata_df['pert_well'].isin(exclude_wells)].index
+
+
 
     neg_remove = [x for x in remove if x in neg_df.columns]
     pos_remove = [x for x in remove if x in pos_df.columns]
@@ -46,7 +48,5 @@ def modz_dist(df, col_metadata_df, exclude_wells, outfile):
     axes.legend(bbox_to_anchor=(0., 0.8, 0.8, .102), loc=3, borderaxespad=0.)
 
     plt.savefig(outfile)
-
-    plt.show()
 
     plt.clf()

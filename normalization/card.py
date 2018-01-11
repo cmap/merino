@@ -59,7 +59,7 @@ def reader_writer(input_file, output_file, function, check_size=False):
     return plate_failure
 
 
-def card(proj_dir, plate_name, log_tf, bad_wells=[]):
+def card(proj_dir, plate_name, log_tf=True, bad_wells=[]):
 
     if not os.path.exists(os.path.join(proj_dir, 'normalize')):
         os.mkdir(os.path.join(proj_dir, 'normalize'))

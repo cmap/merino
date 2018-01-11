@@ -19,7 +19,7 @@ def cut_l1(original_list):
 
                 temp2 = [z for z in temp if "." in z]
 
-                if len(temp2) ==0:
+                if len(temp2) == 0:
                     import pdb
                     pdb.set_trace()
                 max_l = max([int(x[-1]) for x in temp2])

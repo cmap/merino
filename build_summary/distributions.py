@@ -14,12 +14,12 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     # Making distribution of normalised MFI values
 
     # The replacement of inf with NaN was only necessary because of issues with DP11/12 Data. May just remove this in the future
-    norm_df = norm_gct.data_df[~norm_gct.data_df.index.isin(invariants)]
+    norm_df = norm_gct.data_df
     norm_data = norm_df.unstack()
     norm_data.replace([np.inf, -np.inf], np.nan, inplace=True)
 
     norm_data.dropna(inplace=True)
-    norm_bins = np.linspace(0, max(norm_data), 100)
+    norm_bins = np.linspace(-10, max(norm_data), 100)
 
     # Matplotlib Histogram
     n, bins, patches = plt.hist(norm_data, norm_bins, facecolor='green', alpha=1)
@@ -30,7 +30,7 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     plt.title('Distribution of Norm Data')
     plt.grid(True)
     axes = plt.gca()
-    axes.set_xlim(xmin=0, xmax=max(norm_data))
+    axes.set_xlim(xmin=-10, xmax=max(norm_data))
 
     plt.savefig(os.path.join(outfile, 'norm_dist.png'))
 
@@ -42,11 +42,12 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     neg_dex = col_metadata_df[col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
     pos_dex = col_metadata_df[(col_metadata_df['pert_iname'] == 'Bortezomib') | (col_metadata_df['pert_iname'] == 'MG-132')].index.tolist()
 
+    neg_dex = [y for y in neg_dex if y in norm_df.columns]
     neg_df = norm_df[neg_dex]
     neg_data = neg_df.unstack()
     neg_data.dropna(inplace=True)
 
-    neg_bins = np.linspace(0, max(neg_data), 100)
+    neg_bins = np.linspace(min(neg_data), max(neg_data), 100)
     n, bins, patches = plt.hist(neg_data, neg_bins, facecolor='blue', alpha=1)
 
     plt.xlabel('Normalized DMSO Values, n={}'.format(len(neg_df.unstack().dropna())))
@@ -61,12 +62,13 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     #############################################################################################
     # Making distribution of normalized POSCON values
 
+    pos_dex = [y for y in pos_dex if y in norm_df.columns]
     pos_df = norm_df[pos_dex]
     pos_data = pos_df.unstack()
     pos_data.dropna(inplace=True)
 
     if len(pos_data) > 0:
-        pos_bins = np.linspace(0, max(pos_data), 100)
+        pos_bins = np.linspace(min(pos_data), max(pos_data), 100)
         n, bins, patches = plt.hist(pos_data, pos_bins, facecolor='red', alpha=1)
 
         plt.xlabel('Normalized Poscon Values, n={}'.format(len(pos_data)))
@@ -74,7 +76,7 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
         plt.title('Distribution of Norm Poscon Data')
         plt.grid(True)
         axes = plt.gca()
-        axes.set_xlim(xmin=0, xmax=max(pos_data))
+        axes.set_xlim(xmin=min(pos_data), xmax=max(pos_data))
 
         plt.savefig(os.path.join(outfile, 'poscon_dist.png'))
 
@@ -84,12 +86,21 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     # Plotting normalized POSCON and DMSO distributions together
 
 
+    if len(pos_data) > 0:
+        control_bins = np.linspace(min(pos_data), max(neg_data), 100)
 
-    control_bins = np.linspace(0, max(neg_data), 100)
+    else:
+        control_bins = np.linspace(min(neg_data), max(neg_data), 100)
     sns.distplot(neg_data, control_bins, color='blue', hist=True, kde=False, norm_hist=True, label='DMSO, n={}'.format(len(neg_df.unstack().dropna())))
     sns.distplot(pos_data, control_bins, color='red', hist=True, kde=False, norm_hist=True, label='POSCON, n={}'.format(len(pos_df.unstack().dropna())))
 
-    plt.xlim((0, max(neg_data)))
+    if len(pos_data) > 0:
+        plt.xlim((min(pos_data), max(neg_data)))
+
+    else:
+        plt.xlim((min(neg_data), max(neg_data)))
+
+
     plt.xlabel('Normalized Control Values')
     plt.ylabel('Frequency')
     plt.title('Distribution of Normalized Control Data')
@@ -152,12 +163,14 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     count_df = count_gct.data_df
     count_data = count_df.unstack()
     count_data.dropna(inplace=True)
+    ber = np.linspace(0, 150, 150)
 
-    n, bins, patches = plt.hist(count_data, 100, facecolor='yellow', alpha=1)
+    n, bins, patches = plt.hist(count_data, ber, facecolor='yellow', alpha=1)
 
     plt.xlabel('Bead Count Data, n={}'.format(len(count_data)))
     plt.ylabel('Frequency')
     plt.title('Distribution of Bead Count Data')
+    plt.xlim(0,150)
 
     plt.savefig(os.path.join(outfile, 'bead_count_dist.png'))
 
@@ -174,6 +187,7 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     plt.xlabel('Median Bead Count by Well, n={}'.format(len(median_well_count)))
     plt.ylabel('Frequency')
     plt.title('Distribution of Median Count By Well')
+    plt.xlim(0,150)
 
     plt.savefig(os.path.join(outfile, 'median_count_dist.png'))
 
@@ -187,7 +201,7 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     viability_data.replace([np.inf, -np.inf], np.nan, inplace=True)
     viability_data.dropna(inplace=True)
 
-    vib_bins = np.linspace(0, 4, 100)
+    vib_bins = np.linspace(min(viability_data.dropna()), 4, 100)
     n, bins, patches = plt.hist(viability_data, vib_bins, facecolor='pink', alpha=1)
 
     plt.xlabel('Viability Data, n={}'.format(len(viability_data)))
@@ -196,7 +210,7 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     plt.grid(True)
     axes = plt.gca()
 
-    axes.set_xlim(xmin=0, xmax=4)
+    axes.set_xlim(xmin=min(viability_data.dropna()), xmax=max(viability_data.dropna()))
 
     plt.savefig(os.path.join(outfile, 'viability_dist.png'))
 
@@ -209,7 +223,7 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     zscore_data.replace([np.inf, -np.inf], np.nan, inplace=True)
     zscore_data.dropna(inplace=True)
 
-    bins = np.linspace(-10, 10, 50)
+    bins = np.linspace(-10, 10, 100)
 
     n, bins, patches = plt.hist(zscore_data, bins, facecolor='brown', alpha=1)
 

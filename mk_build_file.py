@@ -11,7 +11,6 @@ import merino.cut_to_l2
 import cmapPy.pandasGEXpress.write_gct as wgx
 import cmapPy.pandasGEXpress.parse as pe
 import functools
-import pandas as pd
 import merino.setup_logger as setup_logger
 import logging
 import argparse
@@ -79,28 +78,34 @@ def build(search_pattern, outfile, file_suffix):
 
 def main(args):
 
-    modz_path = os.path.join(args.proj_dir, 'modz', args.search_pattern, '*.gct')
+    modz_path = os.path.join(args.proj_dir, 'modz.ZSPC', args.search_pattern, '*.gct')
     print modz_path
     modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.ZSPC_')
     print 'MODZ'
-    sig_data = build(modz_path,modz_out_path, '.gctx')
+    zspc_sig_data = build(modz_path,modz_out_path, '.gctx')
 
-    zscorepc_path = os.path.join(args.proj_dir, 'zscorepc', args.search_pattern, '*ZSPC.gct')
+    modz_path = os.path.join(args.proj_dir, 'modz.LFCPC', args.search_pattern, '*.gct')
+    print modz_path
+    modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LFCPC_')
+    print 'MODZ'
+    fcpc_sig_data = build(modz_path,modz_out_path, '.gctx')
+
+    zscorepc_path = os.path.join(args.proj_dir, 'ZSPC', args.search_pattern, '*ZSPC.gct')
     zscorepc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_ZSPC_')
     print 'ZSPC'
     build(zscorepc_path, zscorepc_out_path, '.gctx')
 
-    zscorevc_path = os.path.join(args.proj_dir, 'zscorevc', args.search_pattern, '*ZSVC.gct')
+    zscorevc_path = os.path.join(args.proj_dir, 'ZSVC', args.search_pattern, '*ZSVC.gct')
     zscorevc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_ZSVC_')
     print 'ZSVC'
     build(zscorevc_path, zscorevc_out_path, '.gctx')
 
-    viabilitypc_path = os.path.join(args.proj_dir, 'viabilitypc', args.search_pattern, '*.gct')
+    viabilitypc_path = os.path.join(args.proj_dir, 'LFCPC', args.search_pattern, '*.gct')
     viabilitypc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LFCPC_')
     print 'LFCPC'
     build(viabilitypc_path, viabilitypc_out_path, '.gctx')
 
-    viabilityvc_path = os.path.join(args.proj_dir, 'viabilityvc', args.search_pattern, '*.gct')
+    viabilityvc_path = os.path.join(args.proj_dir, 'LFCVC', args.search_pattern, '*.gct')
     viabilityvc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LFCVC_')
     print 'LFCVC'
     build(viabilityvc_path, viabilityvc_out_path, '.gctx')
@@ -129,7 +134,7 @@ def main(args):
 
     jon = pd.DataFrame()
 
-    for y in glob.glob(os.path.join(args.proj_dir, 'modz', args.search_pattern, '*cc_q75.txt')):
+    for y in glob.glob(os.path.join(args.proj_dir, 'modz.ZSPC', args.search_pattern, '*cc_q75.txt')):
 
         temp = pd.read_table(y)
 
@@ -137,12 +142,28 @@ def main(args):
 
     jon.set_index('sig_id', inplace=True)
 
-    sig_info = sig_data.col_metadata_df.join(jon)
+    zspc_sig_info = zspc_sig_data.col_metadata_df.join(jon)
 
     for x in ['data_level', 'prism_replicate', 'det_well']:
-        del sig_info[x]
+        del zspc_sig_info[x]
 
-    sig_info.to_csv(os.path.join(args.build_folder, 'sig_info.txt'), sep='\t')
+    zspc_sig_info.to_csv(os.path.join(args.build_folder, args.cohort_name + '_MODZ.ZSPC_sig_metrics.txt'), sep='\t')
+
+    jon = pd.DataFrame()
+
+    for y in glob.glob(os.path.join(args.proj_dir, 'modz.LFCPC', args.search_pattern, '*cc_q75.txt')):
+        temp = pd.read_table(y)
+
+        jon = jon.append(temp)
+
+    jon.set_index('sig_id', inplace=True)
+
+    fcpc_sig_info = fcpc_sig_data.col_metadata_df.join(jon)
+
+    for x in ['data_level', 'prism_replicate', 'det_well']:
+        del fcpc_sig_info[x]
+
+    fcpc_sig_info.to_csv(os.path.join(args.build_folder, args.cohort_name + '_MODZ.LFCPC_sig_metrics.txt'), sep='\t')
 
 
 
