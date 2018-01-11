@@ -8,13 +8,12 @@ import os
 import pandas as pd
 import seaborn as sns
 
+
 def median_ZSPC_histogram(df, col_metadata_df, outfile, det =''):
 
     # Make histogram of median ZSPC by compound and mark the location of bortezomib
 
     pos_dex = col_metadata_df[col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
-
-
 
     full_dist = df.data_df.median(axis=0).dropna()
     pos_dist = df.data_df[pos_dex].median(axis=0).dropna()
@@ -40,6 +39,7 @@ def median_ZSPC_ecdf(df, col_metadata_df, outfile, det=''):
     # Make ECDF of median ZSPC by compound and mark the location of bortezomib
 
     pos_dex = col_metadata_df[col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
+
 
 
     ecdf = ECDF(df.data_df.median(axis=0))

@@ -11,22 +11,21 @@ logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 
 def main():
-	config_filepath = "2016-08-12_PCAL015-44_prism_pipeline.cfg"
-	plate_mapping_filepath = "../map_src/2016-08-12_PCAL015-44_CS1.2_plates_mapping.txt"
-	plate_map_filepath = "../map_src/2016-08-13_PCAL015-44_plate_maps_7159-03-A04-01-07-18.txt"
+	config_filepath = "2016-08-12_PDOG015-44_prism_pipeline.cfg"
+	plate_mapping_filepath = "../map_src/2016-08-12_PDOG015-44_CS1.2_plates_mapping.txt"
+	plate_map_filepath = "../map_src/2016-08-13_PDOG015-44_plate_maps_7159-03-A04-01-07-18.txt"
 
 	base_assemble_dir = "../assemble/"
 	base_lxb_dir = "../lxb/"
 
 	all_perturbagens = assemble.read_all_perturbagens_from_file(plate_map_filepath, config_filepath,
 																prism_metadata.plate_map_type_CM)
-	
 	parser = assemble.build_parser()
 	args_list = ["-config_filepath", config_filepath, None, "", plate_mapping_filepath, "DP7", None, "DP8", None]
 
 	for pert_plate_index in range(15,45):
 		for rep_num in range(1,4):
-			pert_plate = "PCAL0{}".format(pert_plate_index)
+			pert_plate = "PDOG0{}".format(pert_plate_index)
 			replicate = "X{}".format(rep_num)
 			prism_replicate = "{}_CS1.2_{}".format(pert_plate, replicate)
 			dp7 = "{}_DP7_{}".format(pert_plate, replicate)
@@ -58,7 +57,7 @@ def main():
 				t = f.read().strip()
 				len_t = len(t.split("\n"))
 				print "output file of:  {}  length:  {}".format(of, len_t)
-				
+
 				dest_file = os.path.join(assemble_dir, of)
 				if os.path.exists(dest_file):
 					os.remove(dest_file)
@@ -68,6 +67,4 @@ def main():
 if __name__ == "__main__":
 	setup_logger.setup(verbose=False)
 	main()
-
-
 

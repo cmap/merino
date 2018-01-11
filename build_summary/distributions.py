@@ -15,6 +15,7 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
 
     # The replacement of inf with NaN was only necessary because of issues with DP11/12 Data. May just remove this in the future
     norm_df = norm_gct.data_df
+
     norm_data = norm_df.unstack()
     norm_data.replace([np.inf, -np.inf], np.nan, inplace=True)
 
@@ -85,7 +86,6 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     ##################################################################################################
     # Plotting normalized POSCON and DMSO distributions together
 
-
     if len(pos_data) > 0:
         control_bins = np.linspace(min(pos_data), max(neg_data), 100)
 
@@ -99,7 +99,6 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
 
     else:
         plt.xlim((min(neg_data), max(neg_data)))
-
 
     plt.xlabel('Normalized Control Values')
     plt.ylabel('Frequency')
@@ -200,7 +199,6 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     viability_data = viability_df.unstack()
     viability_data.replace([np.inf, -np.inf], np.nan, inplace=True)
     viability_data.dropna(inplace=True)
-
     vib_bins = np.linspace(min(viability_data.dropna()), 4, 100)
     n, bins, patches = plt.hist(viability_data, vib_bins, facecolor='pink', alpha=1)
 
@@ -209,7 +207,6 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     plt.title('Distribution of Viability Data')
     plt.grid(True)
     axes = plt.gca()
-
     axes.set_xlim(xmin=min(viability_data.dropna()), xmax=max(viability_data.dropna()))
 
     plt.savefig(os.path.join(outfile, 'viability_dist.png'))
@@ -222,7 +219,6 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     zscore_data = zscore_df.unstack()
     zscore_data.replace([np.inf, -np.inf], np.nan, inplace=True)
     zscore_data.dropna(inplace=True)
-
     bins = np.linspace(-10, 10, 100)
 
     n, bins, patches = plt.hist(zscore_data, bins, facecolor='brown', alpha=1)

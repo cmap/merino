@@ -4,7 +4,6 @@ import string
 import matplotlib.pyplot as plt
 
 
-
 def mk_heatmap(df, title, outfile, lims=[]):
 
     values = df.median(axis=0)
@@ -15,14 +14,12 @@ def mk_heatmap(df, title, outfile, lims=[]):
         curr_column = values[[x[-2:] == col for x in values.index]]
         curr_column.index = [y[-3] for y in curr_column.index]
         heatmap_df[col] = curr_column
-
     if len(lims) == 0:
         sns.heatmap(heatmap_df, linewidths=.1, cmap="coolwarm")
     elif len(lims) == 2:
         sns.heatmap(heatmap_df, linewidths=.1, cmap="coolwarm", vmin=lims[0], vmax=lims[1])
     else:
         raise Exception('Must pass exactly 2 color scale limits or none at all')
-
     plt.yticks(rotation=1)
     plt.title(title)
     plt.savefig(outfile)

@@ -13,7 +13,6 @@ associated metadata (most likely inst_info.txt)
 
 def make_count_heatmap(count_gct, col_metadata_df, title, output):
 
-
     concat_list = []
     print 'Rearranging by well'
     for x in col_metadata_df['prism_replicate'].unique():

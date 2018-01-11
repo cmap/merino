@@ -20,7 +20,7 @@ class TestRegisterPrismPlates(unittest.TestCase):
         output_file = tempfile.NamedTemporaryFile(mode="w")
         logger.debug("output_file.name:  {}".format(output_file.name))
 
-        arg_list = ["-config_filepath", config_filepath, "-output_file", output_file.name, "-dont", "PCAL", "45", "CS3.1"]
+        arg_list = ["-config_filepath", config_filepath, "-output_file", output_file.name, "-dont", "PDOG", "45", "CS3.1"]
 
         search_str = os.path.join(cur_test_dir, "7159-03-A04-01-*_REPORT_dlahr.txt")
         input_files = glob.glob(search_str)

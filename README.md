@@ -1,6 +1,6 @@
-# Merino
+# Merino - !! Pre-publication !!
 
-Data Flow for converting raw PR500 data into processed results
+Pre-publication version of data Flow for converting raw PR500 data into processed results
 
 ## Setting up the environment for development:
 

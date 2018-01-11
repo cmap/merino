@@ -5,7 +5,6 @@ def modz_dist(df, col_metadata_df, exclude_wells, outfile):
 
     #Make histogram of median ZSPC by compound and mark the location of bortezomib
     import numpy as np
-    #df = pe.parse('/Users/elemire/Workspace/PCAL_proj_dir/modz_master.gct')
 
     pos_dex = col_metadata_df[col_metadata_df['pert_type'] == 'trt_poscon'].index.tolist()
 
@@ -50,3 +49,4 @@ def modz_dist(df, col_metadata_df, exclude_wells, outfile):
     plt.savefig(outfile)
 
     plt.clf()
+

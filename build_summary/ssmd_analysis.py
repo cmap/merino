@@ -44,7 +44,6 @@ def get_ssmd(df, exclude_wells = []):
     neg_df.drop(neg_remove, axis=1, inplace=True)
     pos_df.drop(pos_remove, axis=1, inplace=True)
 
-
     dmso_medians = neg_df[~neg_df.index.isin(invariants)].median(axis=1, skipna=True)
     poscon_medians = pos_df[~neg_df.index.isin(invariants)].median(axis=1, skipna=True)
 
@@ -231,5 +230,4 @@ def failures_ecdf(filepaths, outfile, exclude_wells = []):
     axes.set_ylim([0, 1])
     axes.legend(bbox_to_anchor=(0.55, 0.5, 0.8, .102), loc=3, borderaxespad=0.)
     plt.savefig(os.path.join(outfile, 'PlateSSMDFailureECDF.png'))
-    plt.show()
     plt.clf()

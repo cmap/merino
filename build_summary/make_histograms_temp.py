@@ -27,5 +27,5 @@ for det in dets:
 
 
 
-
 pr.distributions('GCT', ['PCAL102_CS5_X1', 'PCAL102_CS5_X2', 'PCAL102_CS5_X3', 'PCAL102_CS5_X4', 'PCAL102_CS5_X5', 'PCAL102_CS5_X6'], 'GCT/QC')
+

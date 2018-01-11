@@ -60,6 +60,4 @@ def calc_mono(pert_plates, project_folder):
     return mono_list
 
 
-def plot_monotonicity_boxes(PR500_mono, DP_mono, outfile, plot_title):
-
 

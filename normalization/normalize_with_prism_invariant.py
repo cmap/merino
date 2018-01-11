@@ -109,4 +109,4 @@ def dp_normalize(filepath, outfile):
 
     my_gctoo = GCToo.GCToo(data_df=recombine, row_metadata_df=df.row_metadata_df, col_metadata_df=df.col_metadata_df)
 
-    write_gct.write(my_gctoo, outfile)
+    #write_gct.write(my_gctoo, outfile)

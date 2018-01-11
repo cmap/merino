@@ -12,6 +12,7 @@ import cmapPy.pandasGEXpress.GCToo as GCToo
 import generic_heatmap
 
 
+
 def spearmanwrapper(sequence):
     # TODO: Make sure sequence is of equal length to sequence passed?
     if len(sequence.dropna()) > 2:
@@ -48,13 +49,13 @@ def invariant_table(gct, count_gct):
 
     return final
 
+
 def invariant_heatmap(gct, outfile, lims=[]):
     """
     Make heatmap of invariant medians here
     :return:
     """
     inv_gct = extract_invariants(gct)
-
     reload(generic_heatmap)
     generic_heatmap.mk_heatmap(inv_gct.data_df, 'Heatmap of Invariant Medians', outfile, lims=lims)
 
@@ -111,7 +112,6 @@ def invariant_monotonicity(mfi_gct, col_metadata, outfile):
 
     return {'all treatment': trt_mono_values.dropna(), 'high_dose': trt_high_mono_values.dropna(), 'poscons': pos_mono_values.dropna(),
     'DMSO': neg_mono_values.dropna()}
-
 
 def invariant_curves_plot(df, col_metadata_df, outfile):
 
