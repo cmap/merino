@@ -24,13 +24,8 @@ class TestCheckAndBuildPerts(unittest.TestCase):
     def test_build_assayplate_pertplate_map(self):
 
         test_map = check_and_build_perts.build_assayplate_pertplate_map(plate_tracking)
-<<<<<<< HEAD
-        assayplate_expected_pert_map = {'SCW0117638': 'PCAL015', 'SCW0116413': 'PCAL015', 'SCW0115438': 'PCAL015',
-                                        'SCW0114128': 'PCAL016', 'SCW0118663': 'PCAL016'}
-=======
         assayplate_expected_pert_map = {'SCW0117638': 'PDOG015', 'SCW0116413': 'PDOG015', 'SCW0115438': 'PDOG015',
                                         'SCW0114128': 'PDOG016', 'SCW0118663': 'PDOG016'}
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
 
         for (assayplate, expected_pertplate) in assayplate_expected_pert_map.items():
             assert test_map[assayplate] == expected_pertplate
@@ -44,19 +39,11 @@ class TestCheckAndBuildPerts(unittest.TestCase):
 
         assert len(test_map) == 2
         assert type(test_map) == dict
-<<<<<<< HEAD
-        assert test_map['PCAL015'][1].well_id == 'C01'
-        assert test_map['PCAL016'][1].well_id == 'D01'
-
-    def test_write_plate_maps(self):
-        for map_file in glob.glob('PCAL*.src'):
-=======
         assert test_map['PDOG015'][1].well_id == 'C01'
         assert test_map['PDOG016'][1].well_id == 'D01'
 
     def test_write_plate_maps(self):
         for map_file in glob.glob('PDOG*.src'):
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
             os.remove(map_file)
 
         assayplate_pertplate_map = check_and_build_perts.build_assayplate_pertplate_map(plate_tracking)
@@ -67,17 +54,10 @@ class TestCheckAndBuildPerts(unittest.TestCase):
 
         check_and_build_perts.write_plate_maps(dataframes)
 
-<<<<<<< HEAD
-        num_files = glob.glob("PCAL*.src")
-        assert len(num_files) == 2
-
-        for map_file in glob.glob('PCAL*.src'):
-=======
         num_files = glob.glob("PDOG*.src")
         assert len(num_files) == 2
 
         for map_file in glob.glob('PDOG*.src'):
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
             x = os.path.getsize(map_file)
             assert x > 0
             os.remove(map_file)

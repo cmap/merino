@@ -12,11 +12,7 @@ class TestDavepoolData(unittest.TestCase):
         assert hasattr(r, "median_headers")
 
     def test_read_data(self):
-<<<<<<< HEAD
-        csv_filepath = "functional_tests/test_davepool_data/PCAL001_P1_X1.csv"
-=======
         csv_filepath = "functional_tests/test_davepool_data/PDOG001_P1_X1.csv"
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
         r = davepool_data.read_data(csv_filepath)
         assert r is not None
         assert r.csv_filepath == csv_filepath, r.csv_filepath

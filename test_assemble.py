@@ -22,11 +22,7 @@ class TestAssemble(unittest.TestCase):
         assert r == "P24", r
 
     def test_read_davepool_data_objects(self):
-<<<<<<< HEAD
-        l = [(1, "requirements_artifacts/PCAL001_P1_X1.csv"), (2, "requirements_artifacts/PCAL001_P2_X1.csv")]
-=======
         l = [(1, "requirements_artifacts/PDOG001_P1_X1.csv"), (2, "requirements_artifacts/PDOG001_P2_X1.csv")]
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
         r = assemble.read_davepool_data_objects(l)
         assert len(r) > 0
         logger.debug("r:  {}".format(r))
@@ -63,29 +59,12 @@ class TestAssemble(unittest.TestCase):
         assert r[2][1] == "3", r[2][1]
 
     def test_full_functional(self):
-<<<<<<< HEAD
-        expected_files = ["PCAL003_CS1_X1/PCAL003_CS1_X1_COUNT.gct", "PCAL003_CS1_X1/PCAL003_CS1_X1_MEDIAN.gct"]
-=======
         expected_files = ["PDOG003_CS1_X1/PDOG003_CS1_X1_COUNT.gct", "PDOG003_CS1_X1/PDOG003_CS1_X1_MEDIAN.gct"]
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
         for ef in expected_files:
             if os.path.exists(ef):
                 os.remove(ef)
 
         config_filepath = "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg"
-<<<<<<< HEAD
-        prism_replicate_name = "PCAL003_CS1_X1"
-        plates_mapping_path = "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt"
-        args1 = check_and_build_perts.build_parser().parse_args(
-            ["-cfg", "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg", "-pmp",
-             "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt",
-             "-ptp", "functional_tests/test_assemble/full_functional_test/2016-03-22_PCAL_plate_mapping.txt"])
-        check_and_build_perts.main(args1)
-        plate_map_path = 'PCAL003.src'
-        dp7_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP7_X1.csv"
-        dp8_csv_path = "functional_tests/test_assemble/full_functional_test/PCAL003_DP8_X1.csv"
-        csdf_path = "requirements_artifacts/CalicoTranche1PrimaryMetaData_02252016.txt"
-=======
         prism_replicate_name = "PDOG003_CS1_X1"
         plates_mapping_path = "functional_tests/test_assemble/full_functional_test/2016-03-22_PDOG_plate_mapping.txt"
         args1 = check_and_build_perts.build_parser().parse_args(
@@ -97,7 +76,6 @@ class TestAssemble(unittest.TestCase):
         dp7_csv_path = "functional_tests/test_assemble/full_functional_test/PDOG003_DP7_X1.csv"
         dp8_csv_path = "functional_tests/test_assemble/full_functional_test/PDOG003_DP8_X1.csv"
         csdf_path = "requirements_artifacts/Tranche1PrimaryMetaData_02252016.txt"
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
         dmf_path = "requirements_artifacts/test_davepool_analyte_mapping.txt"
 
         args = assemble.build_parser().parse_args(["-config_filepath", config_filepath, "-prn", prism_replicate_name,
@@ -112,11 +90,7 @@ class TestAssemble(unittest.TestCase):
             assert os.path.exists(ef), ef
             os.remove(ef)
 
-<<<<<<< HEAD
-        for map_file in glob.glob('PCAL*.src'):
-=======
         for map_file in glob.glob('PDOG*.src'):
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
             x = os.path.getsize(map_file)
             assert x > 0
             os.remove(map_file)

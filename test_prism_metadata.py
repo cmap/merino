@@ -24,11 +24,7 @@ class TestPrismMetadata(unittest.TestCase):
         prism_cell_list_items = cp.items("PrismCell column headers")
         davepool_mapping_items = cp.items("DavepoolAnalyteMapping column headers")
 
-<<<<<<< HEAD
-        cell_set_definition = "requirements_artifacts/CalicoTranche1PrimaryMetaData_02252016.txt"
-=======
         cell_set_definition = "requirements_artifacts/Tranche1PrimaryMetaData_02252016.txt"
->>>>>>> a8dc955472ae6dee38081072b4d9ac7083f8b805
         r = pm.read_prism_cell_from_file(cell_set_definition, prism_cell_list_items)
         self.assertGreater(len(r), 20)
         logger.debug("r[0:10]:  {}".format(r[0:10]))
