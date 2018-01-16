@@ -14,6 +14,7 @@ import numpy
 import os
 import glob
 import pandas as pd
+import shutil
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -65,7 +66,15 @@ class TestMerino(unittest.TestCase):
         r2 = norm.normalize(l2)
         r3 = norm.normalize(l3)
 
-        modz_gct, ccq74, weights = modz.calculate_modz([r,r2,r3])
+        z = zscore.calculate_zscore(r, plate_control=True)
+        z2 = zscore.calculate_zscore(r2, plate_control=True)
+        z3 = zscore.calculate_zscore(r3, plate_control=True)
+
+        modz_gct, ccq74, weights = modz.calculate_modz([z,z2,z3])
+
+        assert round(modz_gct.data_df['test_CS0X1:A'][0], 4) == -0.5816
+        assert round(modz_gct.data_df['test_CS0X1:B'][2], 4) == -0.4991
+        assert round(modz_gct.data_df['test_CS0X1:D'][1], 4) == 1.001
 
         print modz_gct.data_df
 
@@ -89,6 +98,17 @@ class TestMerino(unittest.TestCase):
 
     def test_card(self):
         card.card('functional_tests/test_merino/', 'test_CS0_X2')
+        assert os.path.isfile('functional_tests/test_merino/normalize/test_CS0_X2/test_CS0_X2_NORM.gct')
+        assert os.path.isfile('functional_tests/test_merino/LFCPC/test_CS0_X2/test_CS0_X2_FCPC.gct')
+        assert os.path.isfile('functional_tests/test_merino/LFCVC/test_CS0_X2/test_CS0_X2_FCVC.gct')
+        assert os.path.isfile('functional_tests/test_merino/ZSPC/test_CS0_X2/test_CS0_X2_ZSPC.gct')
+        assert os.path.isfile('functional_tests/test_merino/ZSVC/test_CS0_X2/test_CS0_X2_ZSVC.gct')
+
+        shutil.rmtree('functional_tests/test_merino/normalize/test_CS0_X2/')
+        shutil.rmtree('functional_tests/test_merino/LFCPC/test_CS0_X2/')
+        shutil.rmtree('functional_tests/test_merino/LFCVC/test_CS0_X2/')
+        shutil.rmtree('functional_tests/test_merino/ZSPC/test_CS0_X2/')
+        shutil.rmtree('functional_tests/test_merino/ZSVC/test_CS0_X2/')
 
 
 
