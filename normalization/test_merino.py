@@ -33,6 +33,7 @@ class TestMerino(unittest.TestCase):
         assert round(r.data_df['test_CS0_X1:D'][1], 4) == 3.4919
 
     def test_zscore(self):
+        #TODO split plate control and vehicle control into two functions
         r = norm.normalize(l)
         zv = zscore.calculate_zscore(r, plate_control=False)
         zp = zscore.calculate_zscore(r, plate_control=True)
@@ -76,8 +77,6 @@ class TestMerino(unittest.TestCase):
         assert round(modz_gct.data_df['test_CS0X1:B'][2], 4) == -0.4991
         assert round(modz_gct.data_df['test_CS0X1:D'][1], 4) == 1.001
 
-        print modz_gct.data_df
-
 
     def test_count_shear(self):
         count = GCToo.GCToo(data_df=pd.DataFrame({'test_CS0_X1:A': [40, 50, 30, 20, 10],
@@ -109,6 +108,19 @@ class TestMerino(unittest.TestCase):
         shutil.rmtree('functional_tests/test_merino/LFCVC/test_CS0_X2/')
         shutil.rmtree('functional_tests/test_merino/ZSPC/test_CS0_X2/')
         shutil.rmtree('functional_tests/test_merino/ZSVC/test_CS0_X2/')
+
+
+    def test_weave(self):
+        os.mkdir('functional_tests/test_merino/modz.zscorepc')
+        weave.weave('functional_tests/test_merino/', 'test')
+        assert os.path.isfile('functional_tests/test_merino/modz.zscorepc/test_CS0/test_CS0_MODZ.zscorepc.gct')
+        assert os.path.isfile('functional_tests/test_merino/modz.zscorepc/test_CS0/test_cc_q75.txt')
+        shutil.rmtree('functional_tests/test_merino/modz.zscorepc')
+
+
+    def test_merino(self):
+        os.system(
+            'python merino_main.py -pd functional_tests/test_merino/ -cn test_build -bf functional_tests/test_merino/build')
 
 
 
