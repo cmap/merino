@@ -111,6 +111,8 @@ class TestMerino(unittest.TestCase):
 
 
     def test_weave(self):
+        if os.path.exists('functional_tests/test_merino/modz.zscorepc'):
+            shutil.rmtree('functional_tests/test_merino/modz.zscorepc')
         os.mkdir('functional_tests/test_merino/modz.zscorepc')
         weave.weave('functional_tests/test_merino/', 'test')
         assert os.path.isfile('functional_tests/test_merino/modz.zscorepc/test_CS0/test_CS0_MODZ.zscorepc.gct')

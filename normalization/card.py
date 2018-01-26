@@ -61,8 +61,10 @@ def reader_writer(input_file, output_file, function, check_size=False):
 
 def card(proj_dir, plate_name, log_tf=True, bad_wells=[]):
 
+    # Make Level 3 data folder
     if not os.path.exists(os.path.join(proj_dir, 'normalize')):
         os.mkdir(os.path.join(proj_dir, 'normalize'))
+
     # Get path to raw mfi
     assemble_path = os.path.join(proj_dir, 'assemble', plate_name, plate_name + '_MEDIAN.gct')
     # Get path to beadcount values
@@ -70,10 +72,10 @@ def card(proj_dir, plate_name, log_tf=True, bad_wells=[]):
     # Get path to LEVEL3 norm values
     norm_path = os.path.join(proj_dir, 'normalize', plate_name, plate_name + '_NORM.gct')
     # Set plate_failure variable to false
-    plate_failure=False
+    plate_failure = False
 
     if not os.path.exists(os.path.join(proj_dir, 'normalize', plate_name)):
-        # Create norm folder if it doesn't exist already
+        # Create norm folder for plate if it doesn't exist already
         os.mkdir(os.path.join(proj_dir, 'normalize', plate_name))
         # Create norm file
         reader_writer(assemble_path, norm_path, functools.partial(norm.normalize, log=log_tf))
@@ -113,17 +115,6 @@ def card(proj_dir, plate_name, log_tf=True, bad_wells=[]):
     return plate_failure
 
 
-def oldmain(proj_dir, search_pattern='*', log_tf=True, bad_wells=[]):
-    failure_list = []
-    for folder in glob.glob(os.path.join(proj_dir, 'assemble', search_pattern)):
-        name = os.path.basename(folder)
-        plate_failure = card(proj_dir, name, log_tf = log_tf, bad_wells=bad_wells)
-        if plate_failure == True:
-            failure_list.append(name)
-
-    print failure_list
-    pd.Series(failure_list).to_csv(os.path.join(proj_dir, 'failed_plates.txt'), sep='\t')
-
 def main(args):
     failure_list = []
     for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
@@ -144,4 +135,16 @@ if __name__ == "__main__":
     logger.debug("args:  {}".format(args))
 
     main(args)
+
+
+def oldmain(proj_dir, search_pattern='*', log_tf=True, bad_wells=[]):
+    failure_list = []
+    for folder in glob.glob(os.path.join(proj_dir, 'assemble', search_pattern)):
+        name = os.path.basename(folder)
+        plate_failure = card(proj_dir, name, log_tf = log_tf, bad_wells=bad_wells)
+        if plate_failure == True:
+            failure_list.append(name)
+
+    print failure_list
+    pd.Series(failure_list).to_csv(os.path.join(proj_dir, 'failed_plates.txt'), sep='\t')
 

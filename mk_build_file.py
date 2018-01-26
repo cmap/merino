@@ -17,6 +17,7 @@ import argparse
 import sys
 import ConfigParser
 import os
+import merino.build_summary.ssmd_analysis as ssmd
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -126,23 +127,24 @@ def main(args):
     build(count_path, count_out_path, '.gctx')
 
     inst_info = inst_data.col_metadata_df
+    inst_info['profile_id'] = inst_info.index
 
     for x in ['data_level', 'provenance']:
         del inst_info[x]
 
+    inst_info.set_index('profile_id', inplace=True)
     inst_info.to_csv(os.path.join(args.build_folder, 'inst_info.txt'), sep='\t')
 
-    jon = pd.DataFrame()
 
+    jon = pd.DataFrame()
     for y in glob.glob(os.path.join(args.proj_dir, 'modz.ZSPC', args.search_pattern, '*cc_q75.txt')):
 
         temp = pd.read_table(y)
 
         jon = jon.append(temp)
-
     jon.set_index('sig_id', inplace=True)
 
-    zspc_sig_info = zspc_sig_data.col_metadata_df.join(jon)
+    zspc_sig_info = jon.join(zspc_sig_data.col_metadata_df)
 
     for x in ['data_level', 'prism_replicate', 'det_well']:
         del zspc_sig_info[x]
@@ -164,6 +166,18 @@ def main(args):
         del fcpc_sig_info[x]
 
     fcpc_sig_info.to_csv(os.path.join(args.build_folder, args.cohort_name + '_MODZ.LFCPC_sig_metrics.txt'), sep='\t')
+
+    #Write out cell metadata (it is the same all the way through)
+    paths = glob.glob(os.path.join(args.proj_dir, 'normalize', args.search_pattern, '*.gct'))
+    cell_temp = pe(paths[0])
+    cell_temp.row_metadata_df.to_csv(os.path.join(args.build_folder, args.cohort_name + '_cell_info.txt'), sep='\t')
+
+    #Calculate SSMD matrix using paths that were just grabbed and write out
+    ssmd_mat = ssmd.ssmd_matrix(paths)
+    ssmd_mat.to_csv(os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.txt'), sep='\t')
+
+
+
 
 
 

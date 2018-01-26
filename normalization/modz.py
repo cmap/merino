@@ -59,7 +59,7 @@ def calculate_q75(spearman):
 def calculate_modz(gct_list, group_by='pert_well'):
 
     fields_to_remove = [x for x in gct_list[0].row_metadata_df.columns if x in ['det_plate', 'det_plate_scan_time', 'assay_plate_barcode']]
-    master_gct = cg.hstack(gct_list, fields_to_remove=fields_to_remove)
+    master_gct = cg.hstack(gct_list, False, None, fields_to_remove=fields_to_remove)
 
     #TODO Change to replicate set ID when we have it in assemble
     #TODO change prism_replicate to replicate_id in assemble
