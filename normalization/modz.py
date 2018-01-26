@@ -83,6 +83,7 @@ def calculate_modz(gct_list, group_by='pert_well'):
     #TODO Abstract out a method which just takes the GCT objects. Find a way to get rid of any field that doesn't match up in cg.hstack.
 
     for gv_val in groupby_vals:
+
         dex = master_gct.col_metadata_df[master_gct.col_metadata_df[group_by] == gv_val].index.tolist()
         mat = master_gct.data_df[dex]
 

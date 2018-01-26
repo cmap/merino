@@ -28,7 +28,11 @@ def ssmd_matrix(norm_paths, exclude_wells=[], log=True, outpath = ''):
     #ssmd_report.to_csv(outpath, sep='\t', index=False)
 
 
-def get_ssmd(df, exclude_wells = []):
+def get_ssmd(df, exclude_wells = [], log=False):
+
+    if log==True:
+        new_data = np.power(2, df.data_df)
+        df = GCToo.GCToo(data_df=new_data, col_metadata_df=df.col_metadata_df, row_metadata_df=df.row_metadata_df)
 
     neg_dex = df.col_metadata_df[df.col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
     pos_dex = df.col_metadata_df[(df.col_metadata_df['pert_type'] == 'trt_poscon')].index.tolist()

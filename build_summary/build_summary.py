@@ -9,10 +9,11 @@ import generic_heatmap as map
 import ssmd_analysis as ssmd
 import compound_strength as cp
 import comp_strength_overview as comp
-import expected_sensitivities as sense
+#import expected_sensitivities as sense
 import count_heatmap as c_map
 import matplotlib.pyplot as plt
 import numpy as np
+import sc_plot
 
 
 def main(proj_dir, out_dir):
@@ -47,13 +48,13 @@ def main(proj_dir, out_dir):
     modz_gct = pe(modz_path)
 
     print "Reading Metadata"
-    inst_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*inst_info*.txt'))[0], index_col='profile_id')
-    sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*sig_metrics_MODZ.ZSPC.txt'))[0], index_col='sig_id')
+    inst_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*inst_info*.txt'))[0], index_col='cid')
+    sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC_sig_metrics.txt'))[0], index_col='cid')
 
     reload(dist)
     reload(inv)
     reload(map)
-    reload(sense)
+
     print os.path.join(out_dir, 'modz_dist.png')
 
     if not os.path.exists(os.path.join(out_dir, 'sensitivities')):
@@ -78,10 +79,11 @@ def main(proj_dir, out_dir):
 
     reload(comp)
     comp.modz_dist(modz_gct, sig_info, [], os.path.join(out_dir, 'modz_dist.png'))
-    reload(dist)
     dist.distributions(norm_gct, mfi_gct, count_gct, zscore_gct, viability_gct, inst_info, os.path.join(out_dir))
 
     inv.invariant_monotonicity(mfi_gct, inst_info, out_dir)
+
+    sc_plot.sc_plot(sig_info, 'SS vs CCQ75', os.path.join(out_dir,'sc_modz.zspc.png'))
 
 
 
