@@ -28,10 +28,25 @@ def build_parser():
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
     parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data",
-                        action="store_true", default=True)
+                        action="store_false")
+    parser.add_argument("-inv_tf", "-inv", help="True or false, if true normalize to invariants",
+                        action="store_false")
+    parser.add_argument("-no_invariants", "-ni", help="True or false, if true log transform the data",
+                        action="store_true")
     parser.add_argument("-input_folder", "-if",
                         help="The directory from which to produce level 5 data.",
                         type=str, default='ZSPC', required=False)
+    parser.add_argument("-nprofile_drop", "-nd",
+                        help="Drop sigs from modZ with less than two profiles",
+                        action="store_false")
+    parser.add_argument("-davepool_combat", "-dc",
+                        help="Perform combat on the two detection plates - pertains to older data format",
+                        action="store_true")
+    parser.add_argument("-group_by", "-gb", help="Field(s) to group by for modZ", type=str,
+                        default='pert_well')
+    parser.add_argument("-skip", "-sk", help="Dictionary indicating which columns to exclude from the modZ calculation "
+                                             "eg. {'pert_type': ['ctl_vehicle', 'trt_poscon']}, to exclude controls",
+                        type=str,default=None)
 
     return parser
 

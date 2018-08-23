@@ -1,7 +1,7 @@
 import cut_to_l2
 import glob
 import sys
-import cmapPy.pandasGEXpress.concat_gctoo as cg
+import cmapPy.pandasGEXpress.concat as cg
 import cmapPy.pandasGEXpress.GCToo as GCToo
 import cmapPy.pandasGEXpress.parse as pe
 import cmapPy.pandasGEXpress.write_gctx as wg
@@ -45,20 +45,25 @@ def build_parser():
 
     return parser
 
-def build(search_pattern, outfile, file_suffix):
+def build(search_pattern, outfile, file_suffix, cut=True):
     gct_list = glob.glob(search_pattern)
     old_len = len(gct_list)
-    reload(cut_to_l2)
-    gct_list = cut_to_l2.cut_l1(gct_list)
+
+    if cut==True:
+        gct_list = cut_to_l2.cut_l1(gct_list)
+
     new_len = len(gct_list)
 
     print 'Number of old lysate plates removed = {}'.format(old_len - new_len)
+
+    if new_len == 0:
+        return
 
     gcts = []
     for gct in gct_list:
         if gct.endswith('X4'):
             continue
-        temp = pe(gct)
+        temp = pe.parse(gct)
         gcts.append(temp)
 
     for ct in gcts:
@@ -66,7 +71,9 @@ def build(search_pattern, outfile, file_suffix):
 
     fields_to_remove = [x for x in gcts[0].row_metadata_df.columns if
                         x in ['det_plate', 'det_plate_scan_time', 'assay_plate_barcode']]
-    concat_gct = cg.hstack(gcts, fields_to_remove=fields_to_remove)
+
+
+    concat_gct = cg.hstack(gcts, False, None, fields_to_remove=fields_to_remove)
 
     concat_gct_wo_meta = GCToo.GCToo(data_df = concat_gct.data_df, row_metadata_df = pd.DataFrame(index=concat_gct.data_df.index),
                                      col_metadata_df=pd.DataFrame(index=concat_gct.col_metadata_df.index))
@@ -83,20 +90,49 @@ def main(args):
     print modz_path
     modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.ZSPC_')
     print 'MODZ'
-    zspc_sig_data = build(modz_path,modz_out_path, '.gctx')
+    zspc_sig_data = build(modz_path,modz_out_path, '.gctx', cut=False)
+
+    cb_modz_path = os.path.join(args.proj_dir, 'modz.ZSPC.CB', args.search_pattern, '*.gct')
+    print cb_modz_path
+    cb_modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.ZSPC.CB_')
+    print 'MODZ'
+    cb_zspc_sig_data = build(cb_modz_path, cb_modz_out_path, '.gctx', cut=False)
 
     modz_path = os.path.join(args.proj_dir, 'modz.LFCPC', args.search_pattern, '*.gct')
     print modz_path
     modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LFCPC_')
     print 'MODZ'
-    fcpc_sig_data = build(modz_path,modz_out_path, '.gctx')
+    fcpc_sig_data = build(modz_path,modz_out_path, '.gctx', cut=False)
 
-    zscorepc_path = os.path.join(args.proj_dir, 'ZSPC', args.search_pattern, '*ZSPC.gct')
+    modz_path = os.path.join(args.proj_dir, 'modz.LFCPC.CB', args.search_pattern, '*.gct')
+    print modz_path
+    modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LFCPC.CB_')
+    print 'MODZ'
+    cb_fcpc_sig_data = build(modz_path, modz_out_path, '.gctx', cut=False)
+
+    modz_path = os.path.join(args.proj_dir, 'modz.LMEM.CB', args.search_pattern, '*.gct')
+    print modz_path
+    modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LMEM.CB_')
+    print 'MODZ'
+    cb_lfem_sig_data = build(modz_path, modz_out_path, '.gctx', cut=False)
+
+    modz_path = os.path.join(args.proj_dir, 'modz.LMEM.', args.search_pattern, '*.gct')
+    print modz_path
+    modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LMEM_')
+    print 'MODZ'
+    lfem_sig_data = build(modz_path, modz_out_path, '.gctx', cut=False)
+
+    zscorepc_path = os.path.join(args.proj_dir, 'ZSPC', args.search_pattern, '*ZSPC*.gct')
     zscorepc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_ZSPC_')
     print 'ZSPC'
     build(zscorepc_path, zscorepc_out_path, '.gctx')
 
-    zscorevc_path = os.path.join(args.proj_dir, 'ZSVC', args.search_pattern, '*ZSVC.gct')
+    zscorepc_path = os.path.join(args.proj_dir, 'ZSPC.CB', args.search_pattern, '*ZSPC*.gct')
+    zscorepc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_ZSPC.CB_')
+    print 'ZSPC.CB'
+    build(zscorepc_path, zscorepc_out_path, '.gctx')
+
+    zscorevc_path = os.path.join(args.proj_dir, 'ZSVC', args.search_pattern, '*.gct')
     zscorevc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_ZSVC_')
     print 'ZSVC'
     build(zscorevc_path, zscorevc_out_path, '.gctx')
@@ -106,15 +142,25 @@ def main(args):
     print 'LFCPC'
     build(viabilitypc_path, viabilitypc_out_path, '.gctx')
 
+    viabilitypc_path = os.path.join(args.proj_dir, 'LFCPC.CB', args.search_pattern, '*.gct')
+    viabilitypc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LFCPC.CB_')
+    print 'LFCPC'
+    build(viabilitypc_path, viabilitypc_out_path, '.gctx')
+
+    viabilitypc_path = os.path.join(args.proj_dir, 'LMEM.CB', args.search_pattern, '*.gct')
+    viabilitypc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LMEM.CB_')
+    print 'LMEM'
+    build(viabilitypc_path, viabilitypc_out_path, '.gctx')
+
     viabilityvc_path = os.path.join(args.proj_dir, 'LFCVC', args.search_pattern, '*.gct')
     viabilityvc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LFCVC_')
     print 'LFCVC'
     build(viabilityvc_path, viabilityvc_out_path, '.gctx')
 
-    norm_path = os.path.join(args.proj_dir, 'normalize', args.search_pattern, '*NORM.gct')
+    norm_path = os.path.join(args.proj_dir, 'normalize', args.search_pattern, '*.gct')
     norm_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL3_NORM_')
     print 'NORM'
-    build(norm_path, norm_out_path, '.gctx')
+    norm_data = build(norm_path, norm_out_path, '.gctx')
 
     mfi_path = os.path.join(args.proj_dir, 'assemble', args.search_pattern, '*MEDIAN.gct')
     mfi_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL2_MFI_')
@@ -133,9 +179,22 @@ def main(args):
         del inst_info[x]
 
     inst_info.set_index('profile_id', inplace=True)
-    inst_info.to_csv(os.path.join(args.build_folder, 'inst_info.txt'), sep='\t')
+    inst_info['is_well_failure'] = False
+    inst_info.loc[[x for x in inst_info.index if x not in norm_data.data_df.columns], 'is_well_failure'] = True
+    inst_info.to_csv(os.path.join(args.build_folder, args.cohort_name + '_inst_info.txt'), sep='\t')
+
+    ################################################################################
+
+    paths = glob.glob(os.path.join(args.proj_dir, 'normalize', args.search_pattern, '*.gct'))
+    cell_temp = pe.parse(paths[0])
+    cell_temp.row_metadata_df.to_csv(os.path.join(args.build_folder, args.cohort_name + '_cell_info.txt'), sep='\t')
+
+    #Calculate SSMD matrix using paths that were just grabbed and write out
+    ssmd_mat = ssmd.ssmd_matrix(paths)
+    ssmd_mat.to_csv(os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.txt'), sep='\t')
 
 
+    ###################################################################################
     jon = pd.DataFrame()
     for y in glob.glob(os.path.join(args.proj_dir, 'modz.ZSPC', args.search_pattern, '*cc_q75.txt')):
 
@@ -150,7 +209,7 @@ def main(args):
         del zspc_sig_info[x]
 
     zspc_sig_info.to_csv(os.path.join(args.build_folder, args.cohort_name + '_MODZ.ZSPC_sig_metrics.txt'), sep='\t')
-
+    ################################################################################
     jon = pd.DataFrame()
 
     for y in glob.glob(os.path.join(args.proj_dir, 'modz.LFCPC', args.search_pattern, '*cc_q75.txt')):
@@ -160,25 +219,70 @@ def main(args):
 
     jon.set_index('sig_id', inplace=True)
 
-    fcpc_sig_info = fcpc_sig_data.col_metadata_df.join(jon)
+    fcpc_sig_info = jon.join(fcpc_sig_data.col_metadata_df)
 
     for x in ['data_level', 'prism_replicate', 'det_well']:
         del fcpc_sig_info[x]
 
     fcpc_sig_info.to_csv(os.path.join(args.build_folder, args.cohort_name + '_MODZ.LFCPC_sig_metrics.txt'), sep='\t')
 
-    #Write out cell metadata (it is the same all the way through)
-    paths = glob.glob(os.path.join(args.proj_dir, 'normalize', args.search_pattern, '*.gct'))
-    cell_temp = pe(paths[0])
-    cell_temp.row_metadata_df.to_csv(os.path.join(args.build_folder, args.cohort_name + '_cell_info.txt'), sep='\t')
+    #####################################################
+    jon = pd.DataFrame()
 
-    #Calculate SSMD matrix using paths that were just grabbed and write out
-    ssmd_mat = ssmd.ssmd_matrix(paths)
-    ssmd_mat.to_csv(os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.txt'), sep='\t')
+    for y in glob.glob(os.path.join(args.proj_dir, 'modz.LFCPC.CB', args.search_pattern, '*cc_q75.txt')):
+        temp = pd.read_table(y)
+
+        jon = jon.append(temp)
+
+    jon.set_index('sig_id', inplace=True)
+
+    fcpc_sig_info_cb = jon.join(cb_fcpc_sig_data.col_metadata_df)
+
+    for x in ['data_level', 'prism_replicate', 'det_well']:
+        del fcpc_sig_info_cb[x]
+
+    fcpc_sig_info_cb.drop(fcpc_sig_info_cb[fcpc_sig_info_cb['nprofile'] < 2].index, inplace=True)
 
 
+    fcpc_sig_info_cb.to_csv(os.path.join(args.build_folder, args.cohort_name + '_MODZ.LFCPC.CB_sig_metrics.txt'), sep='\t')
 
+    ####################################################################
 
+    ###################################################################################
+    jon = pd.DataFrame()
+    for y in glob.glob(os.path.join(args.proj_dir, 'modz.ZSPC.CB', args.search_pattern, '*cc_q75.txt')):
+
+        temp = pd.read_table(y)
+
+        jon = jon.append(temp)
+    jon.set_index('sig_id', inplace=True)
+
+    zspc_sig_info_cb = jon.join(cb_zspc_sig_data.col_metadata_df)
+
+    for x in ['data_level', 'prism_replicate', 'det_well']:
+        del zspc_sig_info_cb[x]
+
+    zspc_sig_info_cb.drop(zspc_sig_info_cb[zspc_sig_info_cb['nprofile'] < 2].index, inplace=True)
+
+    zspc_sig_info_cb.to_csv(os.path.join(args.build_folder, args.cohort_name + '_MODZ.ZSPC.CB_sig_metrics.txt'), sep='\t')
+
+    ###################################################################################
+    jon = pd.DataFrame()
+    for y in glob.glob(os.path.join(args.proj_dir, 'modz.LMEM.CB', args.search_pattern, '*cc_q75.txt')):
+        temp = pd.read_table(y)
+        jon = jon.append(temp)
+
+    jon.set_index('sig_id', inplace=True)
+
+    lfem_sig_info_cb = jon.join(cb_lfem_sig_data.col_metadata_df)
+
+    for x in ['data_level', 'prism_replicate', 'det_well']:
+        del lfem_sig_info_cb[x]
+
+    lfem_sig_info_cb.drop(lfem_sig_info_cb[lfem_sig_info_cb['nprofile'] < 2].index, inplace=True)
+
+    lfem_sig_info_cb.to_csv(os.path.join(args.build_folder, args.cohort_name + '_MODZ.LMEM.CB_sig_metrics.txt'),
+                            sep='\t')
 
 
 if __name__ == "__main__":

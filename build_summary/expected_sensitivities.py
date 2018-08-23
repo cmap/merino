@@ -1,4 +1,4 @@
-import cmap.io.gmt as gmt
+import pestle.cmap.io.gmt as gmt
 import merino.compute_wtcs as compute_wtcs
 import merino.plot_enrichment_score as plot_enrichment_score
 import pandas as pd
@@ -8,23 +8,51 @@ import matplotlib.pyplot as plt
 import numpy as np
 import bisect
 from statsmodels.distributions.empirical_distribution import ECDF
+import merino.setup_logger as setup_logger
+import logging
+import argparse
+import sys
+
+logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 invariants = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670', '671', '672', '673', '674', '675', '676', '677', '678', '679', '680']
 
+def build_parser():
+
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # The following arguments are required. These are files that are necessary for assembly and which change
+    # frequently between cohorts, replicates, etc.
+    parser.add_argument("-gct",  help="path to data file",
+                        type=str, required=True)
+    parser.add_argument("-meta", "-m", help="path to metadata file",
+                        type=str, required=True)
+    parser.add_argument("-out", "-o",
+                        help="Our folder for results",
+                        type=str, required=True)
+    parser.add_argument("-sense", "-s",
+                        help="Path to expected sensitivity gmt if required",
+                        type=str, default=None, required=False)
+    parser.add_argument("-prefix_name", "-pref",
+                        help="Column name for weave_prefix/prism_replicate",
+                        type=str, default='weave_prefix',required=False)
+    parser.add_argument("-index_col", "-ind",
+                        help="Column name for index - sig_id/profile_id",
+                        type=str, default='sig_id', required=False)
+    parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
+
+
+    return parser
 
 def reformat_gmt(gmt):
 
     sense = {}
     for x in gmt:
-        sense[x['desc']] = x['sig']
+        sense[x['id']] = x['sig']
 
     return sense
 
 
 def make_sqi_map(sensitivity_map, col_meta, data):
-
-
-
     s_qi_map = {}
 
     for key in sensitivity_map:
@@ -38,6 +66,8 @@ def make_sqi_map(sensitivity_map, col_meta, data):
                     s_value = s_value[~s_value.index.isin(invariants)]
 
                     if s_value.shape[1] != 1:
+                        import pdb
+                        pdb.set_trace()
                         raise Exception('S Value has more than one column, should correspond to a single well')
 
                     s_value = s_value.iloc[:,0]
@@ -51,20 +81,20 @@ def make_sqi_map(sensitivity_map, col_meta, data):
     return s_qi_map
 
 
-def wtks(gct, metadata, outfolder, gmt_path='../full_sensitivities.gmt'):
+def wtks(gct, metadata, outfolder, gmt_path='/Users/elemire/Workspace/merino/full_sensitivities.gmt', group_col='weave_prefix'):
     gmt_file = gmt.read(gmt_path)
 
     sensitivity_map = reformat_gmt(gmt_file)
 
+    metadata = metadata.loc[gct.data_df.columns]
 
     expected_sensitivity_ranks = []
 
     print 'meta'
     print 'data'
 
-    for rep in metadata['weave_prefix'].unique():
+    for rep in metadata[group_col].dropna().unique():
 
-        print rep
 
         if not os.path.exists(os.path.join(outfolder, rep)):
             os.mkdir(os.path.join(outfolder, rep))
@@ -73,7 +103,7 @@ def wtks(gct, metadata, outfolder, gmt_path='../full_sensitivities.gmt'):
 
         rep_folder = os.path.join(outfolder, rep)
 
-        ids = metadata[metadata['weave_prefix'] == rep].index
+        ids = metadata[metadata[group_col] == rep].index
 
         data = gct.data_df[ids]
 
@@ -151,8 +181,7 @@ def wtks(gct, metadata, outfolder, gmt_path='../full_sensitivities.gmt'):
                     mark = bisect.bisect_left(ecdf.x, sensitivity_score)
                     if mark == len(ecdf.y):
                         mark -= 1
-
-                    marks[col_meta[col_meta['pert_id'] == key.split('_')[0]]['pert_iname'][0] + '_' + key.split('_')[1] + '_' + key.split('_')[2]] = mark
+                    marks[col_meta[col_meta['pert_id'] == key.split('_')[0]]['pert_iname'][0] + '_' + str(key.split('_')[1])] = mark
 
                     poscons_x = []
                     poscons_y = []
@@ -204,4 +233,21 @@ def wtks(gct, metadata, outfolder, gmt_path='../full_sensitivities.gmt'):
     summary.set_index('det_plate', inplace=True)
 
     summary.to_csv(os.path.join(outfolder, 'expected_sensitivity_ranks.txt'), sep='\t')
+
+
+def main(args):
+    data = pe.parse(args.gct)
+    meta = pd.read_table(args.meta, index_col=args.index_col)
+    if args.sense is not None:
+        wtks(data, meta, args.out, args.sense)
+    else:
+        wtks(data, meta, args.out)
+
+if __name__ == "__main__":
+    args = build_parser().parse_args(sys.argv[1:])
+    setup_logger.setup(verbose=args.verbose)
+
+    logger.debug("args:  {}".format(args))
+
+    main(args)
 

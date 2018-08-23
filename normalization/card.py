@@ -3,10 +3,11 @@ import viability_normalization as viability
 import zscore
 import os
 import glob
-import modz
+import distil
 import merino.cut_to_l2
+import sys
+sys.path.append('/Users/elemire/Workspace/cmapPy')
 import cmapPy.pandasGEXpress.write_gct as wgx
-import cmapPy.pandasGEXpress.parse as pe
 import functools
 import shear
 import pandas as pd
@@ -15,6 +16,8 @@ import logging
 import argparse
 import sys
 import ConfigParser
+
+import cmapPy.pandasGEXpress.parse as pe
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -42,7 +45,7 @@ def build_parser():
 def reader_writer(input_file, output_file, function, check_size=False):
     plate_failure = False
     # Read in input file
-    gctoo = pe(input_file)
+    gctoo = pe.parse(input_file)
     # Call normalizing function on gctoo
     new_gctoo = function(gctoo)
 
@@ -53,13 +56,13 @@ def reader_writer(input_file, output_file, function, check_size=False):
         plate_failure = True
 
     # write out new gctoo
-    wgx.write_gct(new_gctoo, out_fname=output_file)
+    wgx.write(new_gctoo, out_fname=output_file)
     print output_file
 
     return plate_failure
 
 
-def card(proj_dir, plate_name, log_tf=True, bad_wells=[]):
+def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False):
 
     # Make Level 3 data folder
     if not os.path.exists(os.path.join(proj_dir, 'normalize')):
@@ -77,10 +80,15 @@ def card(proj_dir, plate_name, log_tf=True, bad_wells=[]):
     if not os.path.exists(os.path.join(proj_dir, 'normalize', plate_name)):
         # Create norm folder for plate if it doesn't exist already
         os.mkdir(os.path.join(proj_dir, 'normalize', plate_name))
+
         # Create norm file
-        reader_writer(assemble_path, norm_path, functools.partial(norm.normalize, log=log_tf))
+        if dp == True:
+            reader_writer(assemble_path, norm_path, norm.no_inv_norm)
+        else:
+            reader_writer(assemble_path, norm_path, functools.partial(norm.normalize, log=log_tf, inv=inv_tf))
+
         # Read in count file
-        count_gctoo = pe(count_path)
+        count_gctoo = pe.parse(count_path)
         # Remove low bead count wells and check GCT size, if too many wells have been stripped it will qualify as a failure
         plate_failure = reader_writer(norm_path, norm_path, functools.partial(norm.remove_low_bead_wells, count_gct=count_gctoo), check_size=True)
         # Shear predetermined bad wells (if any exist)
@@ -90,14 +98,14 @@ def card(proj_dir, plate_name, log_tf=True, bad_wells=[]):
     # Map denoting each type of LEVEL4 data, its folder name, the function to create it, and the file ending.
         lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
                      'ZSPC': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
-                     'LFCPC': [functools.partial(viability.log_viability, plate_control=True), '_FCPC.gct'],
+                     'LFCPC': [functools.partial(viability.log_viability, plate_control=True, log=True), '_FCPC.gct'],
                      'LFCVC': [viability.log_viability, '_FCVC.gct']}
 
     else:
         lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
                          'ZSPC': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
-                         'LFCPC': [functools.partial(viability.calculate_viability, plate_control=True), '_FCPC.gct'],
-                         'LFCVC': [viability.calculate_viability, '_FCVC.gct']}
+                         'LFCPC': [functools.partial(viability.log_viability, plate_control=True, log=False), '_FCPC.gct'],
+                         'LFCVC': [functools.partial(viability.log_viability, plate_control=False, log=False), '_FCVC.gct']}
 
     # Loop through this map to output all level 4 data
     for x in lvl4_card_map.keys():
@@ -120,7 +128,7 @@ def main(args):
     for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
         name = os.path.basename(folder)
         print name
-        plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, bad_wells=args.bad_wells)
+        plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
         if plate_failure == True:
             failure_list.append(name)
 

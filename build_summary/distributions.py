@@ -20,7 +20,11 @@ def distributions(norm_gct,median_gct,count_gct, zscore_gct,viability_gct, col_m
     norm_data.replace([np.inf, -np.inf], np.nan, inplace=True)
 
     norm_data.dropna(inplace=True)
-    norm_bins = np.linspace(-10, max(norm_data), 100)
+    try:
+        norm_bins = np.linspace(-10, max(norm_data), 100)
+    except:
+        import pdb
+        pdb.set_trace()
 
     # Matplotlib Histogram
     n, bins, patches = plt.hist(norm_data, norm_bins, facecolor='green', alpha=1)

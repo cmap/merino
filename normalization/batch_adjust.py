@@ -13,17 +13,17 @@ import logging
 import multiprocessing as mp
 import numpy as np
 
-import normalization.combat as combat
-import setup_logger
+import merino.normalization.combat as combat
+import merino.setup_logger as setup_logger
 import cmapPy.pandasGEXpress.parse as pe
 import cmapPy.pandasGEXpress.write_gct as wg
-import cmapPy.pandasGEXpress.concat_gctoo as cg
+import cmapPy.pandasGEXpress.concat as cg
 import cmapPy.set_io.grp as grp
 # handle cmapPy version differences for subsetting gcts
 try:
     from cmapPy.pandasGEXpress.subset_gctoo import subset_gctoo as gct_slice
 except ImportError:
-    from cmapPy.pandasGEXpress.slice_gctoo import slice_gctoo as gct_slice
+    import cmapPy.pandasGEXpress.slice_gctoo as gct_slice
 
 
 LOGGER = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -36,6 +36,7 @@ def data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch):
     nbatch = len(batches.unique())
     LOGGER.info('Splitting dataset by %s into %d groups' % (col_group, len(col_groups)))
     LOGGER.info('Batch field %s has %d levels' % (batch_field, nbatch))
+    print 'here'
     
     for _, key in enumerate(sorted(col_groups)):
         this_gp = all_ds.data_df[col_groups[key]].copy()
@@ -57,9 +58,11 @@ def combat_worker(df_long):
     dataframe adjusted values """
 
     # handle missing values
+
     to_use = df_long.loc['value'].notnull().values
     vals = df_long.loc[['value', 'dummy'], to_use]
     batch = df_long.loc[['batch'], to_use].squeeze()
+
     adj = combat.combat(vals, batch)
     df_long.loc[['value'], to_use] = adj.loc[['value']]
     # reshape results
@@ -89,22 +92,30 @@ def combat_by_group(gct_list, col_group='pert_well', batch_field='pool_id',
         subsets of all_ds that match gct_list
     """
     # concatenate replicate datasets by column
-    all_ds = cg.hstack(gct_list, remove_all_metadata_fields=False,
-                       error_report_file=None, fields_to_remove=None)
+    print 'here'
+    fields_to_remove = [x for x in gct_list[0].row_metadata_df.columns if
+                        x in ['det_plate', 'det_plate_scan_time', 'assay_plate_barcode']]
+    all_ds = cg.hstack(gct_list, remove_all_metadata_fields=False,error_report_file=None, fields_to_remove=fields_to_remove)
+
 
     # column groups
     #col_groups = all_ds.col_metadata_df.groupby(col_group).groups
     #row_groups = all_ds.row_metadata_df[row_group]
 
     pool = mp.Pool(processes=mp.cpu_count())
+
+
+
     chunks = data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch)
+
     adjusted_data = pool.map(combat_worker, chunks)
+
     for res in adjusted_data:
         all_ds.data_df[res.columns] = res
 
     adj_list = []
     for dummy, input_ds in enumerate(gct_list):
-        this_ds = gct_slice(all_ds, rid=input_ds.data_df.index, cid=input_ds.data_df.columns)
+        this_ds = gct_slice(all_ds, rid=input_ds.data_df.index.tolist(), cid=input_ds.data_df.columns.tolist())
         this_ds.src = input_ds.src
         adj_list.append(this_ds)
 

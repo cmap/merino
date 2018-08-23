@@ -23,8 +23,9 @@ def spearmanwrapper(sequence):
 
 def extract_invariants(gctoo):
 
-    #invariants = [str(x) for x in range(661,671)]
-    invariants = range(661,671)
+    invariants = [str(x) for x in range(661,671)]
+    #invariants = [str(x) for x in range(661, 665)]
+    #invariants = range(661,671)
 
     invs = gctoo.data_df.loc[invariants]
 
@@ -118,7 +119,7 @@ def invariant_curves_plot(df, col_metadata_df, outfile):
     inv_df = extract_invariants(df)
 
     neg_dex = col_metadata_df[col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
-    pos_dex = col_metadata_df[(col_metadata_df['pert_iname'] == 'Bortezomib') | (col_metadata_df['pert_iname'] == 'MG-132')].index.tolist()
+    pos_dex = col_metadata_df[(col_metadata_df['pert_type'] == 'trt_poscon') | (col_metadata_df['pert_iname'] == 'MG-132')].index.tolist()
 
     dmso_invariants = inv_df.data_df[neg_dex]
     poscon_invariants = inv_df.data_df[pos_dex]

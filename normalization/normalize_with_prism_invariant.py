@@ -1,6 +1,7 @@
 import cmapPy.pandasGEXpress.parse as parse
 import cmapPy.pandasGEXpress.GCToo as GCToo
 import numpy as np
+import pandas as pd
 
 # TODO add to metadata
 invariant_rids = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670']
@@ -10,8 +11,8 @@ def normalize(mfi_gctoo, log=True, inv=True):
     # Level 2-3 Normalization based on prism invariant
 
     #mfi_gctoo = remove_low_bead_wells(mfi_gctoo, count_gctoo)
-
-    mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
+    #if inv is True:
+    #    mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
 
     mfi_gctoo.data_df[mfi_gctoo.data_df < 1] = 1
     data_df = mfi_gctoo.data_df
@@ -62,6 +63,7 @@ def remove_outlier_invariants(gctoo):
 
     #bad_wells = invdata.median()[invdata.median() < dmso_inv.median().quantile(0.005)].index
 
+
     bad_wells = invdata.median()[invdata.median() < 600].index
 
     data = gctoo.data_df.drop(bad_wells, axis=1)
@@ -110,3 +112,38 @@ def dp_normalize(filepath, outfile):
     my_gctoo = GCToo.GCToo(data_df=recombine, row_metadata_df=df.row_metadata_df, col_metadata_df=df.col_metadata_df)
 
     #write_gct.write(my_gctoo, outfile)
+
+
+def no_inv_norm(mfi_gctoo, log=True, inv=True):
+    mfi_gctoo.data_df[mfi_gctoo.data_df < 1] = 1
+    log_data = np.log2(mfi_gctoo.data_df)
+
+    dp_data = []
+
+    for x in mfi_gctoo.row_metadata_df['davepool_id'].unique():
+
+        temp = log_data.loc[mfi_gctoo.row_metadata_df[mfi_gctoo.row_metadata_df['davepool_id'] == x].index]
+
+        medians = temp.median()
+        group1_dex = medians[medians < np.log2(1500)].index
+        group2_dex = medians[medians >= np.log2(1500)].index
+
+        group1_data = temp.loc[:, group1_dex]
+        group2_data = temp.loc[:, group2_dex]
+
+
+        group1_norm = group1_data - 14.2551
+        group2_norm = group2_data.subtract(group2_data.median(), axis='columns')
+
+        norm_data = pd.concat([group1_norm, group2_norm], axis=1)
+
+        dp_data.append(norm_data)
+
+    concat_data = pd.concat(dp_data, axis=0)
+
+    concat_data = concat_data.loc[mfi_gctoo.data_df.index,mfi_gctoo.data_df.columns]
+
+    norm_gct = GCToo.GCToo(data_df=concat_data, row_metadata_df=mfi_gctoo.row_metadata_df,
+                           col_metadata_df=mfi_gctoo.col_metadata_df)
+
+    return norm_gct
