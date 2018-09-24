@@ -78,10 +78,13 @@ def build_data_by_cell(cells, davepool_data_obj):
     cell_to_count_data_map = {}
     count_wells = []
 
-    l = [(cell_to_median_data_map, median_wells, davepool_data_obj.median_headers, davepool_data_obj.median_data),
+    ld = [(cell_to_median_data_map, median_wells, davepool_data_obj.median_headers, davepool_data_obj.median_data),
         (cell_to_count_data_map, count_wells, davepool_data_obj.count_headers, davepool_data_obj.count_data)]
 
-    for (cell_data_map, wells, headers, data) in l:
+
+
+    for (cell_data_map, wells, headers, data) in ld:
+
         cell_header_map = {}
         for c in cells:
             if c.ignore == False:
@@ -122,7 +125,6 @@ def process_data(davepool_data_objects, davepool_id_to_cells_map):
     authoritative_well_list = []
     all_median_data_by_cell = DataByCell(cell_data_map={})
     all_count_data_by_cell = DataByCell(cell_data_map={})
-
     for dd in davepool_data_objects:
         cells = davepool_id_to_cells_map[dd.davepool_id]
         logger.debug("pools:  {}".format(cells))
@@ -226,6 +228,7 @@ def build_gctoo_data_df(cell_id_data_map, data_df_column_ids):
 def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects, prism_cell_list):
 
     # Build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
+
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
     # Put all the data in gct-able form

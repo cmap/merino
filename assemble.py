@@ -32,19 +32,15 @@ def build_parser():
     # frequently between cohorts, replicates, etc.
     parser.add_argument("-prism_replicate_name", "-prn", help="name of the prism replicate that is being processed",
                         type=str, required=True)
-    parser.add_argument("-plates_mapping_path", "-ptp",
-                        help="path to file containing the mapping between assasy plates and det plates",
-                        type=str, required=False)
     parser.add_argument("-davepool_mapping_file", "-dmf", help="mapping of analytes to pools and davepools",
+                        type=str, required=False)
+    parser.add_argument("-assay_type", "-at", help="assay data comes from eg. PR500, PR300, KJ100",
                         type=str, required=True)
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
-    parser.add_argument("-davepool_id_csv_filepath_pairs", "-dp_csv",
-                        help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
-                        type=str, nargs="+", required=True)
     parser.add_argument("-cell_set_definition_file", "-csdf",
                         help="file containing cell set definition to use, overriding config file",
-                        type=str, default=None, required=True)
+                        type=str, default=None, required=False)
     # These arguments are optional. Some may be superfluous now and might be removed.
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
@@ -55,8 +51,27 @@ def build_parser():
                         default='')
     parser.add_argument("-truncate_to_plate_map", "-trunc", help="True or false, if true truncate data to fit framework of platemap provided",
                         action="store_true", default=False)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-davepool_id_csv_filepath_pairs", "-dp_csv",
+                        help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
+                        type=str, nargs="+", required=False)
+    group.add_argument("-csv_filepath", "-csv",
+                        help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
+                        type=str, nargs="+", required=False)
 
     return parser
+
+_cellset_dict_ = {'PR500': '/Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_PR500.CS5_definition.txt',
+                 'PR300': '/Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_PR300.CS1_definition.txt',
+                 'KJ100': '/Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_KJ100.CS5_definition.txt',
+                 'DP7DP8': '/Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_DP78.CS1_definition.txt'}
+
+_analyte_mapping_dict_ = {'PR500': '/Volumes/cmap/data/vdb/PRISM/analyte_mapping/PR500_mapping.txt',
+                         'PR300': '/Volumes/cmap/data/vdb/PRISM/analyte_mapping/PR300_mapping.txt',
+                         'KJ100': '/Volumes/cmap/data/vdb/PRISM/analyte_mapping/KJ100_mapping.txt',
+                         'DP7DP8': '/Volumes/cmap/data/vdb/PRISM/analyte_mapping/DP78_mapping.txt'}
+
+
 
 
 def parse_location_to_well(location):
@@ -76,9 +91,19 @@ def read_davepool_data_objects(davepool_id_csv_list):
     :return:
     '''
     r = []
+
     for (dp_id, csv_filepath) in davepool_id_csv_list:
         pd = davepool_data.read_data(csv_filepath)
         pd.davepool_id = dp_id
+        r.append(pd)
+
+    return r
+
+def read_csv(csv_list, assay_type):
+    r = []
+    for csv_filepath in csv_list:
+        pd = davepool_data.read_data(csv_filepath)
+        pd.davepool_id = assay_type
         r.append(pd)
 
     return r
@@ -106,6 +131,7 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
     :return:
     '''
     r = []
+
     for i in range(len(davepool_id_csv_filepath_pairs)/2):
         index = 2*i
         davepool_id = davepool_id_csv_filepath_pairs[index]
@@ -115,7 +141,7 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
     return r
 
 
-def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_file, davepool_mapping_file):
+def build_prism_cell_list(config_filepath, cell_set_definition_file, davepool_mapping_file):
     '''
     read PRISM cell line meta data from file specified in config file (at config_filepath), then associate with
     assay_plate based on pool ID.  Check for cell pools that are not associated with any assay plate
@@ -135,17 +161,12 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
 
     davepool_mapping = prism_metadata.read_prism_cell_from_file(davepool_mapping_file, davepool_mapping_items)
 
-    pool_id_assay_plate_map = {}
-
-    for ap in assay_plates:
-        pool_id_assay_plate_map[ap.pool_id] = ap
-
-    pool_id_without_assay_plate = set()
     cell_list_id_not_in_davepool_mapping = set()
 
     # Assign davepool mapping info to respective cell IDs
 
     cell_id_davepool_map = {}
+
     for dp in davepool_mapping:
         cell_id_davepool_map[dp.id] = dp
 
@@ -158,29 +179,7 @@ def build_prism_cell_list(config_filepath, assay_plates, cell_set_definition_fil
                 raise Exception ("Cell set pool id does not match davepool mapping pool id at cell id {}".format(pc.id))
         else:
             cell_list_id_not_in_davepool_mapping.add(pc.id)
-        if pc.pool_id in pool_id_assay_plate_map.keys():
-            assay_plate = pool_id_assay_plate_map[pc.pool_id]
-            pc.assay_plate_barcode = assay_plate.assay_plate_barcode
-            pc.det_plate = assay_plate.det_plate
-            pc.det_plate_scan_time = assay_plate.det_plate_scan_time
-            pc.ignore = assay_plate.ignore
-        elif pc.pool_id == '-666':
-            assay_plate = pool_id_assay_plate_map[pc.pool_id]
-            pc.assay_plate_barcode = assay_plate.assay_plate_barcode
-            pc.det_plate = assay_plate.det_plate
-            pc.det_plate_scan_time = assay_plate.det_plate_scan_time
-            pc.ignore = assay_plate.ignore
-        else:
-            pool_id_without_assay_plate.add(pc.pool_id)
 
-
-    if len(pool_id_without_assay_plate) > 0:
-        pool_id_without_assay_plate = list(pool_id_without_assay_plate)
-        pool_id_without_assay_plate.sort()
-        message1 = ("some pools were not found in the list of assay plates - pool_id_without_assay_plate:  {}".format(
-            pool_id_without_assay_plate))
-        logger.error(message1)
-        #raise Exception ("assemble build_prism_cell_list " + message1)
     if len(cell_list_id_not_in_davepool_mapping) > 0:
         cell_list_id_not_in_davepool_mapping = list(cell_list_id_not_in_davepool_mapping)
         cell_list_id_not_in_davepool_mapping.sort()
@@ -227,7 +226,6 @@ def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objec
 def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, truncate_to_platemap):
 
     platemap_well_list = set([p.well_id for p in all_perturbagens])
-
     for davepool in davepool_data_objects:
         if platemap_well_list == set(davepool.median_data.keys()):
             return davepool_data_objects
@@ -254,17 +252,19 @@ def main(args, all_perturbagens=None, assay_plates=None):
     args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
 
     #read actual data from relevant csv files, associate it with davepool ID
-    davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
-    davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
-    #read assay plate meta data relevant to current set of csv files / davepools
-    if assay_plates is None:
+    if args.davepool_id_csv_filepath_pairs is not None:
+        davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
+        davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
-        assay_plates = build_assay_plates(args.plates_mapping_path, args.config_filepath, davepool_data_objects, args.ignore_assay_plate_barcodes)
+    elif args.csv_filepath is not None:
+        davepool_id_csv_list = args.csv_filepath
+        davepool_data_objects = read_csv(davepool_id_csv_list, args.assay_type)
 
-    logger.info("len(assay_plates):  {}".format(len(assay_plates)))
+
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
-    prism_cell_list = build_prism_cell_list(args.config_filepath, assay_plates, args.cell_set_definition_file, args.davepool_mapping_file)
+    prism_cell_list = build_prism_cell_list(args.config_filepath, _cellset_dict_[args.assay_type], _analyte_mapping_dict_[args.assay_type])
+
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
     # truncate csv to plate map size if indicated by args.truncate_to_plate_map
