@@ -88,12 +88,13 @@ def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
             gb = [x for x in args.group_by.split(',')]
 
             if args.davepool_combat == True:
-                print 'here'
                 all_ds, pre_list = batch_adjust.combat_by_group(gct_list, col_group=gb, batch_field='davepool_id')
                 all_ds, adj_list = batch_adjust.combat_by_group(pre_list, col_group=gb, batch_field='pool_id')
 
             else:
+                print 'here'
                 all_ds, adj_list = batch_adjust.combat_by_group(gct_list, col_group=gb, batch_field='pool_id')
+                print adj_list[0].data_df.shape
 
             new_list = []
             for g in adj_list:
@@ -111,8 +112,8 @@ def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
 
                 wg.write(thing, os.path.join(proj_dir, input_folder + '.CB', replicate_name, replicate_name + '_' + input_folder + '.CB.gct'))
 
-            if len(keep_files) < 2:
-                return
+            #if len(keep_files) < 2:
+            #    return
 
             if args.skip is not None:
                 modZ_GCT, cc_q75_df, weights = distil.calculate_modz(gct_list, group_by=gb, skip=json.loads(args.skip))

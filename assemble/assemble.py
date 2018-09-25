@@ -5,7 +5,7 @@ along with all of the relevant meta data.
 
 The meta data inputs are a plate map, a cell set definition file, a plate tracking file, and a davepool-analyte mapping.
 """
-import setup_logger
+import merino.setup_logger as setup_logger
 import logging
 import davepool_data
 import prism_metadata

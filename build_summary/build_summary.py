@@ -73,15 +73,15 @@ def main(proj_dir, out_dir, invar=True, sense=False):
     fcvc_gct = pe.parse(fcvc_path)
 
     print "Reading LEVEL5 Data"
-    modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC_*.gctx'))[0]
-    modz_gct = pe.parse(modz_path)
+    #modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC_*.gctx'))[0]
+    #modz_gct = pe.parse(modz_path)
 
-    cb_modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC.CB_*.gctx'))[0]
-    cb_modz_gct = pe.parse(cb_modz_path)
+    #cb_modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC.CB_*.gctx'))[0]
+    #cb_modz_gct = pe.parse(cb_modz_path)
 
     print "Reading Metadata"
     inst_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*inst_info*.txt'))[0], index_col='profile_id')
-    sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC_sig_metrics.txt'))[0], index_col='sig_id')
+    #sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC_sig_metrics.txt'))[0], index_col='sig_id')
     cell_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*cell_info*.txt'))[0], index_col='rid')
     ssmd_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*ssmd*.txt'))[0], index_col='rid')
 

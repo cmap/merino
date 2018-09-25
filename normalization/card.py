@@ -4,7 +4,7 @@ import zscore
 import os
 import glob
 import distil
-import merino.cut_to_l2
+import merino.misc_tools.cut_to_l2
 import sys
 sys.path.append('/Users/elemire/Workspace/cmapPy')
 import cmapPy.pandasGEXpress.write_gct as wgx

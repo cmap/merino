@@ -239,9 +239,9 @@ def main(args):
     data = pe.parse(args.gct)
     meta = pd.read_table(args.meta, index_col=args.index_col)
     if args.sense is not None:
-        wtks(data, meta, args.out, args.sense)
+        wtks(data, meta, args.out, args.sense, group_col=args.prefix_name)
     else:
-        wtks(data, meta, args.out)
+        wtks(data, meta, args.out, group_col=args.prefix_name)
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])

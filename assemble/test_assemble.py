@@ -22,7 +22,7 @@ class TestAssemble(unittest.TestCase):
         assert r == "P24", r
 
     def test_read_davepool_data_objects(self):
-        l = [(1, "requirements_artifacts/PDOG001_P1_X1.csv"), (2, "requirements_artifacts/PDOG001_P2_X1.csv")]
+        l = [(1, "../requirements_artifacts/PDOG001_P1_X1.csv"), (2, "../requirements_artifacts/PDOG001_P2_X1.csv")]
         r = assemble.read_davepool_data_objects(l)
         assert len(r) > 0
         logger.debug("r:  {}".format(r))
@@ -64,23 +64,24 @@ class TestAssemble(unittest.TestCase):
             if os.path.exists(ef):
                 os.remove(ef)
 
-        config_filepath = "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg"
+        config_filepath = "../functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg"
         prism_replicate_name = "PDOG003_CS1_X1"
-        plates_mapping_path = "functional_tests/test_assemble/full_functional_test/2016-03-22_PDOG_plate_mapping.txt"
         args1 = check_and_build_perts.build_parser().parse_args(
-            ["-cfg", "functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg", "-pmp",
-             "functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt",
-             "-ptp", "functional_tests/test_assemble/full_functional_test/2016-03-22_PDOG_plate_mapping.txt"])
+            ["-cfg", "../functional_tests/test_assemble/full_functional_test/prism_pipeline.cfg", "-pmp",
+             "../functional_tests/test_assemble/full_functional_test/7159-03-A04-01-01_03-22-16_15.34.24.txt",
+             "-ptp", "../functional_tests/test_assemble/full_functional_test/2016-03-22_PDOG_plate_mapping.txt"])
         check_and_build_perts.main(args1)
         plate_map_path = 'PDOG003.src'
-        dp7_csv_path = "functional_tests/test_assemble/full_functional_test/PDOG003_DP7_X1.csv"
-        dp8_csv_path = "functional_tests/test_assemble/full_functional_test/PDOG003_DP8_X1.csv"
-        csdf_path = "requirements_artifacts/Tranche1PrimaryMetaData_02252016.txt"
-        dmf_path = "requirements_artifacts/test_davepool_analyte_mapping.txt"
+        dp7_csv_path = "../functional_tests/test_assemble/full_functional_test/PDOG003_DP7_X1.csv"
+        dp8_csv_path = "../functional_tests/test_assemble/full_functional_test/PDOG003_DP8_X1.csv"
+        csdf_path = "../requirements_artifacts/Tranche1PrimaryMetaData_02252016.txt"
+        dmf_path = "../requirements_artifacts/test_davepool_analyte_mapping.txt"
+        assay_type = "DP7DP8"
 
         args = assemble.build_parser().parse_args(["-config_filepath", config_filepath, "-prn", prism_replicate_name,
-            "-pmp", plate_map_path, "-ptp", plates_mapping_path, "-dp_csv", "DP7", dp7_csv_path, "DP8", dp8_csv_path,
-                                                   "-csdf", csdf_path, "-dmf", dmf_path])
+            "-pmp", plate_map_path, "-dp_csv", "DP7", dp7_csv_path, "DP8", dp8_csv_path,
+                                                   "-csdf", csdf_path, "-dmf", dmf_path,
+                                                   "-at", assay_type])
 
         logger.debug("args:  {}".format(args))
 

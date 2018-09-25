@@ -1,4 +1,4 @@
-import cut_to_l2
+import merino.misc_tools.cut_to_l2 as cut_to_l2
 import glob
 import sys
 import cmapPy.pandasGEXpress.concat as cg
@@ -7,7 +7,7 @@ import cmapPy.pandasGEXpress.parse as pe
 import cmapPy.pandasGEXpress.write_gctx as wg
 import pandas as pd
 import glob
-import merino.cut_to_l2
+import merino.misc_tools.cut_to_l2
 import cmapPy.pandasGEXpress.write_gct as wgx
 import cmapPy.pandasGEXpress.parse as pe
 import functools

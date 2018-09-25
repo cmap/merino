@@ -3,7 +3,7 @@ import viability_normalization as viability
 import zscore
 import os
 import glob
-import modz
+import distil
 
 def log_normalize_all(proj_dir, search_pattern = '*', assemble_folder='assemble', out_folder='normalize'):
     #Invariant Normalize everything in project directory
@@ -121,4 +121,4 @@ def modz_all(proj_dir):
         if not os.path.exists(os.path.join(proj_dir, 'modZ', pert)):
             os.mkdir(os.path.join(proj_dir, 'modZ', pert))
 
-        modz.calculate_modz(keep_files, proj_dir)
+        distil.calculate_modz(keep_files, proj_dir)

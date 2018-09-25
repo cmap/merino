@@ -1,7 +1,7 @@
 import viability_normalization
 import zscore
 import normalize_with_prism_invariant as norm
-import modz
+import distil
 import card
 import weave
 import merino
@@ -71,7 +71,7 @@ class TestMerino(unittest.TestCase):
         z2 = zscore.calculate_zscore(r2, plate_control=True)
         z3 = zscore.calculate_zscore(r3, plate_control=True)
 
-        modz_gct, ccq74, weights = modz.calculate_modz([z,z2,z3])
+        modz_gct, ccq74, weights = distil.calculate_modz([z, z2, z3])
 
         assert round(modz_gct.data_df['test_CS0X1:A'][0], 4) == -0.5816
         assert round(modz_gct.data_df['test_CS0X1:B'][2], 4) == -0.4991

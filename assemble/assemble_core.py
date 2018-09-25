@@ -1,4 +1,4 @@
-import setup_logger
+import merino.setup_logger as setup_logger
 import logging
 import sys
 import os

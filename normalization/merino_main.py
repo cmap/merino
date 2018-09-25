@@ -4,7 +4,7 @@ import merino.setup_logger as setup_logger
 import logging
 import argparse
 import sys
-import merino.mk_build_file as mk
+import merino.normalization.mk_build_file as mk
 import ConfigParser
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
