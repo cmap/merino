@@ -32,8 +32,8 @@ def build_parser():
     # frequently between cohorts, replicates, etc.
     parser.add_argument("-prism_replicate_name", "-prn", help="name of the prism replicate that is being processed",
                         type=str, required=True)
-    parser.add_argument("-davepool_mapping_file", "-dmf", help="mapping of analytes to pools and davepools",
-                        type=str, required=False)
+    parser.add_argument("-analyte_mapping_file", "-dmf", help="mapping of analytes to pools and davepools",
+                        type=str, default=None, required=False)
     parser.add_argument("-assay_type", "-at", help="assay data comes from eg. PR500, PR300, KJ100",
                         type=str, required=True)
     parser.add_argument("-plate_map_path", "-pmp",
@@ -141,7 +141,7 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
     return r
 
 
-def build_prism_cell_list(config_filepath, cell_set_definition_file, davepool_mapping_file):
+def build_prism_cell_list(config_filepath, cell_set_definition_file, analyte_mapping_file):
     '''
     read PRISM cell line meta data from file specified in config file (at config_filepath), then associate with
     assay_plate based on pool ID.  Check for cell pools that are not associated with any assay plate
@@ -159,7 +159,7 @@ def build_prism_cell_list(config_filepath, cell_set_definition_file, davepool_ma
 
     prism_cell_list = prism_metadata.read_prism_cell_from_file(cell_set_definition_file, prism_cell_list_items)
 
-    davepool_mapping = prism_metadata.read_prism_cell_from_file(davepool_mapping_file, davepool_mapping_items)
+    analyte_mapping = prism_metadata.read_prism_cell_from_file(analyte_mapping_file, davepool_mapping_items)
 
     cell_list_id_not_in_davepool_mapping = set()
 
@@ -167,7 +167,7 @@ def build_prism_cell_list(config_filepath, cell_set_definition_file, davepool_ma
 
     cell_id_davepool_map = {}
 
-    for dp in davepool_mapping:
+    for dp in analyte_mapping:
         cell_id_davepool_map[dp.id] = dp
 
     for pc in prism_cell_list:
@@ -263,7 +263,16 @@ def main(args, all_perturbagens=None, assay_plates=None):
 
 
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
-    prism_cell_list = build_prism_cell_list(args.config_filepath, _cellset_dict_[args.assay_type], _analyte_mapping_dict_[args.assay_type])
+    cell_set_file = args.cell_set_definition_file
+    analyte_mapping_file = args.analyte_mapping_file
+
+    if cell_set_file is None:
+        cell_set_file = _cellset_dict_[args.assay_type]
+
+    if analyte_mapping_file is None:
+        analyte_mapping_file = _analyte_mapping_dict_[args.assay_type]
+
+    prism_cell_list = build_prism_cell_list(args.config_filepath, cell_set_file, analyte_mapping_file)
 
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
