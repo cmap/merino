@@ -99,8 +99,8 @@ def create_plate_map_dataframes(pertplate_perturbagens_map):
         dataframe_map = {}
         for (pertplate, perturbagens) in pertplate_perturbagens_map.iteritems():
                 validated_perturbagens = prism_metadata.validate_perturbagens(perturbagens)
-                dataframe = prism_metadata.convert_objects_to_metadata_df(index_builder, validated_perturbagens.values(),
-                                                           {"well_id": "pert_well"})
+                dataframe = prism_metadata.convert_objects_to_metadata_df(index_builder,
+                                                                          validated_perturbagens.values())
                 dataframe_indexed = dataframe.set_index("pert_well")
                 dataframe_indexed.drop('assay_plate_barcode', axis=1, inplace=True)
                 dataframe_indexed.sort_index(axis='index', inplace=True)
@@ -118,7 +118,7 @@ def write_plate_maps(dataframe_map):
 
 def read_all_perturbagens_from_file(plate_map_path, config_filepath, plate_map_type):
     logger.info("loading all perturbagens...")
-    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, plate_map_type, config_filepath)
+    all_perturbagens = prism_metadata.build_perturbagens_from_file(plate_map_path, plate_map_type)
 
     logger.info("finished loading all perturbagens")
 

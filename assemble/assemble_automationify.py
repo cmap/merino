@@ -162,8 +162,7 @@ def main(args):
     map_path = construct_plate_map_path(args.custom_map_path, my_lapo)
 
     # Read all perturbagens form plate map file
-    all_perturbagens = prism_metadata.build_perturbagens_from_file(map_path, prism_metadata.plate_map_type_CMap,
-                                                                   args.config_filepath)
+    all_perturbagens = prism_metadata.build_perturbagens_from_file(map_path, prism_metadata.plate_map_type_CMap)
 
     # This returns a list of tuples, davepool and csv path.
     dp_csv_list = construct_davepool_csv_path_pairs(det_plate_orm_map, my_lapo)
@@ -180,7 +179,8 @@ def main(args):
     assay_plates = build_assay_plates(det_plate_orm_map, davepool_data_objects, args.ignore_assay_plate_barcodes, cursor)
 
     # Use function in assemble to build row metadata
-    prism_cell_list = assemble.build_prism_cell_list(args.config_filepath, assay_plates, my_lapo.cell_set_definition_file, my_lapo.davepool_mapping_file)
+    prism_cell_list = assemble.build_prism_cell_list(assay_plates, my_lapo.cell_set_definition_file,
+                                                     my_lapo.davepool_mapping_file)
 
     #TODO add this to the database
     prism_replicate_name = my_lapo.pert_plate + '_' + my_lapo.prism_cellset_name + '_' + my_lapo.replicate

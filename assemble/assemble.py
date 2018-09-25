@@ -30,21 +30,29 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # The following arguments are required. These are files that are necessary for assembly and which change
     # frequently between cohorts, replicates, etc.
+    #todo: deprecate prism_replicate_name, implicit naming based on os.path.basename(args.csv_filepath)
     parser.add_argument("-prism_replicate_name", "-prn", help="name of the prism replicate that is being processed",
                         type=str, required=True)
-    parser.add_argument("-analyte_mapping_file", "-dmf", help="mapping of analytes to pools and davepools",
-                        type=str, default=None, required=False)
+    #todo: add choices to assay_type
+    parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
+                        default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data comes from eg. PR500, PR300, KJ100",
-                        type=str, required=True)
+                        type=str, required=True, choices=["DP78", "PR500", "PR300", "COPRO"])
+    parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True)
+
+    # These arguments are optional. Some may be superfluous now and might be removed.
+    parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
+
+    parser.add_argument("-analyte_mapping_file", "-dmf",
+                        help="mapping of analytes to pools and davepools, overriding config file",
+                        type=str, default=None, required=False)
     parser.add_argument("-cell_set_definition_file", "-csdf",
                         help="file containing cell set definition to use, overriding config file",
                         type=str, default=None, required=False)
-    # These arguments are optional. Some may be superfluous now and might be removed.
-    parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
-    parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
-                        default=merino.default_config_filepath)
+
+
     parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
                         " ignored / excluded from the assemble", nargs="+", default=None)
     parser.add_argument("-outfile", "-out", help="location to write gct", type=str,
@@ -60,18 +68,6 @@ def build_parser():
                         type=str, nargs="+", required=False)
 
     return parser
-
-_cellset_dict_ = {'PR500': '/Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_PR500.CS5_definition.txt',
-                 'PR300': '/Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_PR300.CS1_definition.txt',
-                 'KJ100': '/Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_KJ100.CS5_definition.txt',
-                 'DP7DP8': '/Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_DP78.CS1_definition.txt'}
-
-_analyte_mapping_dict_ = {'PR500': '/Volumes/cmap/data/vdb/PRISM/analyte_mapping/PR500_mapping.txt',
-                         'PR300': '/Volumes/cmap/data/vdb/PRISM/analyte_mapping/PR300_mapping.txt',
-                         'KJ100': '/Volumes/cmap/data/vdb/PRISM/analyte_mapping/KJ100_mapping.txt',
-                         'DP7DP8': '/Volumes/cmap/data/vdb/PRISM/analyte_mapping/DP78_mapping.txt'}
-
-
 
 
 def parse_location_to_well(location):
@@ -141,38 +137,40 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
     return r
 
 
-def build_prism_cell_list(config_filepath, cell_set_definition_file, analyte_mapping_file):
+def build_prism_cell_list(cell_set_definition_file, analyte_mapping_file):
     '''
     read PRISM cell line meta data from file specified in config file (at config_filepath), then associate with
     assay_plate based on pool ID.  Check for cell pools that are not associated with any assay plate
-    :param config_filepath:
     :param assay_plates:
     :param cell_set_definition_file:
     :return:
     '''
-    cp = ConfigParser.RawConfigParser()
-    cp.read(config_filepath)
+    # cp = ConfigParser.RawConfigParser()
+    # cp.read(config_filepath)
 
+    # prism_cell_list_items = cp.items(_prism_cell_config_file_section)
+    # analyte_mapping_items = cp.items(_davepool_analyte_mapping_file_section)
 
-    prism_cell_list_items = cp.items(_prism_cell_config_file_section)
-    davepool_mapping_items = cp.items(_davepool_analyte_mapping_file_section)
+    prism_cell_list_items = [(x,x) for x in ["analyte_id", "pool_id", "davepool_id", "feature_id", "cell_iname", "minipool_id",
+                             "ccle_name", "barcode_id", "cell_lineage", "cell_culture"]]
+    analyte_mapping_items = [(x,x) for x in ["analyte_id", "feature_id", "cell_name", "davepool_id", "pool_id"]]
 
     prism_cell_list = prism_metadata.read_prism_cell_from_file(cell_set_definition_file, prism_cell_list_items)
 
-    analyte_mapping = prism_metadata.read_prism_cell_from_file(analyte_mapping_file, davepool_mapping_items)
+    analyte_mapping = prism_metadata.read_prism_cell_from_file(analyte_mapping_file, analyte_mapping_items)
 
     cell_list_id_not_in_davepool_mapping = set()
 
-    # Assign davepool mapping info to respective cell IDs
+    # Assign davepool mapping info to respective cell feature IDs
 
     cell_id_davepool_map = {}
 
     for dp in analyte_mapping:
-        cell_id_davepool_map[dp.id] = dp
+        cell_id_davepool_map[dp.feature_id] = dp
 
     for pc in prism_cell_list:
-        if pc.id in cell_id_davepool_map.keys():
-            cell_davepool = cell_id_davepool_map[pc.id]
+        if pc.feature_id in cell_id_davepool_map.keys():
+            cell_davepool = cell_id_davepool_map[pc.feature_id]
             pc.analyte_id = cell_davepool.analyte_id
             pc.davepool_id = cell_davepool.davepool_id
             if pc.pool_id != cell_davepool.pool_id:
@@ -188,44 +186,9 @@ def build_prism_cell_list(config_filepath, cell_set_definition_file, analyte_map
     return prism_cell_list
 
 
-def build_assay_plates(plates_mapping_path, config_filepath, davepool_data_objects, ignore_assay_plate_barcodes):
-    '''
-    read all assay plate meta data from provided file at plates_mapping_path then remove assay plates whose det_plate
-    does not match those in the davepool_data_objects.  Add additional metadata to assay_plates indicating the
-    scan time and if they should be ignored (based if the assay plate barcode is in ignore_assay_plate_barcodes)
-    :param plates_mapping_path: path to file that contains
-    :param config_filepath:
-    :param davepool_data_objects:
-    :param ignore_assay_plate_barcodes:
-    :return:
-    '''
-    all_assay_plates = prism_metadata.read_assay_plate_from_file(plates_mapping_path, config_filepath)
-    logger.info("len(all_assay_plates):  {}".format(len(all_assay_plates)))
-
-    # parse the csv filename to get the det_plate, build a map between det_plate and davepool object
-    det_plate_davepool_data_objects_map = {}
-    for dpdo in davepool_data_objects:
-        filename = os.path.basename(dpdo.csv_filepath)
-        det_plate = ".".join(filename.split(".")[0:-1])
-        det_plate_davepool_data_objects_map[det_plate] = dpdo
-
-    logger.info("det_plate_davepool_data_objects_map.keys():  {}".format(det_plate_davepool_data_objects_map.keys()))
-
-    # only keep assay plates whose det_plate matches one of the loaded davepool
-    assay_plates = [x for x in all_assay_plates if x.det_plate in det_plate_davepool_data_objects_map]
-
-    # add scan time to assay_plate metadata, and indicate if the assay plate should be ignored
-    for ap in assay_plates:
-        ap.det_plate_scan_time = det_plate_davepool_data_objects_map[ap.det_plate].csv_datetime
-
-        ap.ignore = ap.assay_plate_barcode in ignore_assay_plate_barcodes
-
-    return assay_plates
-
-
 def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, truncate_to_platemap):
 
-    platemap_well_list = set([p.well_id for p in all_perturbagens])
+    platemap_well_list = set([p.pert_well for p in all_perturbagens])
     for davepool in davepool_data_objects:
         if platemap_well_list == set(davepool.median_data.keys()):
             return davepool_data_objects
@@ -246,8 +209,7 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
 
 def main(args, all_perturbagens=None, assay_plates=None):
     if all_perturbagens is None:
-        all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, prism_metadata.plate_map_type_CMap, args.config_filepath)
-
+        all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, args.pert_time)
 
     args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
 
@@ -261,18 +223,14 @@ def main(args, all_perturbagens=None, assay_plates=None):
         davepool_id_csv_list = args.csv_filepath
         davepool_data_objects = read_csv(davepool_id_csv_list, args.assay_type)
 
+    cp = ConfigParser.RawConfigParser()
+    cp.read(args.config_filepath)
 
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
-    cell_set_file = args.cell_set_definition_file
-    analyte_mapping_file = args.analyte_mapping_file
+    cell_set_file = args.cell_set_definition_file if args.cell_set_definition_file else cp.get(args.assay_type, "cell_set_definition_file")
+    analyte_mapping_file = args.analyte_mapping_file if args.analyte_mapping_file else cp.get(args.assay_type, "analyte_mapping_file")
 
-    if cell_set_file is None:
-        cell_set_file = _cellset_dict_[args.assay_type]
-
-    if analyte_mapping_file is None:
-        analyte_mapping_file = _analyte_mapping_dict_[args.assay_type]
-
-    prism_cell_list = build_prism_cell_list(args.config_filepath, cell_set_file, analyte_mapping_file)
+    prism_cell_list = build_prism_cell_list(cell_set_file, analyte_mapping_file)
 
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 

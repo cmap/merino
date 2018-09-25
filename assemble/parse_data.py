@@ -37,11 +37,22 @@ def parse_raw_value(raw_value):
 
 
 def generate_header_map(headers, internal_header_file_header_pairs, do_keep_all):
-    reverse_header_map = {}
-    for (c_key, c_header_name) in internal_header_file_header_pairs:
-        reverse_header_map[c_header_name] = c_key
+    """
+    creates a mapping between all headers and a subset of headers (indicated by internal_header_file_header_pairs)
+    allowing for changes to be made to the original header naming scheme (a currently deprecated utility)
 
+    :param headers: (list of strings) list of all headers in file
+    :param internal_header_file_header_pairs: (list of tuples) allows headers to be renamed
+    :param do_keep_all: (boolean) if false uses internal_header_file_header_pairs to pull out subset of headers
+    :return:
+    """
+    reverse_header_map = {}
     header_map = {}
+
+    if internal_header_file_header_pairs is not None:
+        for (c_key, c_header_name) in internal_header_file_header_pairs:
+            reverse_header_map[c_header_name] = c_key
+
     for (i, h) in enumerate(headers):
         if h in reverse_header_map:
             c_key = reverse_header_map[h]
@@ -50,7 +61,7 @@ def generate_header_map(headers, internal_header_file_header_pairs, do_keep_all)
             header_map[h] = i
 
     if len(header_map) == 0:
-        raise Exception("prism_metadata _generate_header_map header_map has no entries, possible mismatch between expected and actual columns (e.g. check config file for mapping")
+        raise Exception("prism_metadata _generate_header_map header_map has no entries, possible mismatch between expected and actual columns")
 
     return header_map
 

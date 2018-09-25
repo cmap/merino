@@ -36,8 +36,7 @@ def main(args):
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
     #read in all the perturbagens but restrict to those that were on the provided assay_plates
-    perturbagen_list = prism_metadata.build_perturbagens_from_file(args.plate_map_path, args.plate_map_type,
-                                                                   args.config_filepath)
+    perturbagen_list = prism_metadata.build_perturbagens_from_file(args.plate_map_path, args.plate_map_type)
     logger.info("len(perturbagen_list):  {}".format(len(perturbagen_list)))
 
     (median_data_by_cell, count_data_by_cell) = assemble.build_data_by_cell(prism_cell_list, my_davepool)

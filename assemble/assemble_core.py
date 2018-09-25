@@ -10,7 +10,7 @@ import cmapPy.pandasGEXpress.write_gct as write_gct
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
-_remove_row_annotations = ["id", "ignore"]
+_remove_row_annotations = ["feature_id", "ignore"]
 _remove_col_annotations = ["assay_plate_barcode"]
 
 _null = "-666"
@@ -49,7 +49,7 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
     :return:
     '''
 
-    platemap_well_list = set([p.well_id for p in all_perturbagens])
+    platemap_well_list = set([p.pert_well for p in all_perturbagens])
 
     for davepool in davepool_data_objects:
         # Check that wells match. If so, return the data. If not, check if -trunc argument was used.
@@ -153,10 +153,9 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
 
     #build column metadata dataframe:
     def column_ID_builder(perturbagen):
-        return prism_replicate_name + ":" + perturbagen.well_id
+        return prism_replicate_name + ":" + perturbagen.pert_well
 
-    col_metadata_df = prism_metadata.convert_objects_to_metadata_df(column_ID_builder, perturbagen_list,
-                                                                             {"well_id":"pert_well"})
+    col_metadata_df = prism_metadata.convert_objects_to_metadata_df(column_ID_builder, perturbagen_list, None)
     for col_annot in _remove_col_annotations:
         if col_annot in col_metadata_df.columns:
             col_metadata_df.drop(col_annot, axis=1, inplace=True)
@@ -171,7 +170,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
 
     #build row metadata dataframe:
     def row_ID_builder(prism_cell_obj):
-        return prism_cell_obj.id
+        return prism_cell_obj.feature_id
 
     row_metadata_df = prism_metadata.convert_objects_to_metadata_df(row_ID_builder,
         data_by_cell.cell_data_map.keys(), {})
@@ -196,7 +195,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
     #build index for the rows of the dataframe using what is actually the column ID (since it will be transposed)
     well_perturbagen_map = {}
     for p in perturbagen_list:
-        well_perturbagen_map[p.well_id] = p
+        well_perturbagen_map[p.pert_well] = p
     data_df_column_ids = []
     for w in data_by_cell.well_list:
         p = well_perturbagen_map[w]
