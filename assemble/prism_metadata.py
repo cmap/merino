@@ -1,23 +1,10 @@
 import setup_logger
 import logging
-import ConfigParser
-import merino
-import json
 import pandas
 import parse_data
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
-
-
-_perturbagen_CM_input_config_file_section = "Perturbagen CM input column headers"
-_perturbagen_CMap_input_config_file_section = "Perturbagen CMap input column headers"
-
-cmap_pert_well = "pert_well"
-
-plate_map_type_CM = "CM"
-plate_map_type_CMap = "CMap"
-plate_map_types = [plate_map_type_CM, plate_map_type_CMap]
 
 
 class PrismCell(object):
@@ -107,7 +94,7 @@ def _add_pert_time_info(perturbagens, pert_time):
         p.pert_time_unit = pert_time_unit
         p.pert_itime = p.pert_time + " " + p.pert_time_unit
 
-
+#todo: usages in check_and_build_perts and tests only
 def validate_perturbagens(perturbagens):
     well_pert_map = {}
     mismatches = {}

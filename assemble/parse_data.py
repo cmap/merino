@@ -1,9 +1,7 @@
 import setup_logger
 import logging
 
-
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
-
 
 def parse_data(header_map, data, BuildClass):
     r = []
@@ -35,7 +33,7 @@ def parse_raw_value(raw_value):
 
     return val
 
-
+#todo: re-write to pull out subset of headers, header mapping no longer necessary
 def generate_header_map(headers, internal_header_file_header_pairs, do_keep_all):
     """
     creates a mapping between all headers and a subset of headers (indicated by internal_header_file_header_pairs)

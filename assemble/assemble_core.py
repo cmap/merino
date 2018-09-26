@@ -1,6 +1,5 @@
 import merino.setup_logger as setup_logger
 import logging
-import sys
 import os
 import cmapPy.pandasGEXpress.GCToo as GCToo
 import validate_prism_gct
@@ -38,7 +37,7 @@ def build_davepool_id_to_cells_map(prism_cell_list):
 
     return r
 
-
+#todo: no usage of this function
 def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, truncate_to_platemap):
     '''
     There are some cases in which we are subsetting plates into different groups, ie. more than one gct per plate.

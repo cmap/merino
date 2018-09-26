@@ -15,7 +15,6 @@ import merino
 import sys
 import ConfigParser
 import assemble_core
-import os
 
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -33,7 +32,6 @@ def build_parser():
     #todo: deprecate prism_replicate_name, implicit naming based on os.path.basename(args.csv_filepath)
     parser.add_argument("-prism_replicate_name", "-prn", help="name of the prism replicate that is being processed",
                         type=str, required=True)
-    #todo: add choices to assay_type
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data comes from eg. PR500, PR300, KJ100",
@@ -69,7 +67,7 @@ def build_parser():
 
     return parser
 
-
+#todo: usages only in tests
 def parse_location_to_well(location):
     split = location.split(",")
     right_paren_index = split[1].index(")")
@@ -104,7 +102,7 @@ def read_csv(csv_list, assay_type):
 
     return r
 
-
+#todo: usages only in tests
 def combine_maps_with_checks(source_map, dest_map):
     source_keys = set(source_map.keys())
     dest_keys = set(dest_map.keys())
