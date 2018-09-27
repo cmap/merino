@@ -3,9 +3,7 @@ import logging
 import pandas
 import parse_data
 
-
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
-
 
 class PrismCell(object):
     def __init__(self, pool_id=None, analyte_id=None, davepool_id=None, feature_id=None):
@@ -27,19 +25,6 @@ class Perturbagen(object):
     def __init__(self, pert_well=None):
         self.pert_well = pert_well
 
-    def __repr__(self):
-        return " ".join(["{}:{}".format(str(k),str(v)) for (k,v) in self.__dict__.items()])
-
-    def __str__(self):
-        return self.__repr__()
-
-#todo: assess if this is necessary, only usage now is in flask_assemble.py
-class AssayPlate(object):
-    def __init__(self, assay_plate_barcode=None, det_plate=None, pool_id=None, ignore=None):
-        self.assay_plate_barcode = assay_plate_barcode
-        self.det_plate = det_plate
-        self.pool_id = pool_id
-        self.ignore = ignore
     def __repr__(self):
         return " ".join(["{}:{}".format(str(k),str(v)) for (k,v) in self.__dict__.items()])
 
@@ -77,7 +62,7 @@ def _read_perturbagen_from_file(filepath, do_keep_all):
 
     #todo: think about other checks / better notification of wrong map type
     if "well_position" in headers:
-        print "Looks like you have a CM plate map, that just won't do"
+        Exception("Merino no longer supports CM map type, please convert map to CMap map type")
 
     header_map = parse_data.generate_header_map(headers, None, do_keep_all)
     logger.debug("header_map:  {}".format(header_map))
@@ -93,39 +78,6 @@ def _add_pert_time_info(perturbagens, pert_time):
         p.pert_time = pert_time
         p.pert_time_unit = pert_time_unit
         p.pert_itime = p.pert_time + " " + p.pert_time_unit
-
-#todo: usages in check_and_build_perts and tests only
-def validate_perturbagens(perturbagens):
-    well_pert_map = {}
-    mismatches = {}
-    for p in perturbagens:
-
-        pert_well = p.pert_well
-
-        if not pert_well in well_pert_map:
-            well_pert_map[pert_well] = p
-        else:
-            prev_p = well_pert_map[pert_well]
-
-            p_comp = (p.pert_id, p.pert_idose)
-            prev_p_comp = (prev_p.pert_id, prev_p.pert_idose)
-            if p_comp != prev_p_comp:
-                logger.debug("mismatch pert_well:  {}  p.assay_plate_barcode:  {}  p_comp:  {}  prev_p.assay_plate_barcode:  {}  "
-                             "prev_p_comp:  {}".format(pert_well, p.assay_plate_barcode, p_comp, prev_p.assay_plate_barcode,
-                                                       prev_p_comp))
-
-                if pert_well not in mismatches:
-                    mismatches[pert_well] = []
-                mismatches[pert_well].append(p.assay_plate_barcode)
-
-    if len(mismatches) > 0:
-        mismatch_wells = list(mismatches.keys())
-        mismatch_wells.sort()
-        msg = "the perturbagens provided contain different compounds in the same wells of different assasy plates - mismatch_wells():  {}".format(mismatch_wells)
-        logger.error(msg)
-        raise Exception("prism_metadata validate_perturbagens " + msg)
-    else:
-        return well_pert_map
 
 
 def convert_objects_to_metadata_df(index_builder, object_list, meta_renaming_map):

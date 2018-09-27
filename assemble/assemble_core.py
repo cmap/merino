@@ -37,39 +37,6 @@ def build_davepool_id_to_cells_map(prism_cell_list):
 
     return r
 
-#todo: no usage of this function
-def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, truncate_to_platemap):
-    '''
-    There are some cases in which we are subsetting plates into different groups, ie. more than one gct per plate.
-    This was the case for PPCN. As such, we need a function to truncate the data to match the plate map which is given.
-    :param davepool_data_objects:
-    :param all_perturbagens:
-    :param truncate_to_platemap:
-    :return:
-    '''
-
-    platemap_well_list = set([p.pert_well for p in all_perturbagens])
-
-    for davepool in davepool_data_objects:
-        # Check that wells match. If so, return the data. If not, check if -trunc argument was used.
-        if platemap_well_list == set(davepool.median_data.keys()):
-            return davepool_data_objects
-        # Truncate to platemap if true.
-        elif truncate_to_platemap == True:
-            for d in davepool_data_objects[0].median_data.keys():
-                 if d not in platemap_well_list:
-                     del davepool_data_objects[0].median_data[d]
-
-            for c in davepool_data_objects[0].count_data.keys():
-                if c not in platemap_well_list:
-                    del davepool_data_objects[0].count_data[c]
-        # Raise exception if not.
-        else:
-            raise Exception("Assemble truncate data objects to plate map: Well lists of platemap and csv do not match")
-
-
-    return davepool_data_objects
-
 
 def build_data_by_cell(cells, davepool_data_obj):
     cell_to_median_data_map = {}
@@ -79,8 +46,6 @@ def build_data_by_cell(cells, davepool_data_obj):
 
     ld = [(cell_to_median_data_map, median_wells, davepool_data_obj.median_headers, davepool_data_obj.median_data),
         (cell_to_count_data_map, count_wells, davepool_data_obj.count_headers, davepool_data_obj.count_data)]
-
-
 
     for (cell_data_map, wells, headers, data) in ld:
 
@@ -148,8 +113,6 @@ def process_data(davepool_data_objects, davepool_id_to_cells_map):
 
 
 def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
-
-
     #build column metadata dataframe:
     def column_ID_builder(perturbagen):
         return prism_replicate_name + ":" + perturbagen.pert_well

@@ -67,16 +67,6 @@ def build_parser():
 
     return parser
 
-#todo: usages only in tests
-def parse_location_to_well(location):
-    split = location.split(",")
-    right_paren_index = split[1].index(")")
-    raw_well = split[1][0:right_paren_index]
-    row = raw_well[0]
-    raw_col = raw_well[1:]
-    col = raw_col.zfill(2)
-    return row + col
-
 
 def read_davepool_data_objects(davepool_id_csv_list):
     '''
@@ -101,21 +91,6 @@ def read_csv(csv_list, assay_type):
         r.append(pd)
 
     return r
-
-#todo: usages only in tests
-def combine_maps_with_checks(source_map, dest_map):
-    source_keys = set(source_map.keys())
-    dest_keys = set(dest_map.keys())
-
-    common_keys = source_keys & dest_keys
-
-    if len(common_keys) > 0:
-        msg = "the source_map and dest_map had common_keys:  {}".format(common_keys)
-        logger.error(msg)
-        raise Exception("assemble combine_maps_with_checks " + msg)
-    else:
-        dest_map.update(source_map)
-
 
 
 def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
@@ -185,7 +160,14 @@ def build_prism_cell_list(cell_set_definition_file, analyte_mapping_file):
 
 
 def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, truncate_to_platemap):
-
+    '''
+    There are some cases in which we are subsetting plates into different groups, ie. more than one gct per plate.
+    This was the case for PPCN. As such, we need a function to truncate the data to match the plate map which is given.
+    :param davepool_data_objects:
+    :param all_perturbagens:
+    :param truncate_to_platemap:
+    :return:
+    '''
     platemap_well_list = set([p.pert_well for p in all_perturbagens])
     for davepool in davepool_data_objects:
         if platemap_well_list == set(davepool.median_data.keys()):
