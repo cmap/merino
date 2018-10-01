@@ -9,7 +9,7 @@ import merino.setup_logger as setup_logger
 import logging
 import davepool_data
 import prism_metadata
-import numpy
+import os
 import argparse
 import merino
 import sys
@@ -23,19 +23,15 @@ _prism_cell_config_file_section = "PrismCell column headers"
 _davepool_analyte_mapping_file_section = "DavepoolAnalyteMapping column headers"
 
 
-
 def build_parser():
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # The following arguments are required. These are files that are necessary for assembly and which change
     # frequently between cohorts, replicates, etc.
-    #todo: deprecate prism_replicate_name, implicit naming based on os.path.basename(args.csv_filepath)
-    parser.add_argument("-prism_replicate_name", "-prn", help="name of the prism replicate that is being processed",
-                        type=str, required=True)
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
                         default=merino.default_config_filepath)
-    parser.add_argument("-assay_type", "-at", help="assay data comes from eg. PR500, PR300, KJ100",
-                        type=str, required=True, choices=["DP78", "PR500", "PR300", "COPRO"])
+    parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
+                        type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100"])
     parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True)
 
     # These arguments are optional. Some may be superfluous now and might be removed.
@@ -43,13 +39,12 @@ def build_parser():
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
 
-    parser.add_argument("-analyte_mapping_file", "-dmf",
+    parser.add_argument("-analyte_mapping_file", "-amf",
                         help="mapping of analytes to pools and davepools, overriding config file",
                         type=str, default=None, required=False)
     parser.add_argument("-cell_set_definition_file", "-csdf",
                         help="file containing cell set definition to use, overriding config file",
                         type=str, default=None, required=False)
-
 
     parser.add_argument("-ignore_assay_plate_barcodes", "-batmanify", help="list of assay plate barcodes that should be"
                         " ignored / excluded from the assemble", nargs="+", default=None)
@@ -61,9 +56,7 @@ def build_parser():
     group.add_argument("-davepool_id_csv_filepath_pairs", "-dp_csv",
                         help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
                         type=str, nargs="+", required=False)
-    group.add_argument("-csv_filepath", "-csv",
-                        help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
-                        type=str, nargs="+", required=False)
+    group.add_argument("-csv_filepath", "-csv", help="full path to csv", type=str,  required=False)
 
     return parser
 
@@ -83,14 +76,11 @@ def read_davepool_data_objects(davepool_id_csv_list):
 
     return r
 
-def read_csv(csv_list, assay_type):
-    r = []
-    for csv_filepath in csv_list:
-        pd = davepool_data.read_data(csv_filepath)
-        pd.davepool_id = assay_type
-        r.append(pd)
+def read_csv(csv_filepath, assay_type):
 
-    return r
+    pd = davepool_data.read_data(csv_filepath)
+    pd.davepool_id = assay_type
+    return pd
 
 
 def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
@@ -118,15 +108,9 @@ def build_prism_cell_list(cell_set_definition_file, analyte_mapping_file):
     :param cell_set_definition_file:
     :return:
     '''
-    # cp = ConfigParser.RawConfigParser()
-    # cp.read(config_filepath)
-
-    # prism_cell_list_items = cp.items(_prism_cell_config_file_section)
-    # analyte_mapping_items = cp.items(_davepool_analyte_mapping_file_section)
-
     prism_cell_list_items = [(x,x) for x in ["analyte_id", "pool_id", "davepool_id", "feature_id", "cell_iname", "minipool_id",
-                             "ccle_name", "barcode_id", "cell_lineage", "cell_culture"]]
-    analyte_mapping_items = [(x,x) for x in ["analyte_id", "feature_id", "cell_name", "davepool_id", "pool_id"]]
+                             "ccle_name", "cell_lineage", "cell_culture"]]
+    analyte_mapping_items = [(x,x) for x in ["analyte_id", "feature_id", "cell_name", "davepool_id", "pool_id", "barcode_id"]]
 
     prism_cell_list = prism_metadata.read_prism_cell_from_file(cell_set_definition_file, prism_cell_list_items)
 
@@ -146,10 +130,11 @@ def build_prism_cell_list(cell_set_definition_file, analyte_mapping_file):
             cell_davepool = cell_id_davepool_map[pc.feature_id]
             pc.analyte_id = cell_davepool.analyte_id
             pc.davepool_id = cell_davepool.davepool_id
+            pc.barcode_id = cell_davepool.barcode_id
             if pc.pool_id != cell_davepool.pool_id:
-                raise Exception ("Cell set pool id does not match davepool mapping pool id at cell id {}".format(pc.id))
+                raise Exception ("Cell set pool id does not match davepool mapping pool id at cell id {}".format(pc.feature_id))
         else:
-            cell_list_id_not_in_davepool_mapping.add(pc.id)
+            cell_list_id_not_in_davepool_mapping.add(pc.feature_id)
 
     if len(cell_list_id_not_in_davepool_mapping) > 0:
         cell_list_id_not_in_davepool_mapping = list(cell_list_id_not_in_davepool_mapping)
@@ -183,7 +168,6 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
         else:
             raise Exception("Assemble truncate data objects to plate map: Well lists of platemap and csv do not match")
 
-
     return davepool_data_objects
 
 
@@ -199,9 +183,20 @@ def main(args, all_perturbagens=None, assay_plates=None):
         davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
         davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
+        pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
+        csv_filename = os.path.basename(davepool_id_csv_list[0][1]).rsplit(".", 1)[0]
+        replicate_number = csv_filename.rsplit("_",1)[1]
+        prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "H_" + replicate_number
+
     elif args.csv_filepath is not None:
         davepool_id_csv_list = args.csv_filepath
-        davepool_data_objects = read_csv(davepool_id_csv_list, args.assay_type)
+        davepool_data_objects = []
+        davepool_data_objects.append(read_csv(davepool_id_csv_list, args.assay_type))
+
+        pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
+        csv_filename = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
+        replicate_number = csv_filename.rsplit("_", 1)[1]
+        prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "H_" + replicate_number
 
     cp = ConfigParser.RawConfigParser()
     cp.read(args.config_filepath)
@@ -218,7 +213,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
     truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, args.truncate_to_plate_map)
 
     # Pass python objects to the core assembly module (this is where command line and automated assembly intersect)
-    assemble_core.main(args.prism_replicate_name, args.outfile, all_perturbagens, davepool_data_objects, prism_cell_list)
+    assemble_core.main(prism_replicate_name, args.outfile, all_perturbagens, davepool_data_objects, prism_cell_list)
 
 
 if __name__ == "__main__":

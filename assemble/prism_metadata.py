@@ -1,4 +1,4 @@
-import setup_logger
+import merino.setup_logger as setup_logger
 import logging
 import pandas
 import parse_data
@@ -47,10 +47,8 @@ def read_prism_cell_from_file(row_metadata_file, items):
 
 
 def build_perturbagens_from_file(filepath, pert_time):
-    do_keep_additional = True
 
-    perturbagens = _read_perturbagen_from_file(filepath, do_keep_additional)
-
+    perturbagens = _read_perturbagen_from_file(filepath, do_keep_all=True)
     _add_pert_time_info(perturbagens, pert_time)
 
     return perturbagens
