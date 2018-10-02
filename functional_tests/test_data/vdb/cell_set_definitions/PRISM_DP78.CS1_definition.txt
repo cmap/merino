@@ -1,0 +1,579 @@
+feature_id	cell_iname	pool_id	davepool_id	cell_lineage	cell_histology	cell_culture	in_pr500	in_pr300	ccle_name	minipool_id
+1	KYSE510	P901	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE510_OESOPHAGUS	PRISM Pool 001
+2	8505C	P901	DP7	thyroid	carcinoma,anaplastic	Adherent	1	0	8505C_THYROID	PRISM Pool 001
+3	GI1	P901	DP7	central nervous system	gliosarcoma	Adherent	1	0	GI1_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 001
+4	A549	P901	DP7	lung	carcinoma,non-small cell	Adherent	1	0	A549_LUNG	PRISM Pool 001
+5	LU99	P901	DP7	lung	carcinoma,large cell	Adherent	1	0	LU99_LUNG	PRISM Pool 001
+6	CAL29	P901	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	CAL29_URINARY_TRACT	PRISM Pool 002
+7	5637	P901	DP7	urinary tract	carcinoma	Adherent	1	0	5637_URINARY_TRACT	PRISM Pool 002
+8	SW948	P901	DP7	large intestine	adenocarcinoma,colorectal	Adherent	1	0	SW948_LARGE_INTESTINE	PRISM Pool 002
+9	NCIH1339	P901	DP7	lung	carcinoma,small cell	Adherent	1	0	NCIH1339_LUNG	PRISM Pool 002
+10	HEC1A	P901	DP7	endometrium	carcinoma	Adherent	1	0	HEC1A_ENDOMETRIUM	PRISM Pool 002
+11	SNU840	P901	DP7	ovary	Brenner tumour	Adherent	1	0	SNU840_OVARY	PRISM Pool 003
+12	HCC827	P901	DP7	lung	carcinoma	Adherent	1	0	HCC827_LUNG	PRISM Pool 003
+13	GAMG	P901	DP7	central nervous system	glioma	Adherent	1	0	GAMG_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 003
+14	NCIH1437	P901	DP7	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH1437_LUNG	PRISM Pool 003
+15	GB1	P901	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	GB1_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 003
+16	NCIH322	P901	DP7	lung	carcinoma	Adherent	1	0	NCIH322_LUNG	PRISM Pool 004
+17	SNUC2A	P901	DP7	large intestine	carcinoma,colorectal	Adherent	1	0	SNUC2A_LARGE_INTESTINE	PRISM Pool 004
+18	CORL23	P901	DP7	lung	carcinoma,large cell	Adherent	1	0	CORL23_LUNG	PRISM Pool 004
+19	SNU761	P901	DP7	liver	hepatocellular carcinoma	Adherent	1	0	SNU761_LIVER	PRISM Pool 004
+20	NCIN87	P901	DP7	stomach	carcinoma,gastric	Adherent	1	0	NCIN87_STOMACH	PRISM Pool 004
+21	RERFLCAD2	P901	DP7	lung	carcinoma	Adherent	1	0	RERFLCAD2_LUNG	PRISM Pool 005
+22	HCC1806	P901	DP7	breast	carcinoma,primary acantholytic squamous cell	Adherent	1	0	HCC1806_BREAST	PRISM Pool 005
+23	NCIH1793	P901	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH1793_LUNG	PRISM Pool 005
+24	MESSA	P901	DP7	soft tissue	sarcoma	Adherent	1	0	MESSA_SOFT_TISSUE	PRISM Pool 005
+25	NCIH1975	P901	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH1975_LUNG	PRISM Pool 005
+26	MFE296	P902	DP7	endometrium	carcinoma	Adherent	1	0	MFE296_ENDOMETRIUM	PRISM Pool 006
+27	KYSE270	P902	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE270_OESOPHAGUS	PRISM Pool 006
+28	KYSE150	P902	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE150_OESOPHAGUS	PRISM Pool 006
+29	PSN1	P902	DP7	pancreas	carcinoma,ductal	Adherent	1	0	PSN1_PANCREAS	PRISM Pool 006
+30	OC316	P902	DP7	ovary	carcinoma	Adherent	1	0	OC316_OVARY	PRISM Pool 006
+31	CAL27	P902	DP7	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	CAL27_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 007
+32	A172	P902	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	A172_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 007
+33	TE11	P902	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE11_OESOPHAGUS	PRISM Pool 007
+34	BC3C	P902	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	BC3C_URINARY_TRACT	PRISM Pool 007
+35	ESS1	P902	DP7	endometrium	carcinosarcoma,mesodermal mixed	Adherent	1	0	ESS1_ENDOMETRIUM	PRISM Pool 007
+36	HS944T	P902	DP7	skin	melanoma	Adherent	1	0	HS944T_SKIN	PRISM Pool 008
+37	DMS114	P902	DP7	lung	small cell carcinoma	Adherent	0	0	DMS114_LUNG	PRISM Pool 008
+38	NCIH2023	P902	DP7	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH2023_LUNG	PRISM Pool 008
+39	RH30	P902	DP7	soft tissue	rhabdomyosarcoma,alveolar	Adherent	1	1	RH30_SOFT_TISSUE	PRISM Pool 008
+40	8MGBA	P902	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	8MGBA_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 008
+41	MPP89	P902	DP7	pleura	mesothelioma	Adherent	1	0	MPP89_PLEURA	PRISM Pool 009
+42	GCIY	P902	DP7	stomach	carcinoma	Adherent	1	0	GCIY_STOMACH	PRISM Pool 009
+43	SNU213	P902	DP7	pancreas	carcinoma	Adherent	1	0	SNU213_PANCREAS	PRISM Pool 009
+44	SF539	P902	DP7	central nervous system	glioma	Adherent	1	0	SF539_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 009
+45	YD8	P902	DP7	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	YD8_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 009
+46	HUH1	P902	DP7	liver	Liver Cancer	Adherent	0	1	HUH1_LIVER	PRISM Pool 010
+47	HT115	P902	DP7	large intestine	Colon Cancer	Adherent	0	1	HT115_LARGE_INTESTINE	PRISM Pool 010
+48	CAL33	P902	DP7	upper aerodigestive tract	Oral Cancer	Adherent	0	1	CAL33_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 010
+49	SNU216	P902	DP7	stomach	Gastric Cancer	Adherent	0	1	SNU216_STOMACH	PRISM Pool 010
+50	A498	P902	DP7	kidney	Kidney Cancer	Adherent	0	1	A498_KIDNEY	PRISM Pool 010
+51	HARA	P903	DP7	lung	carcinoma,squamous cell	Adherent	1	0	HARA_LUNG	PRISM Pool 011
+52	MHHES1	P903	DP7	bone	sarcoma,Ewings,PNET	Adherent	1	1	MHHES1_BONE	PRISM Pool 011
+53	MELHO	P903	DP7	skin	melanoma	Adherent	1	0	MELHO_SKIN	PRISM Pool 011
+54	U251MG	P903	DP7	central nervous system	glioma,astrocytoma	Adherent	1	0	U251MG_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 011
+55	JIMT1	P903	DP7	breast	carcinoma,ductal	Adherent	1	0	JIMT1_BREAST	PRISM Pool 011
+56	PANC1005	P903	DP7	pancreas	carcinoma,ductal	Adherent	1	0	PANC1005_PANCREAS	PRISM Pool 012
+57	NCIH1703	P903	DP7	lung	adenocarcinoma,squamous cell,NSCLC	Adherent	1	0	NCIH1703_LUNG	PRISM Pool 012
+58	KYSE410	P903	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE410_OESOPHAGUS	PRISM Pool 012
+59	HT144	P903	DP7	skin	melanoma	Adherent	1	0	HT144_SKIN	PRISM Pool 012
+60	SNU601	P903	DP7	stomach	carcinoma	Adherent	1	0	SNU601_STOMACH	PRISM Pool 012
+61	LS411N	P903	DP7	large intestine	carcinoma,colorectal	Adherent	1	0	LS411N_LARGE_INTESTINE	PRISM Pool 013
+62	U2OS	P903	DP7	bone	osteosarcoma	Adherent	1	1	U2OS_BONE	PRISM Pool 013
+63	22RV1	P903	DP7	prostate	carcinoma	Adherent	1	0	22RV1_PROSTATE	PRISM Pool 013
+64	OE19	P903	DP7	oesophagus	carcinoma	Adherent	1	0	OE19_OESOPHAGUS	PRISM Pool 013
+65	SH4	P903	DP7	skin	melanoma	Adherent	1	0	SH4_SKIN	PRISM Pool 013
+66	NCIH661	P903	DP7	lung	carcinoma,large cell	Adherent	1	0	NCIH661_LUNG	PRISM Pool 014
+67	LC1SQSF	P903	DP7	lung	carcinoma,squamous cell	Adherent	1	0		PRISM Pool 014
+68	JHH1	P903	DP7	liver	carcinoma,hepatocellular	Adherent	1	0	JHH1_LIVER	PRISM Pool 014
+69	NCIH28	P903	DP7	pleura	mesothelioma	Adherent	1	0	NCIH28_PLEURA	PRISM Pool 014
+70	GMS10	P903	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	GMS10_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 014
+71	SNU182	P903	DP7	liver	Liver Cancer	Adherent	0	1	SNU182_LIVER	PRISM Pool 015
+72	SNU201	P903	DP7	central nervous system	Glioblastoma	Adherent	0	1	SNU201_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 015
+73	DMS53	P903	DP7	lung	SCLC	Adherent	0	1	DMS53_LUNG	PRISM Pool 015
+74	SW1783	P903	DP7	central nervous system	Astrocytoma	Adherent	0	1	SW1783_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 015
+75	NCIH441	P903	DP7	lung	NSCLC	Adherent	0	1	NCIH441_LUNG	PRISM Pool 015
+76	HEYA8	P904	DP7	ovary	carcinoma	Adherent	1	0	HEYA8_OVARY	PRISM Pool 016
+77	RKO	P904	DP7	large intestine	carcinoma	Adherent	1	0	RKO_LARGE_INTESTINE	PRISM Pool 016
+78	CAL62	P904	DP7	thyroid	carcinoma,anaplastic	Adherent	1	0	CAL62_THYROID	PRISM Pool 016
+79	HLF	P904	DP7	liver	carcinoma,hepatocellular	Adherent	1	0	HLF_LIVER	PRISM Pool 016
+80	T24	P904	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	T24_URINARY_TRACT	PRISM Pool 016
+81	ES2	P904	DP7	ovary	carcinoma,clear cell	Adherent	1	0	ES2_OVARY	PRISM Pool 017
+82	YD15	P904	DP7	salivary gland	mucoepidermoid carcinoma	Adherent	1	0	YD15_SALIVARY_GLAND	PRISM Pool 017
+83	KYSE70	P904	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE70_OESOPHAGUS	PRISM Pool 017
+84	KP4	P904	DP7	pancreas	carcinoma,ductal	Adherent	1	0	KP4_PANCREAS	PRISM Pool 017
+85	A2780	P904	DP7	ovary	carcinoma	Adherent	1	0	A2780_OVARY	PRISM Pool 017
+86	AGS	P904	DP7	stomach	adenocarcinoma,gastric	Adherent	1	0	AGS_STOMACH	PRISM Pool 018
+87	ISHIKAWAHERAKLIO02ER	P904	DP7	endometrium	carcinoma	Adherent	1	0	ISHIKAWAHERAKLIO02ER_ENDOMETRIUM	PRISM Pool 018
+88	HGC27	P904	DP7	stomach	adenocarcinoma,undifferentiated	Adherent	1	0	HGC27_STOMACH	PRISM Pool 018
+89	647V	P904	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	647V_URINARY_TRACT	PRISM Pool 018
+90	CAL12T	P904	DP7	lung	carcinoma,non-small cell	Adherent	1	0	CAL12T_LUNG	PRISM Pool 018
+91	L33	P904	DP7	pancreas	carcinoma	Adherent	1	0	L33_PANCREAS	PRISM Pool 019
+92	SF295	P904	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	SF295_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 019
+93	UO31	P904	DP7	kidney	carcinoma	Adherent	1	0	UO31_KIDNEY	PRISM Pool 019
+94	YD10B	P904	DP7	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	YD10B_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 019
+95	DMS273	P904	DP7	lung	carcinoma,small cell	Adherent	1	0	DMS273_LUNG	PRISM Pool 019
+96	G361	P904	DP7	skin	melanoma	Adherent	1	0	G361_SKIN	PRISM Pool 020
+97	OAW42	P904	DP7	ovary	carcinoma	Adherent	1	0	OAW42_OVARY	PRISM Pool 020
+98	HMC18	P904	DP7	breast	carcinoma	Adherent	1	0	HMC18_BREAST	PRISM Pool 020
+99	CAL54	P904	DP7	kidney	carcinoma,renal	Adherent	1	0	CAL54_KIDNEY	PRISM Pool 020
+100	MIAPACA2	P904	DP7	pancreas	carcinoma,ductal	Adherent	1	0	MIAPACA2_PANCREAS	PRISM Pool 020
+101	SW620	P905	DP7	large intestine	adenocarcinoma,colorectal	Adherent	1	0	SW620_LARGE_INTESTINE	PRISM Pool 021
+102	SKHEP1	P905	DP7	liver	carcinoma	Adherent	1	0	SKHEP1_LIVER	PRISM Pool 021
+103	SW480	P905	DP7	large intestine	adenocarcinoma,colorectal	Adherent	1	0	SW480_LARGE_INTESTINE	PRISM Pool 021
+104	YKG1	P905	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	YKG1_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 021
+105	J82	P905	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	J82_URINARY_TRACT	PRISM Pool 021
+106	KYSE30	P905	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE30_OESOPHAGUS	PRISM Pool 022
+107	NCIH2172	P905	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH2172_LUNG	PRISM Pool 022
+108	G401	P905	DP7	soft tissue	rhabdoid	Adherent	1	1	G401_SOFT_TISSUE	PRISM Pool 022
+109	SNU407	P905	DP7	large intestine	carcinoma	Adherent	1	0	SNU407_LARGE_INTESTINE	PRISM Pool 022
+110	AN3CA	P905	DP7	endometrium	carcinoma	Adherent	1	0	AN3CA_ENDOMETRIUM	PRISM Pool 022
+111	PLCPRF5	P905	DP7	liver	carcinoma,hepatocellular	Adherent	1	0	PLCPRF5_LIVER	PRISM Pool 023
+112	YAPC	P905	DP7	pancreas	carcinoma	Adherent	1	0	YAPC_PANCREAS	PRISM Pool 023
+113	SCABER	P905	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	SCABER_URINARY_TRACT	PRISM Pool 023
+114	G292CLONEA141B1	P905	DP7	bone	osteosarcoma	Adherent	1	1	G292CLONEA141B1_BONE	PRISM Pool 023
+115	JHH4	P905	DP7	liver	carcinoma,hepatocellular	Adherent	1	0	JHH4_LIVER	PRISM Pool 023
+116	HS766T	P905	DP7	pancreas	carcinoma,ductal	Adherent	1	0	HS766T_PANCREAS	PRISM Pool 024
+117	SW837	P905	DP7	large intestine	carcinoma	Adherent	1	0	SW837_LARGE_INTESTINE	PRISM Pool 024
+118	KURAMOCHI	P905	DP7	ovary	carcinoma,undifferentiated	Adherent	1	0	KURAMOCHI_OVARY	PRISM Pool 024
+119	YH13	P905	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	YH13_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 024
+120	NCIH2052	P905	DP7	pleura	mesothelioma	Adherent	1	0	NCIH2052_PLEURA	PRISM Pool 024
+121	COLO679	P905	DP7	skin	melanoma	Adherent	1	0	COLO679_SKIN	PRISM Pool 025
+122	A704	P905	DP7	kidney	carcinoma,renal	Adherent	1	0	A704_KIDNEY	PRISM Pool 025
+123	NCIH596	P905	DP7	lung	carcinoma,mixed adenosquamous	Adherent	1	0	NCIH596_LUNG	PRISM Pool 025
+124	KP3	P905	DP7	pancreas	pancreatic cancer,adenosquamous carcinoma	Adherent	1	0	KP3_PANCREAS	PRISM Pool 025
+125	SKUT1	P905	DP7	soft tissue	leiomyosarcoma	Adherent	1	0	SKUT1_SOFT_TISSUE	PRISM Pool 025
+126	42MGBA	P906	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	42MGBA_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 035
+127	A375	P906	DP7	skin	melanoma	Adherent	1	0	A375_SKIN	PRISM Pool 035
+128	FTC133	P906	DP7	thyroid	carcinoma,follicular	Adherent	1	0	FTC133_THYROID	PRISM Pool 035
+129	HT1080	P906	DP7	soft tissue	fibrosarcoma	Adherent	1	0	HT1080_SOFT_TISSUE	PRISM Pool 035
+130	SNU1077	P906	DP7	endometrium	carcinosarcoma,mesodermal mixed	Adherent	1	0	SNU1077_ENDOMETRIUM	PRISM Pool 035
+131	JHOC5	P906	DP7	ovary	clear cell carcinoma	Adherent	1	0	JHOC5_OVARY	PRISM Pool 039
+132	NCIH1299	P906	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH1299_LUNG	PRISM Pool 039
+133	PANC1	P906	DP7	pancreas	carcinoma,epithelioid	Adherent	1	0	PANC1_PANCREAS	PRISM Pool 039
+134	SNU1076	P906	DP7	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	SNU1076_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 039
+135	IGR37	P906	DP7	skin	melanoma	Adherent	1	0	IGR37_SKIN	PRISM Pool 039
+136	JHH6	P906	DP7	liver	hepatocellular carcinoma	Adherent	1	0	JHH6_LIVER	PRISM Pool 040
+137	NCIH460	P906	DP7	lung	carcinoma,large cell	Adherent	1	0	NCIH460_LUNG	PRISM Pool 040
+138	SJSA1	P906	DP7	bone	osteosarcoma	Adherent	1	1	SJSA1_BONE	PRISM Pool 040
+139	A2058	P906	DP7	skin	melanoma	Adherent	1	0	A2058_SKIN	PRISM Pool 040
+140	ACCMESO1	P906	DP7	pleura	mesothelioma	Adherent	1	0	ACCMESO1_PLEURA	PRISM Pool 040
+141	VMCUB1	P906	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	VMCUB1_URINARY_TRACT	PRISM Pool 041
+142	YD38	P906	DP7	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	YD38_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 041
+143	BFTC909	P906	DP7	kidney	carcinoma	Adherent	1	0	BFTC909_KIDNEY	PRISM Pool 041
+144	DAOY	P906	DP7	central nervous system	PNET,medulloblastoma	Adherent	1	1	DAOY_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 041
+145	EFO27	P906	DP7	ovary	mucinous carcinoma	Adherent	1	0	EFO27_OVARY	PRISM Pool 041
+146	IGR1	P906	DP7	skin	melanoma	Adherent	1	0	IGR1_SKIN	PRISM Pool 042
+147	LI7	P906	DP7	liver	hepatocellular carcinoma	Adherent	1	0	LI7_LIVER	PRISM Pool 042
+148	OVK18	P906	DP7	ovary	endometrioid carcinoma	Adherent	1	0	OVK18_OVARY	PRISM Pool 042
+149	SBC5	P906	DP7	lung	carcinoma,small cell	Adherent	1	0	SBC5_LUNG	PRISM Pool 042
+150	TOV112D	P906	DP7	ovary	endometrioid carcinoma	Adherent	1	0	TOV112D_OVARY	PRISM Pool 042
+151	KELLY	P907	DP7	autonomic ganglia	neuroblastoma	Adherent	1	1	KELLY_AUTONOMIC_GANGLIA	PRISM Pool 045
+152	PATU8902	P907	DP7	pancreas	carcinoma,ductal	Adherent	1	0	PATU8902_PANCREAS	PRISM Pool 045
+153	TT2609C02	P907	DP7	thyroid	carcinoma,follicular	Adherent	1	0	TT2609C02_THYROID	PRISM Pool 045
+154	QGP1	P907	DP7	pancreas	carcinoma	Adherent	1	0	QGP1_PANCREAS	PRISM Pool 045
+155	SW1710	P907	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	SW1710_URINARY_TRACT	PRISM Pool 045
+156	BECKER	P907	DP7	central nervous system	astrocytoma grade IV	Adherent	1	0	BECKER_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 051
+157	NCIH520	P907	DP7	lung	carcinoma,squamous cell	Adherent	1	0	NCIH520_LUNG	PRISM Pool 051
+158	SNU685	P907	DP7	endometrium	carcinosarcoma,mesodermal mixed	Adherent	1	0	SNU685_ENDOMETRIUM	PRISM Pool 051
+159	SW1353	P907	DP7	bone	chondrosarcoma	Adherent	1	0	SW1353_BONE	PRISM Pool 051
+160	A101D	P907	DP7	skin	melanoma	Adherent	1	0	A101D_SKIN	PRISM Pool 051
+161	BHT101	P907	DP7	thyroid	carcinoma,anaplastic	Adherent	1	0	BHT101_THYROID	PRISM Pool 052
+162	HEC1B	P907	DP7	endometrium	adenocarcinoma	Adherent	1	0	HEC1B_ENDOMETRIUM	PRISM Pool 052
+163	SNU61	P907	DP7	large intestine	carcinoma	Adherent	1	0	SNU61_LARGE_INTESTINE	PRISM Pool 052
+164	SNU886	P907	DP7	liver	hepatocellular carcinoma	Adherent	1	0	SNU886_LIVER	PRISM Pool 052
+165	SW1573	P907	DP7	lung	carcinoma,alveolar cell	Adherent	1	0	SW1573_LUNG	PRISM Pool 052
+166	G402	P907	DP7	soft tissue	rhabdoid	Adherent	1	1	G402_SOFT_TISSUE	PRISM Pool 053
+167	PECAPJ15	P907	DP7	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	PECAPJ15_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 053
+168	RL952	P907	DP7	endometrium	carcinoma,mixed adenosquamous	Adherent	1	0	RL952_ENDOMETRIUM	PRISM Pool 053
+169	CADOES1	P907	DP7	bone	sarcoma,Ewings,PNET	Adherent	1	1	CADOES1_BONE	PRISM Pool 053
+170	COLO668	P907	DP7	lung	carcinoma,small cell	Adherent	1	0	COLO668_LUNG	PRISM Pool 053
+171	LS513	P907	DP7	large intestine	carcinoma,colorectal	Adherent	1	0	LS513_LARGE_INTESTINE	PRISM Pool 054
+172	RMGI	P907	DP7	ovary	carcinoma,clear cell	Adherent	1	0	RMGI_OVARY	PRISM Pool 054
+173	VMRCRCW	P907	DP7	kidney	carcinoma	Adherent	1	0	VMRCRCW_KIDNEY	PRISM Pool 054
+174	CAKI1	P907	DP7	kidney	clear cell renal cell carcinoma	Adherent	1	0	CAKI1_KIDNEY	PRISM Pool 054
+175	OV7	P907	DP7	ovary	carcinoma	Adherent	1	0	OV7_OVARY	PRISM Pool 054
+176	BEN	P908	DP7	lung	carcinoma	Adherent	1	0	BEN_LUNG	PRISM Pool 056
+177	MKN1	P908	DP7	stomach	carcinoma,mixed adenosquamous	Adherent	1	0	MKN1_STOMACH	PRISM Pool 056
+178	LCLC103H	P908	DP7	lung	carcinoma,large cell	Adherent	1	0	LCLC103H_LUNG	PRISM Pool 056
+179	NCIH1573	P908	DP7	lung	carcinoma	Adherent	1	0	NCIH1573_LUNG	PRISM Pool 056
+180	DBTRG05MG	P908	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	DBTRG05MG_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 056
+181	PECAPJ41CLONED2	P908	DP7	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	PECAPJ41CLONED2_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 057
+182	HCC4006	P908	DP7	lung	carcinoma	Adherent	1	0	HCC4006_LUNG	PRISM Pool 057
+183	NCIH1581	P908	DP7	lung	carcinoma,large cell	Adherent	1	0	NCIH1581_LUNG	PRISM Pool 057
+184	CALU1	P908	DP7	lung	carcinoma,epidermoid	Adherent	1	0	CALU1_LUNG	PRISM Pool 057
+185	NUGC4	P908	DP7	stomach	adenocarcinoma,signet ring	Adherent	1	0	NUGC4_STOMACH	PRISM Pool 057
+186	NCIH1563	P908	DP7	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH1563_LUNG	PRISM Pool 058
+187	JHUEM2	P908	DP7	endometrium	carcinoma	Adherent	1	0	JHUEM2_ENDOMETRIUM	PRISM Pool 058
+188	JHOM1	P908	DP7	ovary	adenocarcinoma	Adherent	1	0	JHOM1_OVARY	PRISM Pool 058
+189	SKOV3	P908	DP7	ovary	carcinoma	Adherent	1	0	SKOV3_OVARY	PRISM Pool 058
+190	SKNBE2	P908	DP7	autonomic ganglia	neuroblastoma	Adherent	1	1	SKNBE2_AUTONOMIC_GANGLIA	PRISM Pool 058
+191	LUDLU1	P908	DP7	lung	carcinoma,squamous cell	Adherent	1	0	LUDLU1_LUNG	PRISM Pool 059
+192	HCC1359	P908	DP7	lung	carcinoma,large cell	Adherent	1	0	HCC1359_LUNG	PRISM Pool 059
+193	PK1	P908	DP7	pancreas	carcinoma	Adherent	1	0	PK1_PANCREAS	PRISM Pool 059
+194	SNU466	P908	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	SNU466_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 059
+195	SKLU1	P908	DP7	lung	carcinoma	Adherent	1	0	SKLU1_LUNG	PRISM Pool 059
+196	NCIH1838	P908	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH1838_LUNG	PRISM Pool 060
+197	SNU245	P908	DP7	biliary tract	carcinoma	Adherent	1	0	SNU245_BILIARY_TRACT	PRISM Pool 060
+198	MKN74	P908	DP7	stomach	adenocarcinoma,tubular	Adherent	1	0	MKN74_STOMACH	PRISM Pool 060
+199	KYSE180	P908	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE180_OESOPHAGUS	PRISM Pool 060
+200	KMRC1	P908	DP7	kidney	clear cell renal cell carcinoma	Adherent	1	0	KMRC1_KIDNEY	PRISM Pool 060
+201	CALU6	P909	DP7	lung	carcinoma,undifferentiated,probably lung anaplastic	Adherent	1	0	CALU6_LUNG	PRISM Pool 030
+202	GOS3	P909	DP7	central nervous system	glioma,astrocytoma	Adherent	1	0	GOS3_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 030
+203	HUH6	P909	DP7	liver	hepatoblastoma	Adherent	1	0	HUH6_LIVER	PRISM Pool 030
+204	PK59	P909	DP7	pancreas	carcinoma	Adherent	1	0	PK59_PANCREAS	PRISM Pool 030
+205	TCCSUP	P909	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	TCCSUP_URINARY_TRACT	PRISM Pool 030
+206	HS939T	P909	DP7	skin	melanoma	Adherent	1	0	HS939T_SKIN	PRISM Pool 034
+207	TOV21G	P909	DP7	ovary	carcinoma,clear cell	Adherent	1	0	TOV21G_OVARY	PRISM Pool 034
+208	OVTOKO	P909	DP7	ovary	carcinoma,clear cell	Adherent	1	0	OVTOKO_OVARY	PRISM Pool 034
+209	TE1	P909	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE1_OESOPHAGUS	PRISM Pool 034
+210	DANG	P909	DP7	pancreas	carcinoma	Adherent	1	0	DANG_PANCREAS	PRISM Pool 034
+211	LMSU	P909	DP7	stomach	adenocarcinoma	Adherent	1	0	LMSU_STOMACH	PRISM Pool 043
+212	MSTO211H	P909	DP7	pleura	mesothelioma,biphasic	Adherent	1	0	MSTO211H_PLEURA	PRISM Pool 043
+213	T47D	P909	DP7	breast	carcinoma,ductal	Adherent	1	0	T47D_BREAST	PRISM Pool 043
+214	PC3	P909	DP7	prostate	carcinoma	Adherent	1	0	PC3_PROSTATE	PRISM Pool 043
+215	VMRCRCZ	P909	DP7	kidney	carcinoma,renal	Adherent	1	0	VMRCRCZ_KIDNEY	PRISM Pool 043
+216	RVH421	P909	DP7	skin	melanoma	Adherent	1	0	RVH421_SKIN	PRISM Pool 044
+217	JHOS2	P909	DP7	ovary	carcinoma	Adherent	1	0	JHOS2_OVARY	PRISM Pool 044
+218	HS852T	P909	DP7	skin	melanoma	Adherent	1	0	HS852T_SKIN	PRISM Pool 044
+219	SNU738	P909	DP7	central nervous system	oligodendroglioma	Adherent	1	0	SNU738_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 044
+220	SKMEL30	P909	DP7	skin	melanoma	Adherent	1	0	SKMEL30_SKIN	PRISM Pool 044
+221	NCIH522	P909	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH522_LUNG	PRISM Pool 046
+222	PATU8988S	P909	DP7	pancreas	carcinoma,ductal	Adherent	1	0	PATU8988S_PANCREAS	PRISM Pool 046
+223	MFE280	P909	DP7	endometrium	carcinoma	Adherent	1	0	MFE280_ENDOMETRIUM	PRISM Pool 046
+224	OVSAHO	P909	DP7	ovary	carcinoma	Adherent	1	0	OVSAHO_OVARY	PRISM Pool 046
+225	SNUC4	P909	DP7	large intestine	adenocarcinoma	Adherent	1	0	SNUC4_LARGE_INTESTINE	PRISM Pool 046
+226	KPL1	P910	DP7	breast	carcinoma,ductal	Adherent	1	0	KPL1_BREAST	PRISM Pool 047
+227	KYSE520	P910	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE520_OESOPHAGUS	PRISM Pool 047
+228	COLO792	P910	DP7	skin	melanoma	Adherent	1	0	COLO792_SKIN	PRISM Pool 047
+229	SW1990	P910	DP7	pancreas	carcinoma,ductal	Adherent	1	0	SW1990_PANCREAS	PRISM Pool 047
+230	HS729	P910	DP7	soft tissue	rhabdomyosarcoma	Adherent	1	1	HS729_SOFT_TISSUE	PRISM Pool 047
+231	TE6	P910	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE6_OESOPHAGUS	PRISM Pool 048
+232	NCIH727	P910	DP7	lung	carcinoma,endocrine	Adherent	1	0	NCIH727_LUNG	PRISM Pool 048
+233	PANC0203	P910	DP7	pancreas	carcinoma	Adherent	1	0	PANC0203_PANCREAS	PRISM Pool 048
+234	NCIH358	P910	DP7	lung	carcinoma,bronchioalveolar,NSCLC	Adherent	1	0	NCIH358_LUNG	PRISM Pool 048
+235	HEC59	P910	DP7	endometrium	carcinoma	Adherent	1	0	HEC59_ENDOMETRIUM	PRISM Pool 048
+236	HCC1419	P910	DP7	breast	carcinoma,ductal,primary	Adherent	1	0	HCC1419_BREAST	PRISM Pool 049
+237	NCIH1792	P910	DP7	lung	carcinoma	Adherent	1	0	NCIH1792_LUNG	PRISM Pool 049
+238	NCIH1048	P910	DP7	lung	carcinoma,small cell	Adherent	1	0	NCIH1048_LUNG	PRISM Pool 049
+239	NCIH1568	P910	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH1568_LUNG	PRISM Pool 049
+240	EFM192A	P910	DP7	breast	carcinoma	Adherent	1	0	EFM192A_BREAST	PRISM Pool 049
+241	MKN7	P910	DP7	stomach	adenocarcinoma,tubular	Adherent	1	0	MKN7_STOMACH	PRISM Pool 050
+242	SNU423	P910	DP7	liver	carcinoma,hepatocellular	Adherent	1	0	SNU423_LIVER	PRISM Pool 050
+243	PK45H	P910	DP7	pancreas	carcinoma	Adherent	1	0	PK45H_PANCREAS	PRISM Pool 050
+244	ZR751	P910	DP7	breast	carcinoma,ductal	Adherent	1	0	ZR751_BREAST	PRISM Pool 050
+245	KMRC3	P910	DP7	kidney	clear cell renal cell carcinoma	Adherent	1	0	KMRC3_KIDNEY	PRISM Pool 050
+246	RD	P910	DP7	soft tissue	rhabdomyosarcoma,embryonal	Adherent	1	1	RD_SOFT_TISSUE	PRISM Pool 061
+247	NCIH2077	P910	DP7	lung	adenocarcinoma	Adherent	1	0		PRISM Pool 061
+248	CL34	P910	DP7	large intestine	carcinoma	Adherent	1	0	CL34_LARGE_INTESTINE	PRISM Pool 061
+249	NCIH2087	P910	DP7	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH2087_LUNG	PRISM Pool 061
+250	NCIH1944	P910	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH1944_LUNG	PRISM Pool 061
+251	253JBV	P911	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	253JBV_URINARY_TRACT	PRISM Pool 055
+252	786O	P911	DP7	kidney	clear cell renal cell carcinoma	Adherent	1	0	786O_KIDNEY	PRISM Pool 055
+253	IGROV1	P911	DP7	ovary	carcinoma	Adherent	1	0	IGROV1_OVARY	PRISM Pool 055
+254	LOVO	P911	DP7	large intestine	adenocarcinoma,colorectal	Adherent	1	0	LOVO_LARGE_INTESTINE	PRISM Pool 055
+255	LOXIMVI	P911	DP7	skin	melanoma	Adherent	1	0	LOXIMVI_SKIN	PRISM Pool 055
+256	SW48	P911	DP7	large intestine	adenocarcinoma,colorectal	Adherent	1	0	SW48_LARGE_INTESTINE	PRISM Pool 084
+257	HPAC	P911	DP7	pancreas	carcinoma,ductal	Adherent	1	0	HPAC_PANCREAS	PRISM Pool 084
+258	BXPC3	P911	DP7	pancreas	carcinoma,ductal	Adherent	1	0	BXPC3_PANCREAS	PRISM Pool 084
+259	HUH7	P911	DP7	liver	carcinoma,hepatocellular	Adherent	1	0	HUH7_LIVER	PRISM Pool 084
+260	KP2	P911	DP7	pancreas	carcinoma	Adherent	1	0	KP2_PANCREAS	PRISM Pool 084
+261	FTC238	P911	DP7	thyroid	carcinoma,follicular	Adherent	1	0	FTC238_THYROID	PRISM Pool 086
+262	H4	P911	DP7	central nervous system	neuroglioma	Adherent	1	0	H4_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 086
+263	KMBC2	P911	DP7	urinary tract	carcinoma	Adherent	1	0	KMBC2_URINARY_TRACT	PRISM Pool 086
+264	ONS76	P911	DP7	central nervous system	PNET,medulloblastoma	Adherent	1	1	ONS76_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 086
+265	PATU8988T	P911	DP7	pancreas	carcinoma,ductal	Adherent	1	0	PATU8988T_PANCREAS	PRISM Pool 086
+266	253J	P911	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	253J_URINARY_TRACT	PRISM Pool 087
+267	639V	P911	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	639V_URINARY_TRACT	PRISM Pool 087
+268	CHL1	P911	DP7	skin	melanoma	Adherent	1	0		PRISM Pool 087
+269	HCT116	P911	DP7	large intestine	carcinoma,colorectal	Adherent	1	0	HCT116_LARGE_INTESTINE	PRISM Pool 087
+270	KU1919	P911	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	KU1919_URINARY_TRACT	PRISM Pool 087
+271	HCT15	P911	DP7	large intestine	adenocarcinoma,colorectal	Adherent	1	0	HCT15_LARGE_INTESTINE	PRISM Pool 088
+272	HT29	P911	DP7	large intestine	adenocarcinoma,colorectal	Adherent	1	0	HT29_LARGE_INTESTINE	PRISM Pool 088
+273	MCAS	P911	DP7	ovary	carcinoma	Adherent	1	0	MCAS_OVARY	PRISM Pool 088
+274	SUIT2	P911	DP7	pancreas	carcinoma,ductal	Adherent	1	0	SUIT2_PANCREAS	PRISM Pool 088
+275	TE8	P911	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE8_OESOPHAGUS	PRISM Pool 088
+276	CJM	P912	DP7	skin	melanoma	Adherent	1	0	CJM_SKIN	PRISM Pool 026
+277	SNU398	P912	DP7	liver	carcinoma,hepatocellular	Adherent	1	0	SNU398_LIVER	PRISM Pool 026
+278	SNUC5	P912	DP7	large intestine	adenocarcinoma	Adherent	1	0	SNUC5_LARGE_INTESTINE	PRISM Pool 026
+279	NCIH1651	P912	DP7	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH1651_LUNG	PRISM Pool 026
+280	HCC78	P912	DP7	lung	carcinoma	Adherent	1	0	HCC78_LUNG	PRISM Pool 026
+281	LK2	P912	DP7	lung	carcinoma,squamous cell	Adherent	1	0	LK2_LUNG	PRISM Pool 031
+282	SW780	P912	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	SW780_URINARY_TRACT	PRISM Pool 031
+283	TE4	P912	DP7	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE4_OESOPHAGUS	PRISM Pool 031
+284	RKN	P912	DP7	soft tissue	leiomyosarcoma	Adherent	1	0	RKN_SOFT_TISSUE	PRISM Pool 031
+285	WM983B	P912	DP7	skin	melanoma	Adherent	1	0	WM983B_SKIN	PRISM Pool 031
+286	KNS62	P912	DP7	lung	carcinoma,squamous cell	Adherent	1	0	KNS62_LUNG	PRISM Pool 033
+287	LN229	P912	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	LN229_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 033
+288	A673	P912	DP7	bone	sarcoma,Ewings,PNET	Adherent	1	1	A673_BONE	PRISM Pool 033
+289	DU145	P912	DP7	prostate	carcinoma	Adherent	1	0	DU145_PROSTATE	PRISM Pool 033
+290	T98G	P912	DP7	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	T98G_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 033
+291	COLO783	P912	DP7	skin	melanoma	Adherent	1	0	COLO783_SKIN	PRISM Pool 091
+292	HCC1438	P912	DP7	lung	carcinoma,large cell	Adherent	1	0	HCC1438_LUNG	PRISM Pool 091
+293	HCC44	P912	DP7	lung	carcinoma,non-small cell carcinoma	Adherent	1	0	HCC44_LUNG	PRISM Pool 091
+294	JHH5	P912	DP7	liver	carcinoma,hepatocellular	Adherent	1	0	JHH5_LIVER	PRISM Pool 091
+295	NCIH838	P912	DP7	lung	carcinoma,non-small cell	Adherent	1	0	NCIH838_LUNG	PRISM Pool 091
+296	BFTC905	P912	DP7	urinary tract	carcinoma,transitional cell	Adherent	1	0	BFTC905_URINARY_TRACT	PRISM Pool 092
+297	HEC265	P912	DP7	endometrium	carcinoma	Adherent	1	0	HEC265_ENDOMETRIUM	PRISM Pool 092
+298	HSC2	P912	DP7	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	HSC2_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 092
+299	OC314	P912	DP7	ovary	serous carcinoma	Adherent	1	0	OC314_OVARY	PRISM Pool 092
+300	OE33	P912	DP7	oesophagus	metaplasia	Adherent	1	0	OE33_OESOPHAGUS	PRISM Pool 092
+551	EFO21	P923	DP8	ovary	serous carcinoma	Adherent	1	0	EFO21_OVARY	PRISM Pool 111
+552	OV56	P923	DP8	ovary	carcinoma	Adherent	1	0	OV56_OVARY	PRISM Pool 111
+553	MDAMB175VII	P923	DP8	breast	carcinoma,ductal	Adherent	1	0	MDAMB175VII_BREAST	PRISM Pool 111
+554	TTTHYROID	P923	DP8	thyroid	carcinoma,medulla	Adherent	1	0	TT_THYROID	PRISM Pool 111
+555	PANC0813	P923	DP8	pancreas	carcinoma,ductal	Adherent	1	0	PANC0813_PANCREAS	PRISM Pool 111
+556	EW8	P923	DP8	bone	Ewing's Sarcoma	Adherent	0	1		Peds Pool 002
+557	TTC549	P923	DP8	soft_tissue	Rhabdoid Cancer	Adherent	0	1		Peds Pool 002
+558	TTC642	P923	DP8	soft_tissue	Rhabdoid Cancer	Adherent	0	1		Peds Pool 002
+559	TC32	P923	DP8	bone	Ewing's Sarcoma	Adherent	0	1		Peds Pool 002
+560	KD	P923	DP8	soft_tissue	Rhabdoid Cancer	Adherent	0	1		Peds Pool 002
+561	CBAGPN	P923	DP8	bone	Ewing's Sarcoma	Adherent	0	1		Peds Pool 003
+562	A673STAG2KO45	P923	DP8	engineered	Engineered	Adherent	0	1		Peds Pool 003
+563	A673STAG2NT23	P923	DP8	engineered	Engineered	Adherent	0	1		Peds Pool 003
+564	A673STAG2KO16	P923	DP8	engineered	Engineered	Adherent	0	1		Peds Pool 003
+565	A673STAG2NT14	P923	DP8	engineered	Engineered	Adherent	0	1		Peds Pool 003
+566	TM87	P923	DP8	soft tissue	rhabdoid	Adherent	1	1		Peds Pool 004
+567	MON	P923	DP8	soft tissue	rhabdoid	Adherent	1	1		Peds Pool 004
+568	TTC1240	P923	DP8	soft_tissue	Rhabdoid Cancer	Adherent	0	1		Peds Pool 004
+569	SKNEP1	P923	DP8	bone	Wilms Tumor	Adherent	1	1		Peds Pool 004
+570	EWS502	P923	DP8	bone	sarcoma,Ewings,PNET	Adherent	1	1		Peds Pool 004
+571	STM9101	P923	DP8	soft_tissue	Rhabdoid Cancer	Adherent	0	1		Peds Pool 005
+572	SKPNDW	P923	DP8	bone	Ewing's Sarcoma	Adherent	0	1		Peds Pool 005
+573	KPNYN	P923	DP8	autonomic_ganglia	Neuroblastoma	Adherent	0	1	KPNYN_AUTONOMIC_GANGLIA	Peds Pool 005
+574	PEDS005ADH	P923	DP8	kidney	medullary carcinoma	Adherent	0	0		Peds Pool 005
+575	PEDS015T	P923	DP8	soft_tissue	Undifferentiated Sarcoma	Adherent	0	1		Peds Pool 005
+576	CHLA10	P923	DP8	bone	Ewing's Sarcoma	Adherent	0	1		Peds Pool 006
+577	TTC709	P923	DP8	soft_tissue	Rhabdoid Cancer	Adherent	0	1		Peds Pool 006
+578	NCIH2004RT	P923	DP8	soft_tissue	Rhabdoid Cancer	Adherent	0	1		Peds Pool 006
+501	NCIH1355	P921	DP8	lung	carcinoma	Adherent	1	0	NCIH1355_LUNG	PRISM Pool 103
+502	RMUGS	P921	DP8	ovary	carcinoma	Adherent	1	0	RMUGS_OVARY	PRISM Pool 103
+503	S117	P921	DP8	soft tissue	sarcoma	Adherent	1	0	S117_SOFT_TISSUE	PRISM Pool 103
+504	MDAMB435S	P921	DP8	skin	melanoma	Adherent	1	0	MDAMB435S_SKIN	PRISM Pool 103
+505	HS294T	P921	DP8	skin	melanoma,amelanotic	Adherent	1	0	HS294T_SKIN	PRISM Pool 103
+506	TCCPAN2	P921	DP8	pancreas	carcinoma	Adherent	1	0	TCCPAN2_PANCREAS	PRISM Pool 106
+507	SNU8	P921	DP8	ovary	adenocarcinoma	Adherent	0	0	SNU8_OVARY	PRISM Pool 106
+508	SNB75	P921	DP8	central nervous system	glioma	Adherent	1	0	SNB75_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 106
+509	NCIH2009	P921	DP8	lung	carcinoma	Adherent	1	0	NCIH2009_LUNG	PRISM Pool 106
+510	NCIH1650	P921	DP8	lung	adenocarcinoma,bronchoalveolar	Adherent	1	0	NCIH1650_LUNG	PRISM Pool 106
+511	DV90	P921	DP8	lung	carcinoma	Adherent	1	0	DV90_LUNG	PRISM Pool 107
+512	WM1799	P921	DP8	skin	melanoma	Adherent	1	0	WM1799_SKIN	PRISM Pool 107
+513	COLO829	P921	DP8	skin	melanoma	Adherent	0	0	COLO829_SKIN	PRISM Pool 107
+514	T3M4	P921	DP8	pancreas	adenocarcinoma	Adherent	0	0	T3M4_PANCREAS	PRISM Pool 107
+515	WM2664	P921	DP8	skin	melanoma	Adherent	1	0	WM2664_SKIN	PRISM Pool 107
+516	SNU410	P921	DP8	pancreas	carcinoma	Adherent	1	0	SNU410_PANCREAS	PRISM Pool 108
+517	NMCG1	P921	DP8	central nervous system	astrocytoma	Adherent	0	0	NMCG1_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 108
+518	OVISE	P921	DP8	ovary	carcinoma,clear cell	Adherent	1	0	OVISE_OVARY	PRISM Pool 108
+519	HCC1143	P921	DP8	breast	carcinoma,ductal,primary	Adherent	1	0	HCC1143_BREAST	PRISM Pool 108
+520	SNU1105	P921	DP8	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	SNU1105_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 108
+521	KS1	P921	DP8	central nervous system	Glioma/Brain Cancer	Adherent	0	1	KS1_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 109
+522	CW2	P921	DP8	large intestine	Colon Cancer	Adherent	0	1	CW2_LARGE_INTESTINE	PRISM Pool 109
+523	NIH:OVCAR3	P921	DP8	ovary	Ovarian Cancer	Adherent	0	1	NIHOVCAR3_OVARY	PRISM Pool 109
+524	SKNFI	P921	DP8	autonomic ganglia	Neuroblastoma	Adherent	0	1	SKNFI_AUTONOMIC_GANGLIA	PRISM Pool 109
+525	BICR18	P921	DP8	upper aerodigestive tract	Oral Cancer	Adherent	0	1	BICR18_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 109
+526	RCC10RGB	P922	DP8	kidney	myeloma,renal cell	Adherent	1	0	RCC10RGB_KIDNEY	PRISM Pool 077
+527	RERFLCAD1	P922	DP8	lung	carcinoma	Adherent	1	0	RERFLCAD1_LUNG	PRISM Pool 077
+528	NCIH226	P922	DP8	lung	carcinoma,squamous cell mesothelioma	Adherent	1	0	NCIH226_LUNG	PRISM Pool 077
+529	SKMEL2	P922	DP8	skin	melanoma	Adherent	1	0	SKMEL2_SKIN	PRISM Pool 077
+530	DKMG	P922	DP8	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	DKMG_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 077
+531	CAOV3	P922	DP8	ovary	carcinoma	Adherent	1	0	CAOV3_OVARY	PRISM Pool 078
+532	IALM	P922	DP8	lung	carcinoma,large cell	Adherent	1	0	IALM_LUNG	PRISM Pool 078
+533	NCIH2347	P922	DP8	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH2347_LUNG	PRISM Pool 078
+534	SKMEL3	P922	DP8	skin	melanoma	Adherent	1	0	SKMEL3_SKIN	PRISM Pool 078
+535	SQ1	P922	DP8	lung	carcinoma,squamous cell	Adherent	1	0	SQ1_LUNG	PRISM Pool 078
+536	UMUC1	P922	DP8	urinary tract	carcinoma,transitional cell	Adherent	1	0	UMUC1_URINARY_TRACT	PRISM Pool 081
+537	LS1034	P922	DP8	large intestine	carcinoma,colorectal	Adherent	1	0	LS1034_LARGE_INTESTINE	PRISM Pool 081
+538	COV434	P922	DP8	ovary	granulosa cell tumour	Adherent	1	0	COV434_OVARY	PRISM Pool 081
+539	CCFSTTG1	P922	DP8	central nervous system	glioma,astrocytoma	Adherent	1	0	CCFSTTG1_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 081
+540	COLO680N	P922	DP8	oesophagus	carcinoma,squamous cell	Adherent	1	0	COLO680N_OESOPHAGUS	PRISM Pool 081
+541	SW900	P922	DP8	lung	carcinoma,squamous cell	Adherent	1	0	SW900_LUNG	PRISM Pool 082
+542	SH10TC	P922	DP8	stomach	carcinoma	Adherent	1	0	SH10TC_STOMACH	PRISM Pool 082
+543	BT549	P922	DP8	breast	carcinoma,ductal	Adherent	1	0	BT549_BREAST	PRISM Pool 082
+544	BICR6	P922	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	BICR6_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 082
+545	BICR31	P922	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	BICR31_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 082
+546	LNCAP.FGC	P922	DP8	prostate	carcinoma	Adherent	1	0	LNCAPCLONEFGC_PROSTATE	PRISM Pool 110
+547	TEN	P922	DP8	endometrium	carcinoma,clear cell	Adherent	1	0	TEN_ENDOMETRIUM	PRISM Pool 110
+548	RCM1	P922	DP8	large intestine	carcinoma	Adherent	1	0	RCM1_LARGE_INTESTINE	PRISM Pool 110
+549	SNU1079	P922	DP8	biliary tract	carcinoma	Adherent	1	0	SNU1079_BILIARY_TRACT	PRISM Pool 110
+550	BT474	P922	DP8	breast	carcinoma,ductal	Adherent	1	0	BT474_BREAST	PRISM Pool 110
+401	CL11	P917	DP8	large intestine	Colon Cancer	Adherent	0	1	CL11_LARGE_INTESTINE	PRISM Pool 038
+402	HEPG2	P917	DP8	liver	Liver Cancer	Adherent	0	1	HEPG2_LIVER	PRISM Pool 038
+403	AM38	P917	DP8	central nervous system	Glioblastoma	Adherent	0	1	AM38_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 038
+404	PANC0504	P917	DP8	pancreas	Pancreatic Cancer	Adherent	0	1	PANC0504_PANCREAS	PRISM Pool 038
+405	GSU	P917	DP8	stomach	Gastric Cancer	Adherent	0	1	GSU_STOMACH	PRISM Pool 038
+406	PANC0403	P917	DP8	pancreas	carcinoma	Adherent	1	0	PANC0403_PANCREAS	PRISM Pool 066
+407	NCIH23	P917	DP8	lung	carcinoma,non-small cell	Adherent	1	0	NCIH23_LUNG	PRISM Pool 066
+408	NUGC3	P917	DP8	stomach	carcinoma	Adherent	1	0	NUGC3_STOMACH	PRISM Pool 066
+409	KNS81	P917	DP8	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	KNS81_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 066
+410	COLO800	P917	DP8	skin	melanoma	Adherent	1	0	COLO800_SKIN	PRISM Pool 066
+411	IPC298	P917	DP8	skin	melanoma	Adherent	1	0	IPC298_SKIN	PRISM Pool 067
+412	GP2D	P917	DP8	large intestine	carcinoma	Adherent	1	0	GP2D_LARGE_INTESTINE	PRISM Pool 067
+413	OE21	P917	DP8	oesophagus	carcinoma,squamous cell	Adherent	1	0	OE21_OESOPHAGUS	PRISM Pool 067
+414	KYSE140	P917	DP8	oesophagus	carcinoma,squamous cell	Adherent	1	0	KYSE140_OESOPHAGUS	PRISM Pool 067
+415	NCIH1693	P917	DP8	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH1693_LUNG	PRISM Pool 067
+416	COLO678	P917	DP8	large intestine	Colon Cancer	Adherent	0	1	COLO678_LARGE_INTESTINE	PRISM Pool 068
+417	EFM19	P917	DP8	breast	Breast Cancer	Adherent	0	1	EFM19_BREAST	PRISM Pool 068
+418	COV318	P917	DP8	ovary	Ovarian Cancer	Adherent	0	1	COV318_OVARY	PRISM Pool 068
+419	RDES	P917	DP8	bone	Bone Sarcoma	Adherent	0	1	RDES_BONE	PRISM Pool 068
+420	RPMI7951	P917	DP8	skin	Melanoma	Adherent	0	1	RPMI7951_SKIN	PRISM Pool 068
+421	COV644	P917	DP8	ovary	Ovarian Cancer	Adherent	0	1	COV644_OVARY	PRISM Pool 069
+422	KE39	P917	DP8	stomach	Gastric Cancer	Adherent	0	1	KE39_STOMACH	PRISM Pool 069
+423	NCIH647	P917	DP8	lung	NSCLC	Adherent	0	1	NCIH647_LUNG	PRISM Pool 069
+424	SNU878	P917	DP8	liver	Liver Cancer	Adherent	0	1	SNU878_LIVER	PRISM Pool 069
+425	U87MG	P917	DP8	central nervous system	Glioblastoma	Adherent	0	1	U87MG_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 069
+426	HCC38	P918	DP8	breast	carcinoma,ductal,primary	Adherent	1	0	HCC38_BREAST	PRISM Pool 096
+427	KPNSI9S	P918	DP8	autonomic ganglia	neuroblastoma	Adherent	0	0	KPNSI9S_AUTONOMIC_GANGLIA	PRISM Pool 096
+428	NCIH2452	P918	DP8	pleura	mesothelioma	Adherent	1	0	NCIH2452_PLEURA	PRISM Pool 096
+429	SW1271	P918	DP8	lung	carcinoma,small cell	Adherent	1	0	SW1271_LUNG	PRISM Pool 096
+430	HT1376	P918	DP8	urinary tract	carcinoma,transitional cell	Adherent	1	0	HT1376_URINARY_TRACT	PRISM Pool 096
+431	HEC251	P918	DP8	endometrium	carcinoma	Adherent	1	0	HEC251_ENDOMETRIUM	PRISM Pool 097
+432	KNS42	P918	DP8	central nervous system	glioma	Adherent	1	0	KNS42_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 097
+433	NCIH446	P918	DP8	lung	carcinoma,small cell	Adherent	1	0	NCIH446_LUNG	PRISM Pool 097
+434	WM88	P918	DP8	skin	melanoma	Adherent	1	0	WM88_SKIN	PRISM Pool 097
+435	HS618T	P918	DP8	lung	carcinoma	Adherent	1	0	HS618T_LUNG	PRISM Pool 097
+436	COLO741	P918	DP8	skin	carcinoma,melanoma	Adherent	1	0	COLO741_SKIN	PRISM Pool 098
+437	HEC108	P918	DP8	endometrium	carcinoma	Adherent	1	0	HEC108_ENDOMETRIUM	PRISM Pool 098
+438	MCF7	P918	DP8	breast	carcinoma	Adherent	1	0	MCF7_BREAST	PRISM Pool 098
+439	SKNAS	P918	DP8	autonomic ganglia	neuroblastoma,embryonal	Adherent	1	1	SKNAS_AUTONOMIC_GANGLIA	PRISM Pool 098
+440	TM31	P918	DP8	central nervous system	glioma,astrocytoma	Adherent	1	0	TM31_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 098
+441	SW1116	P918	DP8	large intestine	Colon Cancer	Adherent	0	1	SW1116_LARGE_INTESTINE	PRISM Pool 099
+442	TYKNU	P918	DP8	ovary	Ovarian Cancer	Adherent	0	1	TYKNU_OVARY	PRISM Pool 099
+443	SNU899	P918	DP8	upper aerodigestive tract	Oral Cancer	Adherent	0	1	SNU899_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 099
+444	HT1197	P918	DP8	urinary tract	Urinary Cancer	Adherent	0	1	HT1197_URINARY_TRACT	PRISM Pool 099
+445	C32	P918	DP8	skin	Melanoma	Adherent	0	1	C32_SKIN	PRISM Pool 099
+446	JHH7	P918	DP8	liver	carcinoma,hepatocellular	Adherent	1	0	JHH7_LIVER	PRISM Pool 029
+447	NCIH2126	P918	DP8	lung	carcinoma,non-small cell carcinoma	Adherent	1	0	NCIH2126_LUNG	PRISM Pool 029
+448	MFE319	P918	DP8	endometrium	carcinoma	Adherent	1	0	MFE319_ENDOMETRIUM	PRISM Pool 029
+449	NCIH747	P918	DP8	large intestine	adenocarcinoma,colorectal	Adherent	1	0	NCIH747_LARGE_INTESTINE	PRISM Pool 029
+450	SNU308	P918	DP8	biliary tract	carcinoma	Adherent	1	0	SNU308_BILIARY_TRACT	PRISM Pool 029
+451	HUH28	P919	DP8	biliary tract	carcinoma	Adherent	1	0	HUH28_BILIARY_TRACT	PRISM Pool 070
+452	U118MG	P919	DP8	central nervous system	glioma,astrocytoma	Adherent	1	0	U118MG_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 070
+453	SNU1214	P919	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	SNU1214_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 070
+454	NCIH2228	P919	DP8	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH2228_LUNG	PRISM Pool 070
+455	NCIH2444	P919	DP8	lung	carcinoma,non-small cell	Adherent	1	0	NCIH2444_LUNG	PRISM Pool 070
+456	HEC6	P919	DP8	endometrium	carcinoma	Adherent	1	0	HEC6_ENDOMETRIUM	PRISM Pool 071
+457	HCC366	P919	DP8	lung	carcinoma,mixed adenosquamous	Adherent	1	0	HCC366_LUNG	PRISM Pool 071
+458	TE10	P919	DP8	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE10_OESOPHAGUS	PRISM Pool 071
+459	UACC257	P919	DP8	skin	melanoma	Adherent	1	0	UACC257_SKIN	PRISM Pool 071
+460	8305C	P919	DP8	thyroid	carcinoma,anaplastic	Adherent	1	0	8305C_THYROID	PRISM Pool 071
+461	IM95	P919	DP8	stomach	adenocarcinoma,intestinal	Adherent	1	0	IM95_STOMACH	PRISM Pool 072
+462	TE14	P919	DP8	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE14_OESOPHAGUS	PRISM Pool 072
+463	SCC25	P919	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	SCC25_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 072
+464	BICR16	P919	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	BICR16_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 072
+465	TE617T	P919	DP8	soft tissue	RMS	Adherent	0	1	TE617T_SOFT_TISSUE	PRISM Pool 072
+466	CAKI2	P919	DP8	kidney	papillary renal cell carcinoma	Adherent	0	0	CAKI2_KIDNEY	PRISM Pool 073
+467	OAW28	P919	DP8	ovary	adenocarcinoma	Adherent	0	0	OAW28_OVARY	PRISM Pool 073
+468	OVCAR4	P919	DP8	ovary	adenocarcinoma	Adherent	0	0	OVCAR4_OVARY	PRISM Pool 073
+469	SU8686	P919	DP8	pancreas	adenocarcinoma	Adherent	0	0	SU8686_PANCREAS	PRISM Pool 073
+470	NCIH2073	P919	DP8	lung	non-small cell adenocarcinoma	Adherent	0	0	NCIH2073_LUNG	PRISM Pool 073
+471	ONCODG1	P919	DP8	ovary	adenocarcinoma,ovary	Adherent	1	0	ONCODG1_OVARY	PRISM Pool 076
+472	KALS1	P919	DP8	central nervous system	glioma	Adherent	1	0	KALS1_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 076
+473	SKMEL5	P919	DP8	skin	melanoma	Adherent	1	0	SKMEL5_SKIN	PRISM Pool 076
+474	ASPC1	P919	DP8	pancreas	carcinoma,ductal	Adherent	1	0	ASPC1_PANCREAS	PRISM Pool 076
+475	SNU46	P919	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	SNU46_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 076
+476	769P	P920	DP8	kidney	clear cell renal cell carcinoma	Adherent	1	0	769P_KIDNEY	PRISM Pool 074
+477	NCIH841	P920	DP8	lung	carcinoma,small cell	Adherent	1	0	NCIH841_LUNG	PRISM Pool 074
+478	SKMEL24	P920	DP8	skin	melanoma	Adherent	1	0	SKMEL24_SKIN	PRISM Pool 074
+479	SNU1041	P920	DP8	upper aerodigestive tract	carcinoma	Adherent	1	0	SNU1041_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 074
+480	WM793	P920	DP8	skin	melanoma	Adherent	1	0	WM793_SKIN	PRISM Pool 074
+481	COV362	P920	DP8	ovary	carcinoma	Adherent	1	0	COV362_OVARY	PRISM Pool 075
+482	ISTMES1	P920	DP8	pleura	mesothelioma	Adherent	1	0	ISTMES1_PLEURA	PRISM Pool 075
+483	PANC0327	P920	DP8	pancreas	carcinoma,ductal	Adherent	1	0	PANC0327_PANCREAS	PRISM Pool 075
+484	UACC62	P920	DP8	skin	melanoma	Adherent	1	0	UACC62_SKIN	PRISM Pool 075
+485	UBLC1	P920	DP8	urinary tract	carcinoma,transitional cell	Adherent	1	0	UBLC1_URINARY_TRACT	PRISM Pool 075
+486	HCC1937	P920	DP8	breast	carcinoma,ductal,primary	Adherent	1	0	HCC1937_BREAST	PRISM Pool 079
+487	MALME3M	P920	DP8	skin	melanoma	Adherent	1	0	MALME3M_SKIN	PRISM Pool 079
+488	TUHR4TKB	P920	DP8	kidney	carcinoma	Adherent	1	0	TUHR4TKB_KIDNEY	PRISM Pool 079
+489	NCIH1915	P920	DP8	lung	carcinoma,large cell	Adherent	1	0	NCIH1915_LUNG	PRISM Pool 079
+490	HS746T	P920	DP8	stomach	adenocarcinoma	Adherent	0	0	HS746T_STOMACH	PRISM Pool 079
+491	CAPAN2	P920	DP8	pancreas	carcinoma,ductal	Adherent	1	0	CAPAN2_PANCREAS	PRISM Pool 080
+492	NCIH1623	P920	DP8	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH1623_LUNG	PRISM Pool 080
+493	SNU719	P920	DP8	stomach	carcinoma	Adherent	1	0	SNU719_STOMACH	PRISM Pool 080
+494	SNU869	P920	DP8	biliary tract	carcinoma	Adherent	1	0	SNU869_BILIARY_TRACT	PRISM Pool 080
+495	CAL78	P920	DP8	bone	chondrosarcoma,dedifferentiated	Adherent	1	0	CAL78_BONE	PRISM Pool 080
+496	HCC1954	P920	DP8	breast	Breast Cancer	Adherent	0	1	HCC1954_BREAST	PRISM Pool 083
+497	HCC1395	P920	DP8	breast	Breast Cancer	Adherent	0	1	HCC1395_BREAST	PRISM Pool 083
+498	CHP212	P920	DP8	autonomic ganglia	Neuroblastoma/Brain Cancer	Adherent	0	1	CHP212_AUTONOMIC_GANGLIA	PRISM Pool 083
+499	BICR22	P920	DP8	upper aerodigestive tract	Oral Cancer	Adherent	0	1	BICR22_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 083
+500	JL1	P920	DP8	pleura	Mesothelioma	Adherent	0	1	JL1_PLEURA	PRISM Pool 083
+301	FADU	P913	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	FADU_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 093
+302	MG63	P913	DP8	bone	osteosarcoma	Adherent	1	1	MG63_BONE	PRISM Pool 093
+303	NB1	P913	DP8	autonomic ganglia	neuroblastoma	Adherent	1	1	NB1_AUTONOMIC_GANGLIA	PRISM Pool 093
+304	SF126	P913	DP8	central nervous system	glioma,astrocytoma	Adherent	1	0	SF126_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 093
+305	SNU1066	P913	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	SNU1066_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 093
+306	CAL120	P913	DP8	breast	carcinoma	Adherent	1	0	CAL120_BREAST	PRISM Pool 094
+307	LXF289	P913	DP8	lung	carcinoma	Adherent	1	0	LXF289_LUNG	PRISM Pool 094
+308	MEWO	P913	DP8	skin	melanoma	Adherent	1	0	MEWO_SKIN	PRISM Pool 094
+309	SNGM	P913	DP8	endometrium	carcinoma	Adherent	1	0	SNGM_ENDOMETRIUM	PRISM Pool 094
+310	TTOESOPHAGUS	P913	DP8	oesophagus	squamous cell carcinoma	Adherent	1	0	TT_OESOPHAGUS	PRISM Pool 094
+311	ECGI10	P913	DP8	oesophagus	carcinoma	Adherent	1	0	ECGI10_OESOPHAGUS	PRISM Pool 100
+312	JMSU1	P913	DP8	urinary tract	carcinoma	Adherent	1	0	JMSU1_URINARY_TRACT	PRISM Pool 100
+313	CFPAC1	P913	DP8	pancreas	carcinoma,ductal,cystic fibrosis	Adherent	1	0	CFPAC1_PANCREAS	PRISM Pool 100
+314	SKCO1	P913	DP8	large intestine	adenocarcinoma	Adherent	0	0	SKCO1_LARGE_INTESTINE	PRISM Pool 100
+315	OV90	P913	DP8	ovary	adenocarcinoma	Adherent	0	0	OV90_OVARY	PRISM Pool 100
+316	ACHN	P913	DP8	kidney	carcinoma,renal	Adherent	1	0	ACHN_KIDNEY	PRISM Pool 101
+317	CAL51	P913	DP8	breast	carcinoma	Adherent	1	0	CAL51_BREAST	PRISM Pool 101
+318	HCC15	P913	DP8	lung	carcinoma,squamous cell	Adherent	1	0	HCC15_LUNG	PRISM Pool 101
+319	KMRC20	P913	DP8	kidney	carcinoma,renal	Adherent	1	0	KMRC20_KIDNEY	PRISM Pool 101
+320	NCIH1648	P913	DP8	lung	carcinoma	Adherent	1	0	NCIH1648_LUNG	PRISM Pool 101
+321	A253	P913	DP8	salivary gland	Oral Cancer	Adherent	0	1	A253_SALIVARY_GLAND	PRISM Pool 102
+322	MHHNB11	P913	DP8	autonomic ganglia	Neuroblastoma	Adherent	0	1	MHHNB11_AUTONOMIC_GANGLIA	PRISM Pool 102
+323	SKNDZ	P913	DP8	autonomic ganglia	Neuroblastoma	Adherent	0	1	SKNDZ_AUTONOMIC_GANGLIA	PRISM Pool 102
+324	SKNSH	P913	DP8	autonomic ganglia	Neuroblastoma	Adherent	0	1	SKNSH_AUTONOMIC_GANGLIA	PRISM Pool 102
+325	SNU489	P913	DP8	central nervous system	Glioblastoma	Adherent	0	1	SNU489_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 102
+326	K029AX	P914	DP8	skin	melanoma	Adherent	1	0	K029AX_SKIN	PRISM Pool 028
+327	T3M10	P914	DP8	lung	carcinoma,large cell	Adherent	1	0	T3M10_LUNG	PRISM Pool 028
+328	NCIH2122	P914	DP8	lung	adenocarcinoma,NSCLC	Adherent	1	0	NCIH2122_LUNG	PRISM Pool 028
+329	HCC95	P914	DP8	lung	carcinoma,squamous cell	Adherent	1	0	HCC95_LUNG	PRISM Pool 028
+330	MDAMB468	P914	DP8	breast	carcinoma	Adherent	1	0	MDAMB468_BREAST	PRISM Pool 028
+331	HCC1195	P914	DP8	lung	carcinoma,mixed adenosquamous	Adherent	1	0	HCC1195_LUNG	PRISM Pool 036
+332	EN	P914	DP8	endometrium	carcinoma	Adherent	1	0	EN_ENDOMETRIUM	PRISM Pool 036
+333	TE5	P914	DP8	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE5_OESOPHAGUS	PRISM Pool 036
+334	SNU668	P914	DP8	stomach	adenocarcinoma,signet ring	Adherent	1	0	SNU668_STOMACH	PRISM Pool 036
+335	CORL105	P914	DP8	lung	carcinoma	Adherent	1	0	CORL105_LUNG	PRISM Pool 036
+336	GCT	P914	DP8	soft tissue	Histiocytoma,fibrous	Adherent	1	0	GCT_SOFT_TISSUE	PRISM Pool 089
+337	LN18	P914	DP8	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	LN18_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 089
+338	RERFLCMS	P914	DP8	lung	carcinoma,non-small cell	Adherent	1	0	RERFLCMS_LUNG	PRISM Pool 089
+339	RT112	P914	DP8	urinary tract	carcinoma,transitional cell	Adherent	1	0	RT112_URINARY_TRACT	PRISM Pool 089
+340	LOUNH91	P914	DP8	lung	carcinoma,squamous cell	Adherent	1	0	LOUNH91_LUNG	PRISM Pool 089
+341	KNS60	P914	DP8	central nervous system	glioma,astrocytoma,grade IV	Adherent	1	0	KNS60_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 090
+342	ISTMES2	P914	DP8	pleura	mesothelioma	Adherent	1	0	ISTMES2_PLEURA	PRISM Pool 090
+343	SW579	P914	DP8	thyroid	carcinoma,anaplastic,squamous	Adherent	1	0	SW579_THYROID	PRISM Pool 090
+344	MDAMB231	P914	DP8	breast	carcinoma	Adherent	1	0	MDAMB231_BREAST	PRISM Pool 090
+345	HCC1588	P914	DP8	lung	carcinoma,squamous cell	Adherent	1	0	HCC1588_LUNG	PRISM Pool 090
+346	HSC3	P914	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	HSC3_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 095
+347	MELJUSO	P914	DP8	skin	melanoma	Adherent	1	0	MELJUSO_SKIN	PRISM Pool 095
+348	NCIH2030	P914	DP8	lung	carcinoma,non-small cell	Adherent	1	0	NCIH2030_LUNG	PRISM Pool 095
+349	OVCAR8	P914	DP8	ovary	carcinoma	Adherent	1	0	OVCAR8_OVARY	PRISM Pool 095
+350	PC14	P914	DP8	lung	carcinoma,non-small cell	Adherent	1	0	PC14_LUNG	PRISM Pool 095
+351	HEC151	P915	DP8	endometrium	carcinoma	Adherent	1	0	HEC151_ENDOMETRIUM	PRISM Pool 104
+352	RT4	P915	DP8	urinary tract	carcinoma,transitional cell	Adherent	1	0	RT4_URINARY_TRACT	PRISM Pool 104
+353	SKES1	P915	DP8	bone	sarcoma,anaplastic,osteosarcoma or Ewings	Adherent	1	1	SKES1_BONE	PRISM Pool 104
+354	HT55	P915	DP8	large intestine	carcinoma	Adherent	1	0	HT55_LARGE_INTESTINE	PRISM Pool 104
+355	MKN45	P915	DP8	stomach	carcinoma	Adherent	1	0	MKN45_STOMACH	PRISM Pool 104
+356	HEP3B217	P915	DP8	liver	carcinoma,hepatocellular	Adherent	1	0	HEP3B217_LIVER	PRISM Pool 105
+357	HOS	P915	DP8	bone	osteosarcoma	Adherent	1	1	HOS_BONE	PRISM Pool 105
+358	HUCCT1	P915	DP8	biliary tract	carcinoma	Adherent	1	0	HUCCT1_BILIARY_TRACT	PRISM Pool 105
+359	NCIH292	P915	DP8	lung	mucoepidermoid carcinoma	Adherent	1	0	NCIH292_LUNG	PRISM Pool 105
+360	RERFLCAI	P915	DP8	lung	carcinoma,squamous cell	Adherent	1	0	RERFLCAI_LUNG	PRISM Pool 105
+361	LS180	P915	DP8	large intestine	adenocarcinoma,colorectal	Adherent	1	0	LS180_LARGE_INTESTINE	PRISM Pool 027
+362	SIMA	P915	DP8	autonomic ganglia	neuroblastoma	Adherent	1	1	SIMA_AUTONOMIC_GANGLIA	PRISM Pool 027
+363	CAMA1	P915	DP8	breast	carcinoma	Adherent	1	0	CAMA1_BREAST	PRISM Pool 027
+364	MDAMB436	P915	DP8	breast	carcinoma	Adherent	1	0	MDAMB436_BREAST	PRISM Pool 027
+365	NCIH1435	P915	DP8	lung	carcinoma,non-small cell	Adherent	1	0	NCIH1435_LUNG	PRISM Pool 027
+366	SNU1196	P915	DP8	biliary tract	carcinoma	Adherent	1	0	SNU1196_BILIARY_TRACT	PRISM Pool 062
+367	SNU449	P915	DP8	liver	carcinoma,hepatocellular	Adherent	1	0	SNU449_LIVER	PRISM Pool 062
+368	TE9	P915	DP8	oesophagus	carcinoma,squamous cell	Adherent	1	0	TE9_OESOPHAGUS	PRISM Pool 062
+369	ABC1	P915	DP8	lung	carcinoma,non-small cell	Adherent	1	0	ABC1_LUNG	PRISM Pool 062
+370	NCIH1373	P915	DP8	lung	carcinoma	Adherent	1	0	NCIH1373_LUNG	PRISM Pool 062
+371	EBC1	P915	DP8	lung	carcinoma,squamous cell	Adherent	1	0	EBC1_LUNG	PRISM Pool 063
+372	SKMES1	P915	DP8	lung	carcinoma,squamous cell	Adherent	1	0	SKMES1_LUNG	PRISM Pool 063
+373	HCC56	P915	DP8	large intestine	carcinoma	Adherent	1	0	HCC56_LARGE_INTESTINE	PRISM Pool 063
+374	A204	P915	DP8	soft tissue	rhabdoid	Adherent	1	1	A204_SOFT_TISSUE	PRISM Pool 063
+375	OUMS23	P915	DP8	large intestine	carcinoma	Adherent	1	0	OUMS23_LARGE_INTESTINE	PRISM Pool 063
+376	DETROIT562	P916	DP8	upper aerodigestive tract	carcinoma	Adherent	1	0	DETROIT562_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 064
+377	PECAPJ49	P916	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	PECAPJ49_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 064
+378	SW1088	P916	DP8	central nervous system	astrocytoma	Adherent	1	0	SW1088_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 064
+379	BCPAP	P916	DP8	thyroid	carcinoma,papillary	Adherent	1	0	BCPAP_THYROID	PRISM Pool 064
+380	HDQP1	P916	DP8	breast	carcinoma,ductal	Adherent	1	0	HDQP1_BREAST	PRISM Pool 064
+381	CAS1	P916	DP8	central nervous system	Glioblastoma	Adherent	0	1	CAS1_CENTRAL_NERVOUS_SYSTEM	PRISM Pool 065
+382	CCK81	P916	DP8	large intestine	Colon Cancer	Adherent	0	1	CCK81_LARGE_INTESTINE	PRISM Pool 065
+383	EFE184	P916	DP8	endometrium	Endometrial Cancer	Adherent	0	1	EFE184_ENDOMETRIUM	PRISM Pool 065
+384	EKVX	P916	DP8	lung	NSCLC	Adherent	0	1	EKVX_LUNG	PRISM Pool 065
+385	HUPT4	P916	DP8	pancreas	Pancreatic Cancer	Adherent	0	1	HUPT4_PANCREAS	PRISM Pool 065
+386	OVKATE	P916	DP8	ovary	Ovarian Cancer	Adherent	0	1	OVKATE_OVARY	PRISM Pool 085
+387	SW1463	P916	DP8	large intestine	Colon Cancer	Adherent	0	1	SW1463_LARGE_INTESTINE	PRISM Pool 085
+388	NCIH2196	P916	DP8	lung	SCLC	Adherent	0	1	NCIH2196_LUNG	PRISM Pool 085
+389	MDAMB361	P916	DP8	breast	Breast Cancer	Adherent	0	1	MDAMB361_BREAST	PRISM Pool 085
+390	BHY	P916	DP8	upper aerodigestive tract	Oral Cancer	Adherent	0	1	BHY_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 085
+391	BICR56	P916	DP8	upper aerodigestive tract	carcinoma,squamous cell	Adherent	1	0	BICR56_UPPER_AERODIGESTIVE_TRACT	PRISM Pool 032
+392	SNU81	P916	DP8	large intestine	carcinoma	Adherent	1	0	SNU81_LARGE_INTESTINE	PRISM Pool 032
+393	OSRC2	P916	DP8	kidney	myeloma,renal cell	Adherent	1	0	OSRC2_KIDNEY	PRISM Pool 032
+394	2313287	P916	DP8	stomach	carcinoma	Adherent	1	0	2313287_STOMACH	PRISM Pool 032
+395	NCIH2170	P916	DP8	lung	carcinoma,squamous cell	Adherent	1	0	NCIH2170_LUNG	PRISM Pool 032
+396	HUPT3	P916	DP8	pancreas	carcinoma	Adherent	1	0	HUPT3_PANCREAS	PRISM Pool 037
+397	HCC1428	P916	DP8	breast	carcinoma	Adherent	1	0	HCC1428_BREAST	PRISM Pool 037
+398	NCIH650	P916	DP8	lung	carcinoma,bronchioalveolar,NSCLC	Adherent	1	0	NCIH650_LUNG	PRISM Pool 037
+399	NCIH2110	P916	DP8	lung	carcinoma,non-small cell	Adherent	1	0	NCIH2110_LUNG	PRISM Pool 037
+400	RERFLCKJ	P916	DP8	lung	carcinoma,non-small cell	Adherent	1	0	RERFLCKJ_LUNG	PRISM Pool 037

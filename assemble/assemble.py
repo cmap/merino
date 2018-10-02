@@ -32,12 +32,12 @@ def build_parser():
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
                         type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100"])
-    parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True)
+    parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True, default="120")
+    parser.add_argument("-plate_map_path", "-pmp",
+                        help="path to file containing plate map describing perturbagens used", type=str, required=True)
 
     # These arguments are optional. Some may be superfluous now and might be removed.
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
-    parser.add_argument("-plate_map_path", "-pmp",
-                        help="path to file containing plate map describing perturbagens used", type=str, required=True)
 
     parser.add_argument("-analyte_mapping_file", "-amf",
                         help="mapping of analytes to pools and davepools, overriding config file",
@@ -52,7 +52,7 @@ def build_parser():
                         default='')
     parser.add_argument("-truncate_to_plate_map", "-trunc", help="True or false, if true truncate data to fit framework of platemap provided",
                         action="store_true", default=False)
-    group = parser.add_mutually_exclusive_group()
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-davepool_id_csv_filepath_pairs", "-dp_csv",
                         help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
                         type=str, nargs="+", required=False)
