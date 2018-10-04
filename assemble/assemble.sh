@@ -39,6 +39,11 @@ case $key in
     shift
     shift
     ;;
+    -outfile)
+    OUTFILE="$2"
+    shift
+    ;;
+
     --default)
     DEFAULT=YES
     ;;
@@ -55,16 +60,18 @@ echo PERT_TIME   = "${PERT_TIME}"
 echo PLATE_MAP_PATH = "${PLATE_MAP_PATH}"
 echo CSV_FILEPATH   = "${CSV_FILEPATH}"
 echo DAVEPOOL_ID_CSV_FILEPATH_PAIRS = "${DAVEPOOL_ID_CSV_FILEPATH_PAIRS}"
-
+echo OUTFILE = "${OUTFILE}"
 # Activate conda environment
 source activate merino
 
 cd /cmap/
 
 python merino/setup_merino.py develop
-if [ -z "$DAVEPOOL_ID_CSV_FILEPATH_PAIRS" ]
+if [ -z "$DAVEPOOL_ID_CSV_FILEPATH_PAIRS" ];
 then
-python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS}
+python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS} -out ${OUTFILE}
+else
+python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -csv_filepath ${CSV_FILEPATH} -out ${OUTFILE}
 fi
 
 # Deactivate conda environment
