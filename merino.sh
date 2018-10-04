@@ -4,7 +4,7 @@ key=$1
 
 case $key in
     assemble)
-    assemble $@
+    ./assemble $@
     ;;
     card)
     ./card $@

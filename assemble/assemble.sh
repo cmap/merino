@@ -69,9 +69,9 @@ cd /cmap/
 python merino/setup_merino.py develop
 if [ -z "$DAVEPOOL_ID_CSV_FILEPATH_PAIRS" ];
 then
-python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS} -out ${OUTFILE}
+python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -csv ${CSV_FILEPATH} -out ${OUTFILE}
 else
-python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -csv_filepath ${CSV_FILEPATH} -out ${OUTFILE}
+python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS} -out ${OUTFILE}
 fi
 
 # Deactivate conda environment
