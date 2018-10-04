@@ -13,6 +13,7 @@ import os
 import argparse
 import merino
 import sys
+import ast
 import ConfigParser
 import assemble_core
 
@@ -141,6 +142,7 @@ def build_prism_cell_list(cell_set_definition_file, analyte_mapping_file):
         cell_list_id_not_in_davepool_mapping.sort()
         message2 = ("some cell ids were found in the cell set but not in the davepool mapping - IDs: {}".format(cell_list_id_not_in_davepool_mapping))
         raise Exception ("assemble build_prism_cell_list " + message2)
+
     return prism_cell_list
 
 
@@ -172,8 +174,14 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
 
 
 def main(args, all_perturbagens=None, assay_plates=None):
+    cp = ConfigParser.RawConfigParser()
+    cp.read(args.config_filepath)
+
     if all_perturbagens is None:
         all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, args.pert_time)
+
+    for pert in all_perturbagens:
+        pert.validate_properties(ast.literal_eval(cp.get("required_metadata_fields", "column_metadata_fields")))
 
     args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
 
@@ -198,8 +206,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
         replicate_number = csv_filename.rsplit("_", 1)[1]
         prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "H_" + replicate_number
 
-    cp = ConfigParser.RawConfigParser()
-    cp.read(args.config_filepath)
+
 
     #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
     cell_set_file = args.cell_set_definition_file if args.cell_set_definition_file else cp.get(args.assay_type, "cell_set_definition_file")
@@ -209,6 +216,10 @@ def main(args, all_perturbagens=None, assay_plates=None):
 
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
+    expected_prism_cell_metadata_fields = cp.get("required_metadata_fields","row_metadata_fields")
+    expected_prism_cell_metadata_fields = ast.literal_eval(expected_prism_cell_metadata_fields)
+    for cell in prism_cell_list:
+        cell.validate_properties(expected_prism_cell_metadata_fields)
     # truncate csv to plate map size if indicated by args.truncate_to_plate_map
     truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, args.truncate_to_plate_map)
 

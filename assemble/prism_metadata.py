@@ -20,6 +20,13 @@ class PrismCell(object):
     def __str__(self):
         return self.__repr__()
 
+    def validate_properties(self, expected_properties):
+        for property in expected_properties:
+            if hasattr(self,property):
+                continue
+            else:
+                raise Exception("missing property: {}".format(property))
+
 
 class Perturbagen(object):
     def __init__(self, pert_well=None):
@@ -31,6 +38,12 @@ class Perturbagen(object):
     def __str__(self):
         return self.__repr__()
 
+    def validate_properties(self, expected_properties):
+        for property in expected_properties:
+            if hasattr(self,property):
+                continue
+            else:
+                raise Exception("missing property: {}".format(property))
 
 def read_prism_cell_from_file(row_metadata_file, items):
 
