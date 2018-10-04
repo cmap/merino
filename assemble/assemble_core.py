@@ -197,7 +197,7 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
                                                                      davepool_id_to_cells_map)
 
     if not os.path.exists(os.path.join(outfile, prism_replicate_name)):
-        os.mkdir(os.path.join(outfile, prism_replicate_name))
+        os.makedirs(os.path.join(outfile, prism_replicate_name))
 
     # Create full outfile, build the gct, and write it out!
     median_outfile = os.path.join(outfile, prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")
