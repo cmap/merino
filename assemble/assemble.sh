@@ -6,7 +6,7 @@
 # as in the --default example).
 # note: if this is set to > 0 the /etc/hosts part is not recognized ( may be a bug )
 
-
+shift
 while [[ $# > 1 ]]
 do
 key="$1"
