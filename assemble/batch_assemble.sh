@@ -55,9 +55,9 @@ PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.src"
 echo PLATE_MAP_PATH = "${PLATE_MAP_PATH}"
 echo OUTFILE = "${CONFIG_ROOT}${PROJECT_CODE}/assemble/"
 # Activate conda environment
-#source activate merino
-#
-#cd /cmap/
+source activate merino
+
+cd /cmap/
 if [ "${ASSAY_TYPE}" = "DP78" ];
 then
     DP7_PLATE="${plate_token[0]}_DP7_${PERT_TIME}_${plate_token[3]}_${plate_token[4]}";
@@ -68,12 +68,12 @@ then
     DAVEPOOL_ID_CSV_FILEPATH_PAIRS="DP7 ${DP7_CSV_PATH} DP8 ${DP8_CSV_PATH}"
     echo "DAVEPOOL_ID_CSV_FILEPATH_PAIRS ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS}"
 
-#    python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS} -out ${OUTFILE}
+    python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS} -out ${OUTFILE}
 
 else
     CSV_FILEPATH="${CONFIG_ROOT}${PROJECT_CODE}/lxb/${PLATE}/${PLATE}.csv"
     echo CSV_FILEPATH = "${CSV_FILEPATH}"
-#    python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -csv ${CSV_FILEPATH} -out ${OUTFILE}
+    python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -csv ${CSV_FILEPATH} -out ${OUTFILE}
 
 fi
 
