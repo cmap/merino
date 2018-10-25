@@ -2,7 +2,6 @@ import merino.setup_logger as setup_logger
 import logging
 import os
 import cmapPy.pandasGEXpress.GCToo as GCToo
-import validate_prism_gct
 import prism_metadata
 import pandas
 import cmapPy.pandasGEXpress.write_gct as write_gct
@@ -207,7 +206,3 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     count_outfile = os.path.join(outfile, prism_replicate_name, prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_count_data_by_cell)
     write_gct.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
-
-    # Validate that all the expected meta-data is present
-    validate_prism_gct.check_headers(median_outfile)
-    validate_prism_gct.check_headers(count_outfile)
