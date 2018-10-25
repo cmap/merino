@@ -101,20 +101,23 @@ def build_davepool_id_csv_list(davepool_id_csv_filepath_pairs):
     return r
 
 
-def build_prism_cell_list(cell_set_definition_file, analyte_mapping_file):
+def build_prism_cell_list(config_parser, cell_set_definition_file, analyte_mapping_file):
     '''
-    read PRISM cell line meta data from file specified in config file (at config_filepath), then associate with
-    assay_plate based on pool ID.  Check for cell pools that are not associated with any assay plate
-    :param assay_plates:
+    read PRISM cell line metadata from file specified in config file, then associate with
+    assay_plate based on pool ID, pulling out metadata based on config specifications.  Check for cell pools that are not associated with any assay plate
+    :param config_parser: parser pre-loaded with config file
     :param cell_set_definition_file:
+    :param analyte_mapping_file:
     :return:
     '''
-    prism_cell_list_items = [(x,x) for x in ["analyte_id", "pool_id", "davepool_id", "feature_id", "cell_iname", "minipool_id",
-                             "ccle_name", "cell_lineage", "cell_culture"]]
-    analyte_mapping_items = [(x,x) for x in ["analyte_id", "feature_id", "cell_name", "davepool_id", "pool_id", "barcode_id"]]
 
+    #read headers to pull from config and convert to tuple format expected by data parser
+    prism_cell_list_items = config_parser.get("headers_to_pull", "cell_set_definition_headers")
+    prism_cell_list_items = [(x,x) for x in ast.literal_eval(prism_cell_list_items)]
     prism_cell_list = prism_metadata.read_prism_cell_from_file(cell_set_definition_file, prism_cell_list_items)
 
+    analyte_mapping_items = config_parser.get("headers_to_pull", "analyte_mapping_headers")
+    analyte_mapping_items = [(x,x) for x in ast.literal_eval(analyte_mapping_items)]
     analyte_mapping = prism_metadata.read_prism_cell_from_file(analyte_mapping_file, analyte_mapping_items)
 
     cell_list_id_not_in_davepool_mapping = set()
@@ -172,10 +175,26 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
 
     return davepool_data_objects
 
+def setup_input_files(args):
+    # Check args for over-riding files, i.e. use of -csdf and -amf to override config paths to mapping files
+
+
+    cp = ConfigParser.ConfigParser()
+
+    if os.path.exists(args.config_filepath):
+        cp.read(args.config_filepath)
+    else:
+        #todo: download from s3 to overwrite local prism_pipeline.cfg
+        pass
+
+    #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
+    cell_set_file_path = args.cell_set_definition_file if args.cell_set_definition_file else cp.get(args.assay_type, "cell_set_definition_file")
+    analyte_mapping_file_path = args.analyte_mapping_file if args.analyte_mapping_file else cp.get(args.assay_type, "analyte_mapping_file")
+
+    return (cp, cell_set_file_path, analyte_mapping_file_path)
 
 def main(args, all_perturbagens=None, assay_plates=None):
-    cp = ConfigParser.RawConfigParser()
-    cp.read(args.config_filepath)
+    (cp, cell_set_file, analyte_mapping_file) = setup_input_files(args)
 
     if all_perturbagens is None:
         all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, args.pert_time)
@@ -208,18 +227,14 @@ def main(args, all_perturbagens=None, assay_plates=None):
 
 
 
-    #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
-    cell_set_file = args.cell_set_definition_file if args.cell_set_definition_file else cp.get(args.assay_type, "cell_set_definition_file")
-    analyte_mapping_file = args.analyte_mapping_file if args.analyte_mapping_file else cp.get(args.assay_type, "analyte_mapping_file")
-
-    prism_cell_list = build_prism_cell_list(cell_set_file, analyte_mapping_file)
+    prism_cell_list = build_prism_cell_list(cp, cell_set_file, analyte_mapping_file)
 
     logger.info("len(prism_cell_list):  {}".format(len(prism_cell_list)))
 
-    expected_prism_cell_metadata_fields = cp.get("required_metadata_fields","row_metadata_fields")
-    expected_prism_cell_metadata_fields = ast.literal_eval(expected_prism_cell_metadata_fields)
+    expected_prism_cell_metadata_fields = ast.literal_eval(cp.get("required_metadata_fields","row_metadata_fields"))
     for cell in prism_cell_list:
         cell.validate_properties(expected_prism_cell_metadata_fields)
+
     # truncate csv to plate map size if indicated by args.truncate_to_plate_map
     truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, args.truncate_to_plate_map)
 
