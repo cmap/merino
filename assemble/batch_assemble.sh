@@ -58,6 +58,9 @@ echo OUTFILE = "${CONFIG_ROOT}${PROJECT_CODE}/assemble/"
 source activate merino
 
 cd /cmap/
+
+python setup.py develop
+
 if [ "${ASSAY_TYPE}" = "DP78" ];
 then
     DP7_PLATE="${plate_token[0]}_DP7_${PERT_TIME}_${plate_token[3]}_${plate_token[4]}";
