@@ -16,7 +16,7 @@ import sys
 import ast
 import ConfigParser
 import assemble_core
-
+import utils.aws_utils as aws_utils
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -33,7 +33,7 @@ def build_parser():
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
                         type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100"])
-    parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True, default="120")
+    parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True, default="120H")
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
 
@@ -178,7 +178,6 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
 def setup_input_files(args):
     # Check args for over-riding files, i.e. use of -csdf and -amf to override config paths to mapping files
 
-
     cp = ConfigParser.ConfigParser()
 
     if os.path.exists(args.config_filepath):
@@ -213,7 +212,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
         csv_filename = os.path.basename(davepool_id_csv_list[0][1]).rsplit(".", 1)[0]
         replicate_number = csv_filename.rsplit("_",1)[1]
-        prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "H_" + replicate_number
+        prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "_" + replicate_number
 
     elif args.csv_filepath is not None:
         davepool_id_csv_list = args.csv_filepath
@@ -223,7 +222,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
         csv_filename = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
         replicate_number = csv_filename.rsplit("_", 1)[1]
-        prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "H_" + replicate_number
+        prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "_" + replicate_number
 
 
 
