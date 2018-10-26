@@ -1,7 +1,7 @@
 import urllib2
 import merino.setup_logger as setup_logger
 import logging
-import utils.path_utils as path_utils
+import merino.utils.path_utils as path_utils
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 def parse_data(header_map, data, BuildClass):
