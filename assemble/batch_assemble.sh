@@ -53,8 +53,11 @@ IFS='_' read -r -a plate_token <<< "${PLATE}";
 PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.src"
 
 echo PLATE_MAP_PATH = "${PLATE_MAP_PATH}"
-echo OUTFILE = "${CONFIG_ROOT}${PROJECT_CODE}/assemble/"
+OUTFILE="${CONFIG_ROOT}${PROJECT_CODE}/assemble/"
+
+echo OUTFILE = "#{OUTFILE}"
 # Activate conda environment
+
 source activate merino
 
 cd /cmap/
