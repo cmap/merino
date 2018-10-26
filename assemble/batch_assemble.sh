@@ -59,7 +59,7 @@ source activate merino
 
 cd /cmap/
 
-python merino/setup.py develop
+python merino/setup_merino.py develop
 
 if [ "${ASSAY_TYPE}" = "DP78" ];
 then
