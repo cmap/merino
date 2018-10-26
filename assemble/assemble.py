@@ -16,7 +16,6 @@ import sys
 import ast
 import ConfigParser
 import assemble_core
-import utils.aws_utils as aws_utils
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 

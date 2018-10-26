@@ -42,8 +42,8 @@ class TestAssemble(unittest.TestCase):
         config_filepath = "../prism_pipeline.cfg"
 
         plate_map_path = '../functional_tests/test_data/PDOG/map_src/PDOG003.src'
-        dp7_csv_path = "../functional_tests/test_data/PDOG/lxb/PDOG003_DP7_X1.csv"
-        dp8_csv_path = "../functional_tests/test_data/PDOG/lxb/PDOG003_DP8_X1.csv"
+        dp7_csv_path = "../functional_tests/test_data/PDOG/lxb/PDOG003_DP7_24H_X1_B1.csv"
+        dp8_csv_path = "../functional_tests/test_data/PDOG/lxb/PDOG003_DP8_24H_X1_B1.csv"
         cell_set_def_file = "../functional_tests/test_data/vdb/cell_set_definitions/PRISM_DP78.CS1_definition.txt"
         analyte_mapping_file = "../functional_tests/test_data/vdb/analyte_mapping/DP78_mapping.txt"
         assay_type = "DP78"
