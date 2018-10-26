@@ -3,9 +3,8 @@ import viability_normalization as viability
 import zscore
 import os
 import glob
-import distil
-import merino.misc_tools.cut_to_l2
 import sys
+#todo : um what
 sys.path.append('/Users/elemire/Workspace/cmapPy')
 import cmapPy.pandasGEXpress.write_gct as wgx
 import functools
@@ -15,7 +14,6 @@ import merino.setup_logger as setup_logger
 import logging
 import argparse
 import sys
-import ConfigParser
 
 import cmapPy.pandasGEXpress.parse as pe
 
@@ -29,10 +27,14 @@ def build_parser():
     # frequently between cohorts, replicates, etc.
     parser.add_argument("-proj_dir", "-pd", help="path to the pod directory you want to run card on",
                         type=str, required=True)
-    parser.add_argument("-search_pattern", "-sp",
+    plates_group = parser.add_mutually_exclusive_group(required=True)
+    plates_group.add_argument("-search_pattern", "-sp",
                         help="Search for this string in the directory, only run plates which contain it. "
                              "Default is wildcard",
-                        type=str, default='*', required=False)
+                        type=str, default='*')
+    plates_group.add_argument("-plate_name", "-pn", help="name of individual plate to run on", type=str)
+
+
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
@@ -93,7 +95,9 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
         plate_failure = reader_writer(norm_path, norm_path, functools.partial(norm.remove_low_bead_wells, count_gct=count_gctoo), check_size=True)
         # Shear predetermined bad wells (if any exist)
         reader_writer(norm_path, norm_path, functools.partial(shear.shear, bad_wells=bad_wells))
+
     reload(viability)
+
     if log_tf==True:
     # Map denoting each type of LEVEL4 data, its folder name, the function to create it, and the file ending.
         lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
@@ -124,16 +128,24 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
 
 
 def main(args):
-    failure_list = []
-    for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
-        name = os.path.basename(folder)
-        print name
-        plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
-        if plate_failure == True:
-            failure_list.append(name)
+    if args.search_pattern:
+        failure_list = []
+        for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
+            name = os.path.basename(folder)
+            print name
+            plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
+            if plate_failure == True:
+                failure_list.append(name)
 
-    print failure_list
-    pd.Series(failure_list).to_csv(os.path.join(args.proj_dir, 'failed_plates.txt'), sep='\t')
+        print failure_list
+        pd.Series(failure_list).to_csv(os.path.join(args.proj_dir, 'failed_plates.txt'), sep='\t')
+
+    else:
+        failure = card(args.proj_dir, args.plate_name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
+        if failure:
+            plate_failure_path = os.path.join(args.proj_dir, "assemble", args.plate_name, "failure.txt")
+            with open(plate_failure_path, "w") as file:
+                file.write("{} failed size checks")
 
 
 if __name__ == "__main__":
