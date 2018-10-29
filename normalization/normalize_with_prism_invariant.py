@@ -11,8 +11,8 @@ def normalize(mfi_gctoo, log=True, inv=True):
     # Level 2-3 Normalization based on prism invariant
 
     #mfi_gctoo = remove_low_bead_wells(mfi_gctoo, count_gctoo)
-    #if inv is True:
-    #    mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
+    if inv is True:
+        mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
 
     mfi_gctoo.data_df[mfi_gctoo.data_df < 1] = 1
     data_df = mfi_gctoo.data_df

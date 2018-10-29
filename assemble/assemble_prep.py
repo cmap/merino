@@ -40,7 +40,7 @@ def pcal_run():
             name = pert.split('_')[0] + '_CS5_' + pert.split('_')[2]
             print name
             trunc = pert[0:7]
-            os.system('python ~/Workspace/merino/assemble.py -config_filepath prism_pipeline.cfg -csdf /Volumes/cmap/data/vdb/PRISM/cell_set_definitions/PRISM_PR500.CS5_definition.txt -dmf /Volumes/cmap/data/vdb/PRISM/analyte_mapping/PR500_mapping.txt -out /Volumes/cmap_obelix/pod/custom/PCAL/assemble/ -prn {} -dp_csv PR500 /Volumes/cmap_obelix/pod/custom/PCAL/lxb/{}/{}.jcsv -pmp /Volumes/cmap_obelix/pod/custom/PCAL/map_src/PCAL075-102/{}.src'.format(name, pert, pert, trunc))
+            os.system('python ~/Workspace/merino/assemble/assemble.py -config_filepath prism_pipeline.cfg -at PR500 -out /Volumes/cmap_obelix/pod/custom/PCAL/assemble/ -prn {} -csv /Volumes/cmap_obelix/pod/custom/PCAL/lxb/{}/{}.csv -pmp /Volumes/cmap_obelix/pod/custom/PCAL/map_src/PCAL075-102/{}.src'.format(name, pert, pert, trunc))
 
 def pcal_t2b_run():
     for x in glob.glob('/Volumes/cmap_obelix/pod/custom/PCAL/lxb/*PR500.2*'):

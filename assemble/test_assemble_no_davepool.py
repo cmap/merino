@@ -22,7 +22,7 @@ class TestAssembleNoDavepool(unittest.TestCase):
         csv_filepath = "functional_tests/test_assemble_no_davepool/PMEL.A001_CS2_X1.csv"
 
         args = assemble_no_davepool.build_parser().parse_args(["-config_filepath", config_filepath,
-            prism_replicate_name, plate_map_path, csv_filepath, "-plate_map_type", prism_metadata.plate_map_type_CMap])
+                                                               prism_replicate_name, plate_map_path, csv_filepath, "-plate_map_type", prism_metadata.plate_map_type_CMap])
 
         (median_gctoo, count_gctoo) = assemble_no_davepool.main(args)
 

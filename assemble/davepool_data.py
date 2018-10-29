@@ -1,5 +1,5 @@
 import logging
-import setup_logger
+import merino.setup_logger as setup_logger
 import csv
 
 

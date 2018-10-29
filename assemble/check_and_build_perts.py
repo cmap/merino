@@ -100,7 +100,7 @@ def create_plate_map_dataframes(pertplate_perturbagens_map):
         for (pertplate, perturbagens) in pertplate_perturbagens_map.iteritems():
                 validated_perturbagens = prism_metadata.validate_perturbagens(perturbagens)
                 dataframe = prism_metadata.convert_objects_to_metadata_df(index_builder, validated_perturbagens.values(),
-                                                           {"well_id": "pert_well"})
+                                                                          {"well_id": "pert_well"})
                 dataframe_indexed = dataframe.set_index("pert_well")
                 dataframe_indexed.drop('assay_plate_barcode', axis=1, inplace=True)
                 dataframe_indexed.sort_index(axis='index', inplace=True)

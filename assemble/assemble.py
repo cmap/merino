@@ -7,7 +7,7 @@ The meta data inputs are a plate map, a cell set definition file, a plate tracki
 """
 import merino.setup_logger as setup_logger
 import logging
-import davepool_data
+import merino.assemble.davepool_data as davepool_data
 import prism_metadata
 import numpy
 import argparse
@@ -170,6 +170,7 @@ def build_prism_cell_list(config_filepath, cell_set_definition_file, analyte_map
     for dp in analyte_mapping:
         cell_id_davepool_map[dp.id] = dp
 
+
     for pc in prism_cell_list:
         if pc.id in cell_id_davepool_map.keys():
             cell_davepool = cell_id_davepool_map[pc.id]
@@ -271,6 +272,9 @@ def main(args, all_perturbagens=None, assay_plates=None):
 
     if analyte_mapping_file is None:
         analyte_mapping_file = _analyte_mapping_dict_[args.assay_type]
+
+    print cell_set_file
+    print analyte_mapping_file
 
     prism_cell_list = build_prism_cell_list(args.config_filepath, cell_set_file, analyte_mapping_file)
 
