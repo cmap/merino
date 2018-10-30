@@ -42,7 +42,7 @@ class TestPrismMetadata(unittest.TestCase):
 
     def test__read_perturbagen_from_file_CM(self):
         r = pm._read_perturbagen_from_file("functional_tests/test_prism_metadata/perturbagen.txt",
-            pm._perturbagen_CM_input_config_file_section, False, "prism_pipeline.cfg")
+                                           pm._perturbagen_CM_input_config_file_section, False)
 
         assert len(r) > 0
         for x in r:
@@ -51,7 +51,7 @@ class TestPrismMetadata(unittest.TestCase):
     def test__read_perturbagen_from_file_CMap(self):
         #1 perturbagen per well
         r = pm._read_perturbagen_from_file("functional_tests/test_prism_metadata/LJP005.src",
-                                           pm._perturbagen_CMap_input_config_file_section, True, "prism_pipeline.cfg")
+                                           pm._perturbagen_CMap_input_config_file_section, True)
         assert len(r) > 0, len(r)
         logger.debug("r[0]:  {}".format(r[0]))
         logger.debug("r[6]:  {}".format(r[6]))
@@ -62,7 +62,7 @@ class TestPrismMetadata(unittest.TestCase):
 
         #multiple perturbagens per well
         r = pm._read_perturbagen_from_file("functional_tests/test_prism_metadata/PMEL.A001.src",
-                                               pm._perturbagen_CMap_input_config_file_section, True, "prism_pipeline.cfg")
+                                           pm._perturbagen_CMap_input_config_file_section, True)
 
         assert len(r) > 0, len(r)
         logger.debug("r[0]:  {}".format(r[0]))
@@ -73,7 +73,7 @@ class TestPrismMetadata(unittest.TestCase):
         assert hasattr(r[0], "pert_type")
 
     def test_read_assay_plate_from_file(self):
-        r = pm.read_assay_plate_from_file("functional_tests/test_prism_metadata/assay_plate.txt", "prism_pipeline.cfg")
+        r = pm.read_assay_plate_from_file("functional_tests/test_prism_metadata/assay_plate.txt")
         assert len(r) > 0
         for x in r:
             logger.debug("x:  {}".format(x))
@@ -90,7 +90,7 @@ class TestPrismMetadata(unittest.TestCase):
         p.pert_type = "Test"
         p.pert_mfc_desc = "my fake compound name"
 
-        pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
+        pm._build_additional_perturbagen_info([p])
         logger.debug("p:  {}".format(p))
         assert p.pert_dose == (1000.0 * float(5) / 2001.0), p.pert_dose
         assert p.pert_dose_unit == "uM", p.pert_dose_unit
@@ -104,24 +104,24 @@ class TestPrismMetadata(unittest.TestCase):
         assert p.pert_itime == "120 h", p.pert_itime
 
         p.pert_mfc_desc = None
-        pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
+        pm._build_additional_perturbagen_info([p])
         assert p.pert_iname == p.pert_id, p.pert_iname
 
         p.pert_type = "unrecognized"
-        pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
+        pm._build_additional_perturbagen_info([p])
         assert p.pert_type == "ctl_vehicle", p.pert_type
 
         p.pert_type = None
-        pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
+        pm._build_additional_perturbagen_info([p])
         assert p.pert_type == "ctl_vehicle", p.pert_type
 
         p.pert_mfc_id = None
-        pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
+        pm._build_additional_perturbagen_info([p])
         assert p.pert_id == "DMSO", p.pert_id
 
         p.compound_well_mmoles_per_liter = "not a valid concentration"
         with self.assertRaises(Exception) as context:
-            pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
+            pm._build_additional_perturbagen_info([p])
         assert context.exception is not None
         logger.debug("context.exception:  {}".format(context.exception))
         assert "the concentration or dilution factors should be numbers" in str(context.exception), \
@@ -130,7 +130,7 @@ class TestPrismMetadata(unittest.TestCase):
         p.compound_well_mmoles_per_liter = 5.0
         del p.pert_type
         with self.assertRaises(Exception) as context:
-            pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
+            pm._build_additional_perturbagen_info([p])
         assert context.exception is not None
         logger.debug("context.exception:  {}".format(context.exception))
         assert "pert_type attribute is missing from perturbagen" in str(context.exception), str(context.exception)
@@ -142,7 +142,7 @@ class TestPrismMetadata(unittest.TestCase):
         p.compound_well_mmoles_per_liter = None
         p.pert_mfc_id = None
 
-        pm._build_additional_perturbagen_info("prism_pipeline.cfg", [p])
+        pm._build_additional_perturbagen_info([p])
         logger.debug("p:  {}".format(p))
 
         assert p.pert_dose is None, p.pert_dose
@@ -190,7 +190,7 @@ class TestPrismMetadata(unittest.TestCase):
         def index_builder(pert):
             return col_base_id + ":" + str(pert.well_id)
 
-        r = pm.convert_objects_to_metadata_df(index_builder, pert_list, {"well_id": "pert_well"})
+        r = pm.convert_objects_to_metadata_df(index_builder, pert_list)
         assert r is not None
         logger.debug("r:  {}".format(r))
 
@@ -217,7 +217,7 @@ class TestPrismMetadata(unittest.TestCase):
         def index_builder(c):
             return c.id
 
-        r = pm.convert_objects_to_metadata_df(index_builder, cell_list, {"id": "rid"})
+        r = pm.convert_objects_to_metadata_df(index_builder, cell_list)
 
         assert r is not None
         logger.debug("r:  {}".format(r))

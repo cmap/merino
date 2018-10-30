@@ -1,16 +1,14 @@
 import merino.setup_logger as setup_logger
 import logging
-import sys
 import os
 import cmapPy.pandasGEXpress.GCToo as GCToo
-import validate_prism_gct
 import prism_metadata
 import pandas
 import cmapPy.pandasGEXpress.write_gct as write_gct
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
-_remove_row_annotations = ["id", "ignore"]
+_remove_row_annotations = ["feature_id", "ignore"]
 _remove_col_annotations = ["assay_plate_barcode"]
 
 _null = "-666"
@@ -39,39 +37,6 @@ def build_davepool_id_to_cells_map(prism_cell_list):
     return r
 
 
-def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, truncate_to_platemap):
-    '''
-    There are some cases in which we are subsetting plates into different groups, ie. more than one gct per plate.
-    This was the case for PPCN. As such, we need a function to truncate the data to match the plate map which is given.
-    :param davepool_data_objects:
-    :param all_perturbagens:
-    :param truncate_to_platemap:
-    :return:
-    '''
-
-    platemap_well_list = set([p.well_id for p in all_perturbagens])
-
-    for davepool in davepool_data_objects:
-        # Check that wells match. If so, return the data. If not, check if -trunc argument was used.
-        if platemap_well_list == set(davepool.median_data.keys()):
-            return davepool_data_objects
-        # Truncate to platemap if true.
-        elif truncate_to_platemap == True:
-            for d in davepool_data_objects[0].median_data.keys():
-                 if d not in platemap_well_list:
-                     del davepool_data_objects[0].median_data[d]
-
-            for c in davepool_data_objects[0].count_data.keys():
-                if c not in platemap_well_list:
-                    del davepool_data_objects[0].count_data[c]
-        # Raise exception if not.
-        else:
-            raise Exception("Assemble truncate data objects to plate map: Well lists of platemap and csv do not match")
-
-
-    return davepool_data_objects
-
-
 def build_data_by_cell(cells, davepool_data_obj):
     cell_to_median_data_map = {}
     median_wells = []
@@ -80,8 +45,6 @@ def build_data_by_cell(cells, davepool_data_obj):
 
     ld = [(cell_to_median_data_map, median_wells, davepool_data_obj.median_headers, davepool_data_obj.median_data),
         (cell_to_count_data_map, count_wells, davepool_data_obj.count_headers, davepool_data_obj.count_data)]
-
-
 
     for (cell_data_map, wells, headers, data) in ld:
 
@@ -149,14 +112,12 @@ def process_data(davepool_data_objects, davepool_id_to_cells_map):
 
 
 def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
-
-
     #build column metadata dataframe:
     def column_ID_builder(perturbagen):
-        return prism_replicate_name + ":" + perturbagen.well_id
+        return prism_replicate_name + ":" + perturbagen.pert_well
 
-    col_metadata_df = prism_metadata.convert_objects_to_metadata_df(column_ID_builder, perturbagen_list,
-                                                                    {"well_id":"pert_well"})
+    col_metadata_df = prism_metadata.convert_objects_to_metadata_df(column_ID_builder, perturbagen_list, None)
+
     for col_annot in _remove_col_annotations:
         if col_annot in col_metadata_df.columns:
             col_metadata_df.drop(col_annot, axis=1, inplace=True)
@@ -171,7 +132,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
 
     #build row metadata dataframe:
     def row_ID_builder(prism_cell_obj):
-        return prism_cell_obj.id
+        return prism_cell_obj.feature_id
 
     row_metadata_df = prism_metadata.convert_objects_to_metadata_df(row_ID_builder,
                                                                     data_by_cell.cell_data_map.keys(), {})
@@ -196,7 +157,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
     #build index for the rows of the dataframe using what is actually the column ID (since it will be transposed)
     well_perturbagen_map = {}
     for p in perturbagen_list:
-        well_perturbagen_map[p.well_id] = p
+        well_perturbagen_map[p.pert_well] = p
     data_df_column_ids = []
     for w in data_by_cell.well_list:
         p = well_perturbagen_map[w]
@@ -236,7 +197,7 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
                                                                      davepool_id_to_cells_map)
 
     if not os.path.exists(os.path.join(outfile, prism_replicate_name)):
-        os.mkdir(os.path.join(outfile, prism_replicate_name))
+        os.makedirs(os.path.join(outfile, prism_replicate_name))
 
     # Create full outfile, build the gct, and write it out!
     median_outfile = os.path.join(outfile, prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")
@@ -246,7 +207,3 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     count_outfile = os.path.join(outfile, prism_replicate_name, prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_count_data_by_cell)
     write_gct.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
-
-    # Validate that all the expected meta-data is present
-    validate_prism_gct.check_headers(median_outfile)
-    validate_prism_gct.check_headers(count_outfile)
