@@ -117,6 +117,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
         return prism_replicate_name + ":" + perturbagen.pert_well
 
     col_metadata_df = prism_metadata.convert_objects_to_metadata_df(column_ID_builder, perturbagen_list, None)
+
     for col_annot in _remove_col_annotations:
         if col_annot in col_metadata_df.columns:
             col_metadata_df.drop(col_annot, axis=1, inplace=True)
@@ -134,7 +135,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
         return prism_cell_obj.feature_id
 
     row_metadata_df = prism_metadata.convert_objects_to_metadata_df(row_ID_builder,
-        data_by_cell.cell_data_map.keys(), {})
+                                                                    data_by_cell.cell_data_map.keys(), {})
 
     for row_annot in _remove_row_annotations:
         if row_annot in row_metadata_df.columns:

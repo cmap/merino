@@ -15,7 +15,7 @@ logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 class TestAssembleWithObjects(unittest.TestCase):
     def test_build_davepool_to_cells_map(self):
-        l = [prism_metadata.PrismCell(pool_id=str(x+20), analyte_id=str(x+10), davepool_id=str(x/2)) for x in range(6)]
+        l = [prism_metadata.PrismCell(pool_id=str(x + 20), analyte_id=str(x + 10), davepool_id=str(x / 2)) for x in range(6)]
         logger.debug("l:  {}".format(l))
 
         r = assemble_core.build_davepool_id_to_cells_map(l)
@@ -28,7 +28,7 @@ class TestAssembleWithObjects(unittest.TestCase):
             assert len(r[y]) == 2, r[y]
 
     def test_build_data_by_cell(self):
-        cells = [prism_metadata.PrismCell(pool_id=str(x+20), analyte_id=str(x+10), davepool_id=str(x/2)) for x in range(2)]
+        cells = [prism_metadata.PrismCell(pool_id=str(x + 20), analyte_id=str(x + 10), davepool_id=str(x / 2)) for x in range(2)]
         logger.debug("cells:  {}".format(cells))
 
         davepool_data_obj = davepool_data.DavepoolData()
@@ -67,7 +67,7 @@ class TestAssembleWithObjects(unittest.TestCase):
         logger.debug("r_count.cell_data_map:  {}".format(r_count.cell_data_map))
 
     def test_process_data(self):
-        cells = [prism_metadata.PrismCell(pool_id=str(x+20), analyte_id=str(x+10), davepool_id=str(x/2)) for x in range(4)]
+        cells = [prism_metadata.PrismCell(pool_id=str(x + 20), analyte_id=str(x + 10), davepool_id=str(x / 2)) for x in range(4)]
         logger.debug("cells:  {}".format(cells))
         cells_map = assemble_core.build_davepool_id_to_cells_map(cells)
         logger.debug("cells_map:  {}".format(cells_map))
@@ -149,13 +149,13 @@ class TestAssembleWithObjects(unittest.TestCase):
 
         cell_list = []
         c = prism_metadata.PrismCell(pool_id="fake pool", analyte_id="fake analyte",
-            davepool_id="fake davepool", id=3)
+                                     davepool_id="fake davepool", id=3)
         cell_list.append(c)
         c = prism_metadata.PrismCell(pool_id="fake pool 2", analyte_id="fake analyte 2",
-            davepool_id="fake davepool 2", id=5)
+                                     davepool_id="fake davepool 2", id=5)
         cell_list.append(c)
         c = prism_metadata.PrismCell(pool_id="fake pool 2", analyte_id="fake analyte 3",
-            davepool_id="fake davepool 2", id=7)
+                                     davepool_id="fake davepool 2", id=7)
         cell_list.append(c)
 
         data_by_cell = assemble_core.DataByCell({cell_list[1]:[1, 2, 11], cell_list[2]:[13, 17, 19], cell_list[0]:[23, 29, 31]},
