@@ -55,7 +55,7 @@ PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.src"
 echo PLATE_MAP_PATH = "${PLATE_MAP_PATH}"
 OUTFILE="${CONFIG_ROOT}${PROJECT_CODE}/assemble/"
 
-echo OUTFILE = "#{OUTFILE}"
+echo OUTFILE = "${OUTFILE}"
 # Activate conda environment
 
 source activate merino

@@ -210,9 +210,9 @@ def main(args, all_perturbagens=None, assay_plates=None):
         davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
-        csv_filename = os.path.basename(davepool_id_csv_list[0][1]).rsplit(".", 1)[0]
-        replicate_number = csv_filename.rsplit("_",1)[1]
-        prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "_" + replicate_number
+        plate_name = os.path.basename(davepool_id_csv_list[0][1]).rsplit(".", 1)[0]
+        (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
+        prism_replicate_name = "_".join([pert_plate, args.assay_type, args.pert_time,replicate_number, bead])
 
     elif args.csv_filepath is not None:
         davepool_id_csv_list = args.csv_filepath
@@ -220,9 +220,9 @@ def main(args, all_perturbagens=None, assay_plates=None):
         davepool_data_objects.append(read_csv(davepool_id_csv_list, args.assay_type))
 
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
-        csv_filename = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
-        replicate_number = csv_filename.rsplit("_", 1)[1]
-        prism_replicate_name = pert_plate + "_" + args.assay_type + "_" + args.pert_time + "_" + replicate_number
+        plate_name = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
+        (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
+        prism_replicate_name = "_".join([pert_plate, args.assay_type, args.pert_time,replicate_number, bead])
 
 
     prism_cell_list = build_prism_cell_list(cp, cell_set_file, analyte_mapping_file)
