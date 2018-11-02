@@ -10,8 +10,8 @@ case $key in
     CONFIG_ROOT="$2"
     shift # past argument
     ;;
-    -project_dir)
-    PROJECT_DIR="$2"
+    -project_code)
+    PROJECT_CODE="$2"
     shift # past argument
     ;;
     --default)
@@ -23,6 +23,8 @@ case $key in
 esac
 shift # past argument or value
 done
+
+PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}"
 
 echo CONFIG_ROOT = "${CONFIG_ROOT}"
 echo PROJECT_DIR = "${PROJECT_DIR}"

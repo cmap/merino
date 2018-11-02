@@ -145,7 +145,7 @@ def main(args):
         if failure:
             plate_failure_path = os.path.join(args.proj_dir, "assemble", args.plate_name, "failure.txt")
             with open(plate_failure_path, "w") as file:
-                file.write("{} failed size checks")
+                file.write("{} failed size checks".format(args.plate_name))
 
 
 if __name__ == "__main__":
