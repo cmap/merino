@@ -31,8 +31,8 @@ def build_parser():
     plates_group.add_argument("-search_pattern", "-sp",
                         help="Search for this string in the directory, only run plates which contain it. "
                              "Default is wildcard",
-                        type=str, default='*')
-    plates_group.add_argument("-plate_name", "-pn", help="name of individual plate to run on", type=str)
+                        type=str, default=None)
+    plates_group.add_argument("-plate_name", "-pn", help="name of individual plate to run on", type=str, default=None)
 
 
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
