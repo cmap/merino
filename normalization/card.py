@@ -38,7 +38,9 @@ def build_parser():
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
-    parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data",
+    parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data", default=True,
+                        action="store_false")
+    parser.add_argument("-inv_tf", help="presence of invariants, default: true; use flag to make false", default=True,
                         action="store_false")
 
     return parser
@@ -112,15 +114,15 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
                          'LFCVC': [functools.partial(viability.log_viability, plate_control=False, log=False), '_FCVC.gct']}
 
     # Loop through this map to output all level 4 data
-    for x in lvl4_card_map.keys():
-        if not os.path.exists(os.path.join(proj_dir, x)):
-            os.mkdir(os.path.join(proj_dir, x))
-        if not os.path.exists(os.path.join(proj_dir, x, plate_name)):
-            os.mkdir(os.path.join(proj_dir, x, plate_name))
+    for dir_name in lvl4_card_map.keys():
+        if not os.path.exists(os.path.join(proj_dir, dir_name)):
+            os.mkdir(os.path.join(proj_dir, dir_name))
+        if not os.path.exists(os.path.join(proj_dir, dir_name, plate_name)):
+            os.mkdir(os.path.join(proj_dir, dir_name, plate_name))
 
-            output_path = os.path.join(proj_dir, x, plate_name, plate_name + lvl4_card_map[x][1])
+            output_path = os.path.join(proj_dir, dir_name, plate_name, plate_name + lvl4_card_map[dir_name][1])
 
-            reader_writer(input_file=norm_path, output_file=output_path, function=lvl4_card_map[x][0])
+            reader_writer(input_file=norm_path, output_file=output_path, function=lvl4_card_map[dir_name][0])
 
     # Return status of plate failure
 
@@ -143,7 +145,7 @@ def main(args):
     else:
         failure = card(args.proj_dir, args.plate_name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
         if failure:
-            plate_failure_path = os.path.join(args.proj_dir, "assemble", args.plate_name, "failure.txt")
+            plate_failure_path = os.path.join(args.proj_dir, "normalize", args.plate_name, "failure.txt")
             with open(plate_failure_path, "w") as file:
                 file.write("{} failed size checks".format(args.plate_name))
 
