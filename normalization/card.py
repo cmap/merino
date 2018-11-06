@@ -38,10 +38,10 @@ def build_parser():
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
-    parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data", default=True,
+    parser.add_argument("-inv_tf", "-inv", help="True or false, if true normalize to invariants",
                         action="store_false")
-    parser.add_argument("-inv_tf", help="presence of invariants, default: true; use flag to make false", default=True,
-                        action="store_false")
+    parser.add_argument("-no_invariants", "-ni", help="True or false, if true log transform the data",
+                        action="store_true")
 
     return parser
 
