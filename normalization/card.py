@@ -44,6 +44,7 @@ def build_parser():
                         action="store_false")
     parser.add_argument("-no_invariants", "-ni", help="True or false, if true log transform the data",
                         action="store_true")
+    parser.add_argument("-flattened", help="whether directory structure is flattened with platenames at top level", action="store_true", default=False)
 
     return parser
 
@@ -68,25 +69,41 @@ def reader_writer(input_file, output_file, function, check_size=False):
     return plate_failure
 
 
-def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False):
+def setup_paths(proj_dir, plate_name, flattened):
+    if flattened:
+        top_level_dir = plate_name
+        assemble_path = os.path.join(top_level_dir, "assemble", plate_name + '_MEDIAN.gct')
+        count_path = os.path.join(top_level_dir, "assemble", plate_name + '_COUNT.gct')
+        norm_dir = os.path.join(top_level_dir, "normalize")
 
+    else :
     # Make Level 3 data folder
-    if not os.path.exists(os.path.join(proj_dir, 'normalize')):
-        os.mkdir(os.path.join(proj_dir, 'normalize'))
+        top_level_dir = proj_dir
+        # Get path to raw mfi
+        assemble_path = os.path.join(top_level_dir, 'assemble', plate_name, plate_name + '_MEDIAN.gct')
+        # Get path to beadcount values
+        count_path = os.path.join(top_level_dir, 'assemble', plate_name, plate_name + '_COUNT.gct')
+        # Get path to LEVEL3 norm values
+        norm_dir = os.path.join(top_level_dir, 'normalize', plate_name)
 
-    # Get path to raw mfi
-    assemble_path = os.path.join(proj_dir, 'assemble', plate_name, plate_name + '_MEDIAN.gct')
-    # Get path to beadcount values
-    count_path = os.path.join(proj_dir, 'assemble', plate_name, plate_name + '_COUNT.gct')
-    # Get path to LEVEL3 norm values
-    norm_path = os.path.join(proj_dir, 'normalize', plate_name, plate_name + '_NORM.gct')
+    norm_path = os.path.join(norm_dir, plate_name + '_NORM.gct')
+
+    if not os.path.exists(os.path.join(top_level_dir, 'normalize')):
+        os.mkdir(os.path.join(top_level_dir, 'normalize'))
+
+
+    return (top_level_dir, assemble_path, count_path, norm_dir, norm_path)
+
+
+def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False, flattened=False):
     # Set plate_failure variable to false
     plate_failure = False
 
-    if not os.path.exists(os.path.join(proj_dir, 'normalize', plate_name)):
-        # Create norm folder for plate if it doesn't exist already
-        os.mkdir(os.path.join(proj_dir, 'normalize', plate_name))
+    (top_level_dir, assemble_path, count_path, norm_dir, norm_path) = setup_paths(proj_dir, plate_name, flattened)
 
+    if not os.path.exists(norm_dir):
+        # Create norm folder for plate if it doesn't exist already
+        os.mkdir(norm_dir)
         # Create norm file
         if dp == True:
             reader_writer(assemble_path, norm_path, norm.no_inv_norm)
@@ -117,14 +134,17 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
 
     # Loop through this map to output all level 4 data
     for dir_name in lvl4_card_map.keys():
-        if not os.path.exists(os.path.join(proj_dir, dir_name)):
-            os.mkdir(os.path.join(proj_dir, dir_name))
-        if not os.path.exists(os.path.join(proj_dir, dir_name, plate_name)):
-            os.mkdir(os.path.join(proj_dir, dir_name, plate_name))
+        if not os.path.exists(os.path.join(top_level_dir, dir_name)):
+            os.mkdir(os.path.join(top_level_dir, dir_name))
+        # flattened = False
+        if top_level_dir == proj_dir and not os.path.exists(os.path.join(top_level_dir, dir_name, plate_name)):
+            os.mkdir(os.path.join(top_level_dir, dir_name, plate_name))
+            output_path = os.path.join(top_level_dir, dir_name, plate_name, plate_name + lvl4_card_map[dir_name][1])
 
-            output_path = os.path.join(proj_dir, dir_name, plate_name, plate_name + lvl4_card_map[dir_name][1])
+        else : # flattened = True
+            output_path = os.path.join(top_level_dir, dir_name, plate_name + lvl4_card_map[dir_name][1])
 
-            reader_writer(input_file=norm_path, output_file=output_path, function=lvl4_card_map[dir_name][0])
+        reader_writer(input_file=norm_path, output_file=output_path, function=lvl4_card_map[dir_name][0])
 
     # Return status of plate failure
 
@@ -132,26 +152,39 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
 
 
 def main(args):
+    # N.B. search pattern is not setup to handle flattened directory structure
     if args.search_pattern:
         failure_list = []
         for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
-            name = os.path.basename(folder)
-            print name
-            plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
+            plate_name = os.path.basename(folder)
+            print plate_name
+            plate_failure = card(args.proj_dir, plate_name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants, flattened=args.flattened)
             if plate_failure == True:
-                failure_list.append(name)
+                failure_list.append(plate_name)
 
         print failure_list
-        pd.Series(failure_list).to_csv(os.path.join(args.proj_dir, 'failed_plates.txt'), sep='\t')
+        if len(failure_list) > 0:
+            pd.Series(failure_list).to_csv(os.path.join(args.proj_dir, 'failed_plates.txt'), sep='\t')
+            return
 
     else:
-        failure = card(args.proj_dir, args.plate_name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
+        failure = card(args.proj_dir, args.plate_name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants, flattened=args.flattened)
         if failure:
             plate_failure_path = os.path.join(args.proj_dir, "normalize", args.plate_name, "failure.txt")
             with open(plate_failure_path, "w") as file:
                 file.write("{} failed size checks".format(args.plate_name))
+                return
 
-
+    if args.flattened and args.plate_name:
+        plate_success_path = os.path.join(args.plate_name, "normalize", "success.txt")
+    elif args.flattened is False and args.plate_name:
+        plate_success_path = os.path.join(args.proj_dir, "normalize", args.plate_name, "success.txt")
+    else:
+        plate_success_path = os.path.join(args.proj_dir, "assemble_success.txt")
+    with open(plate_success_path, "w") as file:
+        if args.plate_name:
+            file.write("{} successfully processed".format(args.plate_name))
+        else: file.write("all plates in project {} successfully processed".format(args.proj_dir))
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
     setup_logger.setup(verbose=args.verbose)
@@ -159,16 +192,3 @@ if __name__ == "__main__":
     logger.debug("args:  {}".format(args))
 
     main(args)
-
-
-def oldmain(proj_dir, search_pattern='*', log_tf=True, bad_wells=[]):
-    failure_list = []
-    for folder in glob.glob(os.path.join(proj_dir, 'assemble', search_pattern)):
-        name = os.path.basename(folder)
-        plate_failure = card(proj_dir, name, log_tf = log_tf, bad_wells=bad_wells)
-        if plate_failure == True:
-            failure_list.append(name)
-
-    print failure_list
-    pd.Series(failure_list).to_csv(os.path.join(proj_dir, 'failed_plates.txt'), sep='\t')
-

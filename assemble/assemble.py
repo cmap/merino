@@ -238,6 +238,9 @@ def main(args, all_perturbagens=None, assay_plates=None):
 
     # Pass python objects to the core assembly module (this is where command line and automated assembly intersect)
     assemble_core.main(prism_replicate_name, args.outfile, all_perturbagens, davepool_data_objects, prism_cell_list)
+    success_path = os.path.join(os.path.basename(args.outfile), "success.txt")
+    with open(success_path, "w") as file:
+        file.write("plate {} successfully assembled".format(prism_replicate_name))
 
 
 if __name__ == "__main__":
