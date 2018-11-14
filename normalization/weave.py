@@ -25,13 +25,18 @@ def build_parser():
     # frequently between cohorts, replicates, etc.
     parser.add_argument("-proj_dir", "-pd", help="path to the pod directory you want to run card on",
                         type=str, required=True)
-    parser.add_argument("-search_pattern", "-sp",
-                        help="Search for this string in the directory, only run plates which contain it. "
-                             "Default is wildcard",
-                        type=str, default='*', required=False)
-    parser.add_argument("-input_folder", "-if",
-                        help="Search for this string in the directory, only run plates which contain it.",
-                        type=str, default='ZSPC', required=False)
+
+    input = parser.add_mutually_exclusive_group(required=True)
+    input.add_argument("-input_folder", "-if", help="Search for this string in the directory, only run plates which contain it.",
+                        type=str, default='ZSPC')
+    input.add_argument("-all_inputs", "-ai", help="Run on every card output", action="store_true", default=False)
+
+    replicate_sets = parser.add_mutually_exclusive_group(required=True)
+    replicate_sets.add_argument("-all_plates", "-ap", help="Flag to run on all plates",action="store_true", default=False)
+    replicate_sets.add_argument("-replicate_set_name", "-rsn", help="Run on specified replicate_set", type=str, default=None)
+    replicate_sets.add_argument("-search_pattern", "-sp", help="Run on plates which contain this pattern", type=str, default=None)
+
+
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
@@ -174,13 +179,51 @@ def write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q
     cc_q75_df.to_csv(os.path.join(outfile, rep_set + '_cc_q75.txt'), sep='\t')
     cb_cc_q75_df.to_csv(os.path.join(cb_outfile, rep_set + '_cc_q75.txt'), sep='\t')
 
+def setup_directories(project_dir, input_folder):
+    if not os.path.exists(os.path.join(project_dir, 'modz.{}'.format(input_folder))):
+        os.mkdir(os.path.join(project_dir, 'modz.{}'.format(input_folder)))
+    if not os.path.exists(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder))):
+        os.mkdir(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder)))
+
 def main(args):
-    if not os.path.exists(os.path.join(args.proj_dir, 'modz.{}'.format(args.input_folder))):
-        os.mkdir(os.path.join(args.proj_dir, 'modz.{}'.format(args.input_folder)))
-    if not os.path.exists(os.path.join(args.proj_dir, 'modz.{}.COMBAT'.format(args.input_folder))):
-        os.mkdir(os.path.join(args.proj_dir, 'modz.{}.COMBAT'.format(args.input_folder)))
-    for x in set([os.path.basename(y).split('_')[0]  + '_' + os.path.basename(y).split('_')[1] for y in glob.glob(os.path.join(args.proj_dir, '{}/*'.format(args.input_folder)))]):
-        weave(args.proj_dir, x, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+    # replicate set options: all_plates, replicate_set_name, search_pattern; NB required to chose one
+    if args.search_pattern is not None:
+        glob_value = args.search_pattern
+    if args.replicate_set_name is not None:
+        glob_value = args.replicate_set_name
+    if args.all_plates:
+        glob_value = "*"
+
+    # input_folder options: all_inputs, input_folder; NB required to chose one
+    if args.all_inputs:
+        for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
+            setup_directories(args.proj_dir, input)
+            replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, input, glob_value))
+            replicate_sets = set([ os.path.basename(x).split("_",3)[0] for x in replicate_sets_search_results])
+            if len(replicate_sets) > 1:
+                for replicate_set in replicate_sets:
+                    print replicate_set, input
+                    # weave(args.proj_dir, replicate_set, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
+            else:
+                replicate_set = replicate_sets.pop()
+                print replicate_set, input
+                # weave(args.proj_dir, replicate_set, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
+
+    else:
+        setup_directories(args.proj_dir, args.input_folder)
+        replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, args.input_folder, glob_value))
+        replicate_sets = set([ os.path.basename(x).split("_",3)[0] for x in replicate_sets_search_results])
+        if len(replicate_sets) > 1:
+            for replicate_set in replicate_sets:
+                print replicate_set, args.input_folder
+                # weave(args.proj_dir, replicate_set, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+        else:
+            replicate_set = replicate_sets.pop()
+            print replicate_set, args.input_folder
+            # weave(args.proj_dir, replicate_set, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+
+    # for x in set([os.path.basename(y).split('_')[0]  + '_' + os.path.basename(y).split('_')[1] for y in glob.glob(os.path.join(args.proj_dir, '{}/*'.format(args.input_folder)))]):
+    #     weave(args.proj_dir, x, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
 
 def run_all_weaves():
     pass
