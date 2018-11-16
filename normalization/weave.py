@@ -190,37 +190,44 @@ def main(args):
     if args.search_pattern is not None:
         glob_value = args.search_pattern
     if args.replicate_set_name is not None:
-        glob_value = args.replicate_set_name
+        glob_value = args.replicate_set_name + "*"
     if args.all_plates:
         glob_value = "*"
 
     # input_folder options: all_inputs, input_folder; NB required to chose one
     if args.all_inputs:
         for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
-            setup_directories(args.proj_dir, input)
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, input, glob_value))
-            replicate_sets = set([ os.path.basename(x).split("_",3)[0] for x in replicate_sets_search_results])
+            if not replicate_sets_search_results:
+                continue
+
+            # Setup directories after passing checks for work to do
+            setup_directories(args.proj_dir, input)
+
+            n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
+            replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-2)[0] for x in replicate_sets_search_results])
             if len(replicate_sets) > 1:
                 for replicate_set in replicate_sets:
                     print replicate_set, input
-                    # weave(args.proj_dir, replicate_set, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
+                    weave(args.proj_dir, replicate_set, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
             else:
                 replicate_set = replicate_sets.pop()
                 print replicate_set, input
-                # weave(args.proj_dir, replicate_set, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
+                weave(args.proj_dir, replicate_set, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
 
     else:
         setup_directories(args.proj_dir, args.input_folder)
         replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, args.input_folder, glob_value))
-        replicate_sets = set([ os.path.basename(x).split("_",3)[0] for x in replicate_sets_search_results])
+        n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
+        replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-2)[0] for x in replicate_sets_search_results])
         if len(replicate_sets) > 1:
             for replicate_set in replicate_sets:
                 print replicate_set, args.input_folder
-                # weave(args.proj_dir, replicate_set, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+                weave(args.proj_dir, replicate_set, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
         else:
             replicate_set = replicate_sets.pop()
             print replicate_set, args.input_folder
-            # weave(args.proj_dir, replicate_set, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+            weave(args.proj_dir, replicate_set, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
 
     # for x in set([os.path.basename(y).split('_')[0]  + '_' + os.path.basename(y).split('_')[1] for y in glob.glob(os.path.join(args.proj_dir, '{}/*'.format(args.input_folder)))]):
     #     weave(args.proj_dir, x, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
