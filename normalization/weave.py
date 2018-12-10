@@ -185,8 +185,12 @@ def setup_directories(project_dir, input_folder):
     if not os.path.exists(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder))):
         os.mkdir(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder)))
 
+def glob_for_replicate_sets(project_dir, input, glob_value):
+    pass
+
+
 def main(args):
-    # replicate set options: all_plates, replicate_set_name, search_pattern; NB required to chose one
+    # NB required to choose one of replicate set options: all_plates, replicate_set_name, search_pattern
     if args.search_pattern is not None:
         glob_value = args.search_pattern
     if args.replicate_set_name is not None:
@@ -194,7 +198,7 @@ def main(args):
     if args.all_plates:
         glob_value = "*"
 
-    # input_folder options: all_inputs, input_folder; NB required to chose one
+    # NB required choose one of input_folder options: all_inputs, input_folder
     if args.all_inputs:
         for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, input, glob_value))
@@ -204,8 +208,10 @@ def main(args):
             # Setup directories after passing checks for work to do
             setup_directories(args.proj_dir, input)
 
+            # Naming convention: pertPlate_assayType_pertTime_replicateNum_beadBatch
+            # weave group defined by first three tokens
             n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
-            replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-2)[0] for x in replicate_sets_search_results])
+            replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
             if len(replicate_sets) > 1:
                 for replicate_set in replicate_sets:
                     print replicate_set, input
@@ -218,8 +224,9 @@ def main(args):
     else:
         setup_directories(args.proj_dir, args.input_folder)
         replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, args.input_folder, glob_value))
+
         n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
-        replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-2)[0] for x in replicate_sets_search_results])
+        replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
         if len(replicate_sets) > 1:
             for replicate_set in replicate_sets:
                 print replicate_set, args.input_folder
@@ -231,9 +238,6 @@ def main(args):
 
     # for x in set([os.path.basename(y).split('_')[0]  + '_' + os.path.basename(y).split('_')[1] for y in glob.glob(os.path.join(args.proj_dir, '{}/*'.format(args.input_folder)))]):
     #     weave(args.proj_dir, x, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
-
-def run_all_weaves():
-    pass
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])

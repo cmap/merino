@@ -177,6 +177,7 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
 
 def setup_input_files(args):
     # Check args for over-riding files, i.e. use of -csdf and -amf to override config paths to mapping files
+    # or, if not overridden, read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
 
     cp = ConfigParser.ConfigParser()
 
@@ -186,7 +187,6 @@ def setup_input_files(args):
         #todo: download from s3 to overwrite local prism_pipeline.cfg
         pass
 
-    #read PRISM cell line metadata from file specified in config file, and associate with assay_plate metadata
     cell_set_file_path = args.cell_set_definition_file if args.cell_set_definition_file else cp.get(args.assay_type, "cell_set_definition_file")
     analyte_mapping_file_path = args.analyte_mapping_file if args.analyte_mapping_file else cp.get(args.assay_type, "analyte_mapping_file")
 
@@ -237,11 +237,17 @@ def main(args, all_perturbagens=None, assay_plates=None):
     truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, args.truncate_to_plate_map)
 
     # Pass python objects to the core assembly module (this is where command line and automated assembly intersect)
-    assemble_core.main(prism_replicate_name, args.outfile, all_perturbagens, davepool_data_objects, prism_cell_list)
+    try:
+        assemble_core.main(prism_replicate_name, args.outfile, all_perturbagens, davepool_data_objects, prism_cell_list)
+
+    except Exception as e:
+        failure_path = os.path.join(os.path.basename(args.outfile), "failure.txt")
+        with open(failure_path, "w") as file:
+            file.write("plate {} failed for reason {}".format(prism_replicate_name, e))
+        return
     success_path = os.path.join(os.path.basename(args.outfile), "success.txt")
     with open(success_path, "w") as file:
         file.write("plate {} successfully assembled".format(prism_replicate_name))
-
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
