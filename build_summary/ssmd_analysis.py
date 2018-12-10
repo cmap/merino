@@ -285,6 +285,8 @@ def failures_ecdf(filepaths, outfile, exclude_wells = []):
 def ssmd_by_pool(ssmd, cell_info, outfile):
     ssmd_count = pd.DataFrame()
     ssmd_median = pd.DataFrame()
+    cell_info.index = [str(x) for x in cell_info.index]
+    cell_info = cell_info.loc[ssmd.index.values]
     for pool in cell_info['pool_id'].unique():
         print pool
         pool_dex = cell_info[cell_info['pool_id'] == pool].index

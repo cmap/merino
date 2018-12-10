@@ -47,6 +47,7 @@ def reformat_gmt(gmt):
 
     sense = {}
     for x in gmt:
+
         sense[x['id']] = x['sig']
 
     return sense
@@ -56,7 +57,10 @@ def make_sqi_map(sensitivity_map, col_meta, data):
     s_qi_map = {}
 
     for key in sensitivity_map:
+        print key
+        key = key.replace('_UP', '')
         if key in col_meta['pert_id'].tolist():
+
             for dose in col_meta[col_meta['pert_id'] == key]['pert_dose'].unique():
                 for well in col_meta[(col_meta['pert_id'] == key) & (col_meta['pert_dose'] == dose)]['pert_well'].unique():
 
@@ -239,9 +243,9 @@ def main(args):
     data = pe.parse(args.gct)
     meta = pd.read_table(args.meta, index_col=args.index_col)
     if args.sense is not None:
-        wtks(data, meta, args.out, args.sense)
+        wtks(data, meta, args.out, args.sense, group_col=args.prefix_name)
     else:
-        wtks(data, meta, args.out)
+        wtks(data, meta, args.out, group_col=args.prefix_name)
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])

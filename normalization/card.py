@@ -99,7 +99,7 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
         lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
                      'ZSPC': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
                      'LFCPC': [functools.partial(viability.log_viability, plate_control=True, log=True), '_FCPC.gct'],
-                     'LFCVC': [viability.log_viability, '_FCVC.gct']}
+                     'LFCVC': [functools.partial(viability.log_viability, plate_control=False,log=True), '_FCVC.gct']}
 
     else:
         lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
