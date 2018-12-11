@@ -33,7 +33,7 @@ def calculate_weights(correlation_matrix):
 
 def calculate_sig_strength(modz_values, n_reps):
 
-    modz_values_adjusted = modz_values * math.sqrt(n_reps)
+    modz_values_adjusted = modz_values
 
     ss1_5 = modz_values_adjusted[modz_values_adjusted < -3].count()
     ss1 = modz_values_adjusted[modz_values_adjusted < -2].count()
@@ -94,7 +94,10 @@ def calculate_modz(gct_list, group_by=['pert_well'], skip=None):
     #TODO Change to replicate set ID when we have it in assemble
     #TODO change prism_replicate to replicate_id in assemble
 
-    replicate_set_id = gct_list[0].col_metadata_df.index[0].split('_')[0] + '_' + gct_list[0].col_metadata_df.index[0].split('_')[1]
+    components = gct_list[0].col_metadata_df.index[0].split('_')
+    length = len(components)
+    del components[length - 1]
+    replicate_set_id = '_'.join(components)
 
 
     cc_q75_df = pd.DataFrame(
@@ -161,9 +164,9 @@ def calculate_modz(gct_list, group_by=['pert_well'], skip=None):
         modz_values[modz_values > 10] = 10
         wells = ''.join(pd.Series([x[-4:] for x in mat.columns]).unique())
         print [x.split('_')[2] for x in mat.columns]
-        modZ_mat[mat.columns[0].split('_')[0] + '_' + mat.columns[0].split('_')[1] + wells] = modz_values
+        modZ_mat[replicate_set_id + wells] = modz_values
 
-        cc_q75_df.loc[mat.columns[0].split('_')[0] + '_' + mat.columns[0].split('_')[1] + wells] = [replicate_set_id,
+        cc_q75_df.loc[replicate_set_id + wells] = [replicate_set_id,
                                                    wells,
                                                    ','.join(weights.index.values.tolist()),
                                                    ','.join([str(x) for x in

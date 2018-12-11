@@ -17,7 +17,7 @@ def normalize(mfi_gctoo, log=True, inv=True):
     mfi_gctoo.data_df[mfi_gctoo.data_df < 1] = 1
     data_df = mfi_gctoo.data_df
 
-    data_df.round(2)
+    data_df = data_df.round(2)
 
     if inv is True:
         invs = data_df.loc[invariant_rids].median(axis=0)

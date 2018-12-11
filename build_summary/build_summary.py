@@ -60,7 +60,7 @@ def main(proj_dir, out_dir, invar=True, sense=False):
     zscore_path = glob.glob(os.path.join(proj_dir, '*_ZSPC_*.gctx'))[0]
     zscore_gct = pe.parse(zscore_path)
 
-    zscore_path = glob.glob(os.path.join(proj_dir, '*_ZSPC.CB_*.gctx'))[0]
+    zscore_path = glob.glob(os.path.join(proj_dir, '*_ZSPC.COMBAT_*.gctx'))[0]
     cb_zscore_gct = pe.parse(zscore_path)
 
     zsvc_path = glob.glob(os.path.join(proj_dir, '*_ZSVC_*.gctx'))[0]
@@ -76,18 +76,20 @@ def main(proj_dir, out_dir, invar=True, sense=False):
     #modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC_*.gctx'))[0]
     #modz_gct = pe.parse(modz_path)
 
-    #cb_modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC.CB_*.gctx'))[0]
-    #cb_modz_gct = pe.parse(cb_modz_path)
+
+    cb_modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC.COMBAT_*.gctx'))[0]
+    cb_modz_gct = pe.parse(cb_modz_path)
 
     print "Reading Metadata"
     inst_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*inst_info*.txt'))[0], index_col='profile_id')
-    #sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC_sig_metrics.txt'))[0], index_col='sig_id')
+    sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*sig_metrics_MODZ.ZSPC.txt'))[0], index_col='sig_id')
+
     cell_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*cell_info*.txt'))[0], index_col='rid')
-    ssmd_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*ssmd*.txt'))[0], index_col='rid')
+    ssmd_info = pe.parse(glob.glob(os.path.join(proj_dir, '*ssmd*.gct'))[0])
 
     proj = inst_info.index[0][0:4]
 
-    ssmd.ssmd_by_pool(ssmd_info, cell_info, out_dir)
+    ssmd.ssmd_by_pool(ssmd_info.data_df, cell_info, out_dir)
 
     reload(dist)
     reload(map)
@@ -146,7 +148,8 @@ def main(proj_dir, out_dir, invar=True, sense=False):
 
         print plate
 
-        if plate in ['PCAL130_CS5_X1', 'PCAL128_CS5_X3', 'PCAL129_CS5_X2', 'PCAL130_CS5_X3', 'PCAL131_CS5_X1', 'PCAL147_CS5_X2']:
+
+        if plate in ['CBRANT008_KJ100.48H_X5']:
             continue
 
         plate_mfi = GCToo.GCToo(data_df=mfi_gct.data_df[inst_info[inst_info['prism_replicate'] == plate].index],

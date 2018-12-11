@@ -47,6 +47,7 @@ def reformat_gmt(gmt):
 
     sense = {}
     for x in gmt:
+
         sense[x['id']] = x['sig']
 
     return sense
@@ -56,7 +57,10 @@ def make_sqi_map(sensitivity_map, col_meta, data):
     s_qi_map = {}
 
     for key in sensitivity_map:
+        print key
+        key = key.replace('_UP', '')
         if key in col_meta['pert_id'].tolist():
+
             for dose in col_meta[col_meta['pert_id'] == key]['pert_dose'].unique():
                 for well in col_meta[(col_meta['pert_id'] == key) & (col_meta['pert_dose'] == dose)]['pert_well'].unique():
 

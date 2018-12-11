@@ -118,7 +118,6 @@ def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
 
     reload(distil)
 
-
     group_by = [x for x in args.group_by.split(',')]
 
     if args.davepool_combat == True:
@@ -129,6 +128,7 @@ def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
         print 'here'
         all_ds, adj_list = batch_adjust.combat_by_group(gct_list, col_group=group_by, batch_field='pool_id')
         print adj_list[0].data_df.shape
+
 
     new_list = []
     for g in adj_list:
@@ -146,9 +146,6 @@ def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
 
         wg.write(thing, os.path.join(proj_dir, input_folder + '.COMBAT', replicate_name, replicate_name + '_' + input_folder + '.CB.gct'))
 
-    #if len(keep_files) < 2:
-    #    return
-
     if args.skip is not None:
         modZ_GCT, cc_q75_df, weights = distil.calculate_modz(gct_list, group_by=group_by, skip=json.loads(args.skip))
         cb_modZ_GCT, cb_cc_q75_df, cb_weights = distil.calculate_modz(new_list, group_by=group_by, skip=json.loads(args.skip))
@@ -163,6 +160,7 @@ def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
     outfile = os.path.join(proj_dir, 'modz.{}'.format(input_folder), pert)
     cb_outfile = os.path.join(proj_dir, 'modz.{}.COMBAT'.format(input_folder), pert)
 
+
     if not os.path.exists(outfile):
         os.mkdir(outfile)
     if not os.path.exists(cb_outfile):
@@ -170,7 +168,6 @@ def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
 
 
     write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, outfile, rep_set, input_folder, cb_outfile, pert)
-
 
 def define_pert(proj_dir, input_folder, rep_set):
     print rep_set
@@ -180,16 +177,18 @@ def define_pert(proj_dir, input_folder, rep_set):
     short_reps = [x.split('.')[0] for x in replicate_ids]
     keep = []
 
+
     for r in set(short_reps):
         temp = [y for y in replicate_ids if y.startswith(r)]
         print temp
+
 
         if len(temp) == 1:
             keep.append(temp[0])
         else:
 
-            temp2 = [z for z in temp if "." in z]
 
+            temp2 = [z for z in temp if "." in z]
             max_l = max([int(x[-1]) for x in temp2])
             temp3 = [b for b in temp2 if b.endswith(str(max_l))]
             keep.append(temp3[0])
@@ -206,7 +205,6 @@ def define_pert(proj_dir, input_folder, rep_set):
         gct_list.append(gct)
 
     return (pert, gct_list)
-
 
 
 def drop_less_than_2_replicates(modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df):
@@ -233,6 +231,7 @@ def write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q
     wg.write(cb_modZ_GCT, os.path.join(cb_outfile, pert + '_MODZ.{}.COMBAT'.format(input_folder)))
     cc_q75_df.to_csv(os.path.join(outfile, rep_set + '_cc_q75.txt'), sep='\t')
     cb_cc_q75_df.to_csv(os.path.join(cb_outfile, rep_set + '_cc_q75.txt'), sep='\t')
+
 
 
 if __name__ == "__main__":

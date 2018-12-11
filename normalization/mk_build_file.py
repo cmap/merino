@@ -149,11 +149,6 @@ def main(args):
     print 'LFCPC'
     build(viabilitypc_path, viabilitypc_out_path, '.gctx')
 
-    viabilitypc_path = os.path.join(args.proj_dir, 'LMEM.CB', args.search_pattern, '*.gct')
-    viabilitypc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LMEM.COMBAT_')
-    print 'LMEM'
-    build(viabilitypc_path, viabilitypc_out_path, '.gctx')
-
     viabilityvc_path = os.path.join(args.proj_dir, 'LFCVC', args.search_pattern, '*.gct')
     viabilityvc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LFCVC_')
     print 'LFCVC'
@@ -163,6 +158,7 @@ def main(args):
     norm_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL3_NORM_')
     print 'NORM'
     norm_data = build(norm_path, norm_out_path, '.gctx')
+
 
     mfi_path = os.path.join(args.proj_dir, 'assemble', args.search_pattern, '*MEDIAN.gct')
     mfi_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL2_MFI_')
@@ -193,7 +189,11 @@ def main(args):
 
     #Calculate SSMD matrix using paths that were just grabbed and write out
     ssmd_mat = ssmd.ssmd_matrix(paths)
-    #ssmd_mat.to_csv(os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.txt'), sep='\t')
+
+    ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, row_metadata_df=pd.DataFrame(index=ssmd_mat.index),
+                           col_metadata_df=pd.DataFrame(index=ssmd_mat.columns))
+    wgx.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
+
 
     ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, col_metadata_df=pd.DataFrame(index=ssmd_mat.columns),
                 row_metadata_df=pd.DataFrame(index=ssmd_mat.index))
@@ -245,7 +245,7 @@ def main(args):
     for x in ['data_level', 'prism_replicate', 'det_well']:
         del fcpc_sig_info_cb[x]
 
-    fcpc_sig_info_cb.drop(fcpc_sig_info_cb[fcpc_sig_info_cb['nprofile'] < 2].index, inplace=True)
+    #fcpc_sig_info_cb.drop(fcpc_sig_info_cb[fcpc_sig_info_cb['nprofile'] < 2].index, inplace=True)
 
 
     fcpc_sig_info_cb.to_csv(os.path.join(args.build_folder, args.cohort_name + '_sig_metrics_MODZ.LFCPC.COMBAT.txt'), sep='\t')
@@ -266,13 +266,11 @@ def main(args):
     for x in ['data_level', 'prism_replicate', 'det_well']:
         del zspc_sig_info_cb[x]
 
-    zspc_sig_info_cb.drop(zspc_sig_info_cb[zspc_sig_info_cb['nprofile'] < 2].index, inplace=True)
+    #zspc_sig_info_cb.drop(zspc_sig_info_cb[zspc_sig_info_cb['nprofile'] < 2].index, inplace=True)
 
     zspc_sig_info_cb.to_csv(os.path.join(args.build_folder, args.cohort_name + '_sig_metrics_MODZ.ZSPC.COMBAT.txt'), sep='\t')
 
     ###################################################################################
-
-    #mk lvl 1 plates grp
 
 
     pert_info = zspc_sig_info[['pert_id','pert_id_vendor','pert_iname','pert_mfc_desc','pert_mfc_id','pert_type','x_avg_mol_weight','x_purity','x_smiles']]
