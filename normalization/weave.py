@@ -146,6 +146,10 @@ def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
 
         wg.write(thing, os.path.join(proj_dir, input_folder + '.COMBAT', replicate_name, replicate_name + '_' + input_folder + '.CB.gct'))
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     if args.skip is not None:
         modZ_GCT, cc_q75_df, weights = distil.calculate_modz(gct_list, group_by=group_by, skip=json.loads(args.skip))
         cb_modZ_GCT, cb_cc_q75_df, cb_weights = distil.calculate_modz(new_list, group_by=group_by, skip=json.loads(args.skip))

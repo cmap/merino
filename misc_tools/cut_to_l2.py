@@ -3,16 +3,15 @@ import os
 
 def cut_l1(original_list):
     new_list = []
-
     for pert in set(['_'.join(os.path.basename(y).split('_')[:-2]) for y in original_list]):
         print pert
         files = [x for x in original_list if os.path.basename(x).startswith(pert + '_')]
         plate_names = [os.path.basename(x) for x in files]
         replicate_ids = [x.split("_")[-2] for x in plate_names]
-        #short_reps = [x[:2] for x in replicate_ids]
+        short_reps = [x[:2] for x in replicate_ids]
         keep = []
 
-        for r in set(replicate_ids):
+        for r in set(short_reps):
             temp = [y for y in replicate_ids if y.startswith(r)]
 
             if len(temp) == 1:

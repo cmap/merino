@@ -2,7 +2,7 @@ import glob
 import os
 import cmapPy.pandasGEXpress.parse as pe
 import cmapPy.pandasGEXpress.GCToo as GCToo
-import distributions as dist
+import prism_plots
 import invariant_analysis as inv
 import pandas as pd
 import generic_heatmap as map
@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sc_plot
 import sys
+import seaborn as sns
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -41,99 +42,100 @@ def build_parser():
 
     return parser
 
+def globandparse(search_pattern):
+    path = glob.glob(search_pattern)[0]
+    gct = pe.parse(path)
+    return gct
 
-def main(proj_dir, out_dir, invar=True, sense=False):
-    # READ EM ALL IN
 
+def read_build_data(proj_dir):
     print "Reading LEVEL2 Data"
-    mfi_path = glob.glob(os.path.join(proj_dir, '*MFI*.gctx'))[0]
-    mfi_gct = pe.parse(mfi_path)
-
-    count_path = glob.glob(os.path.join(proj_dir, '*COUNT*.gctx'))[0]
-    count_gct = pe.parse(count_path)
-
-    print "Reading LEVEL3 Data"
-    norm_path = glob.glob(os.path.join(proj_dir, '*NORM*.gctx'))[0]
-    norm_gct = pe.parse(norm_path)
-
-    print "Reading LEVEL4 Data"
-    zscore_path = glob.glob(os.path.join(proj_dir, '*_ZSPC_*.gctx'))[0]
-    zscore_gct = pe.parse(zscore_path)
-
-    zscore_path = glob.glob(os.path.join(proj_dir, '*_ZSPC.COMBAT_*.gctx'))[0]
-    cb_zscore_gct = pe.parse(zscore_path)
-
-    zsvc_path = glob.glob(os.path.join(proj_dir, '*_ZSVC_*.gctx'))[0]
-    zsvc_gct = pe.parse(zsvc_path)
-
-    viability_path = glob.glob(os.path.join(proj_dir, '*4_LFCPC_*.gctx'))[0]
-    viability_gct = pe.parse(viability_path)
-
-    fcvc_path = glob.glob(os.path.join(proj_dir, '*4_LFCVC_*.gctx'))[0]
-    fcvc_gct = pe.parse(fcvc_path)
-
-    print "Reading LEVEL5 Data"
-    #modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC_*.gctx'))[0]
-    #modz_gct = pe.parse(modz_path)
 
 
-    cb_modz_path = glob.glob(os.path.join(proj_dir, '*MODZ.ZSPC.COMBAT_*.gctx'))[0]
-    cb_modz_gct = pe.parse(cb_modz_path)
+
+    data_pattern_list = ['*MFI*.gctx', '*COUNT*.gctx', '*NORM*.gctx', '*_ZSPC_*.gctx', '*_ZSPC.COMBAT_*.gctx',
+                    '*_ZSVC_*.gctx', '*4_LFCPC_*.gctx', '*4_LFCVC_*.gctx', '*MODZ.ZSPC_*.gctx', '*MODZ.ZSPC.COMBAT_*.gctx']
+
+    data_search_patterns = [os.path.join(proj_dir, x) for x in data_pattern_list]
+
+    gcts = [globandparse(x) for x in data_search_patterns]
+
+    data_map = dict(zip(['mfi', 'count', 'norm', 'zspc', 'combat_zspc',
+                'zsvc', 'lfcpc', 'lfcvc', 'modz', 'combat_modz'], gcts))
+
 
     print "Reading Metadata"
     inst_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*inst_info*.txt'))[0], index_col='profile_id')
     sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*sig_metrics_MODZ.ZSPC.txt'))[0], index_col='sig_id')
 
     cell_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*cell_info*.txt'))[0], index_col='rid')
-    ssmd_info = pe.parse(glob.glob(os.path.join(proj_dir, '*ssmd*.gct'))[0])
+    ssmd_info = pe.parse(glob.glob(os.path.join(proj_dir, '*ssmd*.gct'))[0]).data_df
 
-    proj = inst_info.index[0][0:4]
+    metadata_map = {'inst': inst_info, 'sig': sig_info, 'cell': cell_info, 'ssmd': ssmd_info}
 
-    ssmd.ssmd_by_pool(ssmd_info.data_df, cell_info, out_dir)
+    return data_map, metadata_map
 
-    reload(dist)
-    reload(map)
-    reload(inv)
-    reload(ssmd)
-    reload(sc_plot)
-    plt.clf()
-
-    print os.path.join(out_dir, 'modz_dist.png')
+def mk_folders(out_dir):
 
     if not os.path.exists(os.path.join(out_dir, 'sensitivities')):
         os.mkdir(os.path.join(out_dir, 'sensitivities'))
 
+    if not os.path.exists(os.path.join(out_dir, 'distributions')):
+        os.mkdir(os.path.join(out_dir, 'distributions'))
+
+
+def mk_distributions(data_map, metadata_map,project_name, out_dir):
+
+    plot_map = {data_map['mfi']: ['MFI', 0, 50000], data_map['count']: ['Bead Count', 0, 220],
+              data_map['norm']: ['NORM', -10, 6],
+              data_map['zspc']: ['ZSPC', -10, 10], data_map['zsvc']: ['ZSVC', -10, 10],
+              data_map['lfcpc']: ['LFCPC', -10, 10], data_map['lfcvc']: ['LFCVC', -10, 10],
+              data_map['modz']: ['MODZ', -10, 10], data_map['combat_modz']: ['COMBAT MODZ', -10, 10],
+              data_map['combat_zspc']: ['COMBAT ZSPC', -10, 10]}
+
+    for df in plot_map.keys():
+
+        if 'MODZ' in plot_map[df][0]:
+            meta = metadata_map['sig']
+        else:
+            meta = metadata_map['inst']
+
+        prism_plots.data_distribution(data_df=df.data_df, xlabel=plot_map[df][0],
+                                      title='Distribution for {} {}'.format(project_name, plot_map[df][0]),
+                                      outfile=os.path.join(out_dir, 'distributions', 'histogram_{}_{}.png'.format(project_name,plot_map[df][0])),
+                                      xlim=[plot_map[df][1], plot_map[df][2]])
+
+        prism_plots.stacked_heatmap(data_df=df.data_df, column_metadata=meta.loc[df.data_df.columns],
+                                    title='Median {} Across {}'.format(plot_map[df][0],project_name),
+                                    outfile=os.path.join(out_dir, 'distributions', 'heatmap_{}_{}.png'.format(project_name,plot_map[df][0])),
+                                                         lims=[plot_map[df][1], plot_map[df][2]])
+
+
+def main(proj_dir, out_dir, invar=True, sense=False):
+    # READ EM ALL IN
+
+    data_map, metadata_map = read_build_data(proj_dir=proj_dir)
+
+    mk_folders(out_dir=out_dir)
+
+    project_name = os.path.basename(proj_dir)
+
+    mk_distributions(data_map, metadata_map, project_name, out_dir)
 
     if sense == True:
+        expected_sense.wtks(data_map['combat_modz'], metadata_map['sig'], os.path.join(out_dir, 'sensitivities'))
 
-        expected_sense.wtks(modz_gct, sig_info, os.path.join(out_dir, 'sensitivities'))
 
 
-    my_map = {mfi_gct: ['MFI', 0, 50000], norm_gct: ['NORM', -10, 6],
-              zscore_gct: ['ZSPC', -10, 10], zsvc_gct: ['ZSVC', -10, 10],
-              viability_gct: ['FCPC', -10, 10], fcvc_gct: ['FCVC', -10, 10]
-              ,modz_gct: ['MODZ', -10, 10], cb_modz_gct: ['CB.MODZ', -10, 10],
-              cb_zscore_gct: ['CB.ZSPC', -10,10]
-              }
 
-    for df in my_map.keys():
-        bins = np.linspace(my_map[df][1], my_map[df][2], 100)
-        plt.hist(df.data_df.replace([np.inf, -np.inf], np.nan).unstack().dropna(), bins)
-        plt.title('Distribution for {} {}'.format(proj, my_map[df][0]))
-        plt.xlabel('{} Data'.format(my_map[df][0]))
-        plt.savefig(out_dir + '/{}_{}.png'.format(proj,my_map[df][0]))
-        plt.clf()
-
-    c_map.make_count_heatmap(count_gct, inst_info, 'Count Across {}'.format(proj), os.path.join(out_dir, 'count_map.png'))
-
-    reload(comp)
     comp.modz_dist(modz_gct, sig_info, [], os.path.join(out_dir, 'modz_dist.png'))
-    dist.distributions(norm_gct, mfi_gct, count_gct, zscore_gct, viability_gct, inst_info, os.path.join(out_dir))
+
     if invar==True:
         inv.invariant_monotonicity(mfi_gct, inst_info, out_dir)
 
     sc_plot.sc_plot(sig_info, 'SS vs CCQ75', os.path.join(out_dir,'sc_modz.zspc.png'))
 
+    ssmd.ssmd_by_pool(metadata_map['ssmd'], metadata_map['cell'], out_dir)
 
     ssmd.ssmd_ecdf(GCToo.GCToo(data_df=norm_gct.data_df, col_metadata_df=inst_info.loc[norm_gct.data_df.columns], row_metadata_df=norm_gct.row_metadata_df),
                    GCToo.GCToo(data_df=mfi_gct.data_df, col_metadata_df=inst_info.loc[mfi_gct.data_df.columns],
