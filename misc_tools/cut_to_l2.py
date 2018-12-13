@@ -15,9 +15,9 @@ def cut_l1(list_of_plate_paths):
         keep = []
         for base_replicate_num in set(base_replicate_nums):
             all_possible_replicates = [replicate for replicate in replicate_nums if replicate.startswith(base_replicate_num)]
-
             if len(all_possible_replicates) == 1:
                 keep.append(all_possible_replicates[0])
+
 
             else:
                 replicateLXs = [replicate for replicate in all_possible_replicates if ".L" in replicate]
