@@ -104,11 +104,13 @@ def main(args):
             print replicate_set_name, args.input_folder
             weave(args.proj_dir, replicate_set_name, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
 
+
 def setup_directories(project_dir, input_folder):
     if not os.path.exists(os.path.join(project_dir, 'modz.{}'.format(input_folder))):
         os.mkdir(os.path.join(project_dir, 'modz.{}'.format(input_folder)))
     if not os.path.exists(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder))):
         os.mkdir(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder)))
+
 
 def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop=True):
 
@@ -157,14 +159,8 @@ def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop
     outfile = os.path.join(proj_dir, 'MODZ.{}'.format(input_folder), replicate_set_name)
     cb_outfile = os.path.join(proj_dir, 'MODZ.{}.COMBAT'.format(input_folder), replicate_set_name)
 
-
-    if not os.path.exists(outfile):
-        os.mkdir(outfile)
-    if not os.path.exists(cb_outfile):
-        os.mkdir(cb_outfile)
-
-
     write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, outfile, replicate_set_name, input_folder, cb_outfile, replicate_set_name)
+
 
 def define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_name):
     logger.info("defining replicate set files for {}".format(replicate_set_name))
@@ -196,6 +192,11 @@ def drop_less_than_2_replicates(modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df):
 
 def write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, outfile, rep_set, input_folder, cb_outfile, pert):
 
+    if not os.path.exists(outfile):
+        os.mkdir(outfile)
+    if not os.path.exists(cb_outfile):
+        os.mkdir(cb_outfile)
+
     weights[0].to_csv(os.path.join(outfile, rep_set + '_norm_weights.txt'), sep='\t')
     cb_weights[0].to_csv(os.path.join(cb_outfile, rep_set + '_norm_weights.txt'), sep='\t')
     weights[1].to_csv(os.path.join(outfile, rep_set + '_raw_weights.txt'), sep='\t')
@@ -204,8 +205,6 @@ def write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q
     wg.write(cb_modZ_GCT, os.path.join(cb_outfile, pert + '_MODZ.{}.COMBAT'.format(input_folder)))
     cc_q75_df.to_csv(os.path.join(outfile, rep_set + '_cc_q75.txt'), sep='\t')
     cb_cc_q75_df.to_csv(os.path.join(cb_outfile, rep_set + '_cc_q75.txt'), sep='\t')
-
-
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
