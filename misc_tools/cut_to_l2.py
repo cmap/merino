@@ -1,35 +1,40 @@
 import os
 
 
-def cut_l1(original_list):
-    new_list = []
+def cut_l1(list_of_plate_paths):
+    curated_plate_path_list = []
+    all_replicate_set_names = set(['_'.join(os.path.basename(replicate_path).split('_')[:-2]) for replicate_path in list_of_plate_paths])
 
-    for pert in set(['_'.join(os.path.basename(y).split('_')[:-2]) for y in original_list]):
-        print pert
-        files = [x for x in original_list if os.path.basename(x).startswith(pert + '_')]
-        plate_names = [os.path.basename(x) for x in files]
-        replicate_ids = [x.split("_")[-2] for x in plate_names]
-        #short_reps = [x[:2] for x in replicate_ids]
+    for replicate_set_name in all_replicate_set_names:
+        print replicate_set_name
+        replicate_set_paths = [path for path in list_of_plate_paths if os.path.basename(path).startswith(replicate_set_name)]
+        replicate_set_plate_names = [os.path.basename(path) for path in replicate_set_paths]
+        replicate_nums = [replicate.split("_")[-2] for replicate in replicate_set_plate_names]
+        base_replicate_nums = [replicate[:2] for replicate in replicate_nums]
+
         keep = []
+        for base_replicate_num in set(base_replicate_nums):
+            all_possible_replicates = [replicate for replicate in replicate_nums if replicate.startswith(base_replicate_num)]
 
-        for r in set(replicate_ids):
-            temp = [y for y in replicate_ids if y.startswith(r)]
+            if len(all_possible_replicates) == 1:
+                keep.append(all_possible_replicates[0])
 
-            if len(temp) == 1:
-                keep.append(temp[0])
             else:
+                replicateLXs = [replicate for replicate in all_possible_replicates if ".L" in replicate]
 
-                temp2 = [z for z in temp if ".L" in z]
+                if len(replicateLXs) == 0:
+                    print base_replicate_num
+                    raise Exception(UnableToDifferentiateReplicates)
 
-                if len(temp2) == 0:
-                    import pdb
-                    pdb.set_trace()
-                max_l = max([int(x[-1]) for x in temp2])
-                temp3 = [b for b in temp2 if b.endswith(str(max_l))]
-                keep.append(temp3[0])
+                max_l = max([int(replicate[-1]) for replicate in replicateLXs])
+                desired_replicate = [replicate for replicate in replicateLXs if replicate.endswith(str(max_l))]
+                keep.append(desired_replicate[0])
 
-        keep_perts = [x for x in plate_names if x.split('_')[-2] in keep]
-        keep_files = [path for path in files if os.path.basename(path) in keep_perts]
-        [new_list.append(x) for x in keep_files]
+        keep_replicates = [replicate for replicate in replicate_set_plate_names if replicate.split('_')[-2] in keep]
+        keep_files = [path for path in replicate_set_paths if os.path.basename(path) in keep_replicates]
+        [curated_plate_path_list.append(replicate) for replicate in keep_files]
 
-    return new_list
+    return curated_plate_path_list
+
+class UnableToDifferentiateReplicates(Exception):
+    pass
