@@ -92,7 +92,7 @@ def combat_by_group(gct_list, col_group='pert_well', batch_field='pool_id',
         subsets of all_ds that match gct_list
     """
     # concatenate replicate datasets by column
-    print 'here'
+    LOGGER.info("now running ComBat batch adjustment")
     fields_to_remove = [x for x in gct_list[0].row_metadata_df.columns if
                         x in ['det_plate', 'det_plate_scan_time', 'assay_plate_barcode']]
     all_ds = cg.hstack(gct_list, remove_all_metadata_fields=False,error_report_file=None, fields_to_remove=fields_to_remove)
@@ -104,8 +104,6 @@ def combat_by_group(gct_list, col_group='pert_well', batch_field='pool_id',
 
     pool = mp.Pool(processes=mp.cpu_count())
 
-
-
     chunks = data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch)
 
     adjusted_data = pool.map(combat_worker, chunks)
@@ -113,13 +111,14 @@ def combat_by_group(gct_list, col_group='pert_well', batch_field='pool_id',
     for res in adjusted_data:
         all_ds.data_df[res.columns] = res
 
-    adj_list = []
-    for dummy, input_ds in enumerate(gct_list):
+    combat_adjusted_gcts = []
+    for _, input_ds in enumerate(gct_list):
         this_ds = gct_slice(all_ds, rid=input_ds.data_df.index.tolist(), cid=input_ds.data_df.columns.tolist())
         this_ds.src = input_ds.src
-        adj_list.append(this_ds)
+        this_ds.data_df = this_ds.data_df.astype(float)
+        combat_adjusted_gcts.append(this_ds)
 
-    return all_ds, adj_list
+    return all_ds, combat_adjusted_gcts
 
 
 def build_parser():
