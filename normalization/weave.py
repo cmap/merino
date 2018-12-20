@@ -71,6 +71,7 @@ def main(args):
         for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, input, glob_value))
             if not replicate_sets_search_results:
+                print "babies"
                 continue
 
             # Setup directories after passing checks for work to do
@@ -164,11 +165,12 @@ def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop
 
 def define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_name):
     logger.info("defining replicate set files for {}".format(replicate_set_name))
-    plate_directories = glob.glob(os.path.join(proj_dir, input_folder, replicate_set_name + '*'))
+    plate_directories = glob.glob(os.path.join(proj_dir, input_folder, replicate_set_name + '*', '*'))
     keep_files = cut.cut_l1(plate_directories)
 
     gct_list = []
     for path in keep_files:
+        print path
         gct = pe.parse(path)
         logger.info("parsed GCT {} with data_df.shape {}".format(os.path.basename(path), gct.data_df.shape))
         gct_list.append(gct)
