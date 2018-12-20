@@ -70,9 +70,8 @@ def main(args):
         for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, input, glob_value))
             if not replicate_sets_search_results:
-                msg = "Empty search results for input folder {} with {} search value".format(input, glob_value)
-                raise merino_exception.ReplicateSetSearchFailure(msg)
-
+                logger.info("Insufficient inputs for input folder {} to run weave. Skipping... ".format(input))
+                pass
             # Setup directories after passing checks for work to do
             setup_directories(args.proj_dir, input)
 
@@ -167,7 +166,7 @@ def define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_n
     plate_directories = glob.glob(os.path.join(proj_dir, input_folder, replicate_set_name + '*', '*'))
     keep_files = cut.cut_l1(plate_directories)
     if len(keep_files) <= 1:
-        msg = "Insufficient Number of replicates for replicate set {} in {} input folder".format(replicate_set_name, input_folder)
+        msg = "Insufficient number of replicates for replicate set {} in {} input folder".format(replicate_set_name, input_folder)
         raise merino_exception.ReplicateSetSearchFailure(msg)
 
     gct_list = []
