@@ -91,6 +91,10 @@ def main(args):
     else:
         setup_directories(args.proj_dir, args.input_folder)
         replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, args.input_folder, glob_value))
+        if not replicate_sets_search_results:
+            msg = "Unable to find sufficient inputs for input folder {} to run weave using '{}' to search".format(
+                args.input_folder, glob_value)
+            raise merino_exception.ReplicateSetSearchFailure(msg)
 
         n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
         all_replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
