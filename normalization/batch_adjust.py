@@ -36,7 +36,6 @@ def data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch):
     nbatch = len(batches.unique())
     LOGGER.info('Splitting dataset by %s into %d groups' % (col_group, len(col_groups)))
     LOGGER.info('Batch field %s has %d levels' % (batch_field, nbatch))
-    print 'here'
     
     for _, key in enumerate(sorted(col_groups)):
         this_gp = all_ds.data_df[col_groups[key]].copy()
@@ -148,7 +147,7 @@ def load_data(gct_files):
     """
     gct_list = []
     for gct_path in gct_files:
-        print 'Reading {}'.format(gct_path)
+        LOGGER.info('Reading {}'.format(gct_path))
         gct = pe.parse(gct_path)
         gct_list.append(gct)
     return gct_list

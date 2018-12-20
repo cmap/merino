@@ -10,10 +10,10 @@ import cmapPy.pandasGEXpress.GCToo as GCToo
 import cmapPy.pandasGEXpress.write_gct as wg
 
 import merino.setup_logger as setup_logger
-import distil
+import merino.normalization.distil as distil
 import merino.normalization.batch_adjust as batch_adjust
 import merino.misc_tools.cut_to_l2 as cut
-
+import merino.utils.exceptions as merino_exception
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -70,8 +70,8 @@ def main(args):
         for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, input, glob_value))
             if not replicate_sets_search_results:
-                print "babies"
-                continue
+                msg = "Empty search results for input folder {} with {} search value".format(input, glob_value)
+                raise merino_exception.ReplicateSetSearchFailure(msg)
 
             # Setup directories after passing checks for work to do
             setup_directories(args.proj_dir, input)
@@ -82,11 +82,11 @@ def main(args):
             all_replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
             if len(all_replicate_sets) > 1:
                 for replicate_set_name in all_replicate_sets:
-                    print replicate_set_name, input
+                    logger.info("Weaving together {} {} files".format(replicate_set_name, input))
                     weave(args.proj_dir, replicate_set_name, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
             else:
                 replicate_set_name = all_replicate_sets.pop()
-                print replicate_set_name, input
+                logger.info("Weaving together {} {} files".format(replicate_set_name, input))
                 weave(args.proj_dir, replicate_set_name, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
 
     else:
@@ -97,11 +97,11 @@ def main(args):
         all_replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
         if len(all_replicate_sets) > 1:
             for replicate_set_name in all_replicate_sets:
-                print replicate_set_name, args.input_folder
+                logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_folder))
                 weave(args.proj_dir, replicate_set_name, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
         else:
             replicate_set_name = all_replicate_sets.pop()
-            print replicate_set_name, args.input_folder
+            logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_folder))
             weave(args.proj_dir, replicate_set_name, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
 
 
@@ -129,7 +129,7 @@ def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop
 
     else:
         all_ds, combat_adjusted_gct_list = batch_adjust.combat_by_group(gct_list, col_group=group_by_list, batch_field='pool_id')
-        logger.info(combat_adjusted_gct_list[0].data_df.shape)
+        logger.debug("sample combat adjusted gct shape {}".format(combat_adjusted_gct_list[0].data_df.shape))
 
 
     for combat_adjusted_gct in combat_adjusted_gct_list:
@@ -166,13 +166,16 @@ def define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_n
     logger.info("defining replicate set files for {}".format(replicate_set_name))
     plate_directories = glob.glob(os.path.join(proj_dir, input_folder, replicate_set_name + '*', '*'))
     keep_files = cut.cut_l1(plate_directories)
+    if len(keep_files) <= 1:
+        msg = "Insufficient Number of replicates for replicate set {} in {} input folder".format(replicate_set_name, input_folder)
+        raise merino_exception.ReplicateSetSearchFailure(msg)
 
     gct_list = []
     for path in keep_files:
-        print path
         gct = pe.parse(path)
         logger.info("parsed GCT {} with data_df.shape {}".format(os.path.basename(path), gct.data_df.shape))
         gct_list.append(gct)
+
 
     return gct_list
 
