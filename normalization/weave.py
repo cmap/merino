@@ -135,11 +135,11 @@ def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop
     for combat_adjusted_gct in combat_adjusted_gct_list:
         replicate_name = combat_adjusted_gct.col_metadata_df['prism_replicate'].unique()[0]
 
-        if not os.path.exists(os.path.join(args.proj_dir, '{}.COMBAT'.format(args.input_folder))):
-            os.mkdir(os.path.join(args.proj_dir, '{}.COMBAT'.format(args.input_folder)))
+        if not os.path.exists(os.path.join(proj_dir, '{}.COMBAT'.format(input_folder))):
+            os.mkdir(os.path.join(proj_dir, '{}.COMBAT'.format(input_folder)))
 
-        if not os.path.exists(os.path.join(args.proj_dir, '{}.COMBAT'.format(args.input_folder), replicate_name)):
-            os.mkdir(os.path.join(args.proj_dir, '{}.COMBAT'.format(args.input_folder), replicate_name))
+        if not os.path.exists(os.path.join(proj_dir, '{}.COMBAT'.format(input_folder), replicate_name)):
+            os.mkdir(os.path.join(proj_dir, '{}.COMBAT'.format(input_folder), replicate_name))
 
         wg.write(combat_adjusted_gct, os.path.join(proj_dir, input_folder + '.COMBAT', replicate_name, replicate_name + '_' + input_folder + '.COMBAT.gct'))
 
