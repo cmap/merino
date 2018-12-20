@@ -1,18 +1,16 @@
 import os
 import glob
-import distil
-import functools
-import shear
-import pandas as pd
-import cmapPy.pandasGEXpress.parse as pe
-import cmapPy.pandasGEXpress.GCToo as GCToo
-import merino.setup_logger as setup_logger
+import sys
+import json
 import logging
 import argparse
-import sys
+
+import cmapPy.pandasGEXpress.parse as pe
+import cmapPy.pandasGEXpress.GCToo as GCToo
 import cmapPy.pandasGEXpress.write_gct as wg
-import json
-import ConfigParser
+
+import merino.setup_logger as setup_logger
+import distil
 import merino.normalization.batch_adjust as batch_adjust
 import merino.misc_tools.cut_to_l2 as cut
 
@@ -41,15 +39,16 @@ def build_parser():
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
-    parser.add_argument("-group_by", "-gb", help="Field(s) to group by for modZ. If you are using more than one field separate columns names with a comma"
+    parser.add_argument("-group_by", "-gb", help="Field(s) to group by for MODZ. If you are using more than one field separate columns names with a comma"
                         ,type=str,default='pert_well')
-    parser.add_argument("-skip", "-sk", help="Dictionary indicating which columns to exclude from the modZ calculation "
+    parser.add_argument("-skip", "-sk", help="Dictionary indicating which columns to exclude from the MODZ calculation "
                                              "eg. {'pert_type': ['ctl_vehicle', 'trt_poscon']}, to exclude controls",
                         type=str,default=None)
+    #todo: changed this action to store_false, check that this is intended use
     parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data",
-                        action="store_true", default=True)
+                        action="store_false", default=True)
     parser.add_argument("-nprofile_drop", "-nd",
-                        help="Drop sigs from modZ with less than two profiles",
+                        help="Drop sigs from MODZ with less than two profiles",
                         action="store_false")
     parser.add_argument("-davepool_combat", "-dc",
                         help="Perform combat on the two detection plates - pertains to older data format",
@@ -107,18 +106,18 @@ def main(args):
 
 
 def setup_directories(project_dir, input_folder):
-    if not os.path.exists(os.path.join(project_dir, 'modz.{}'.format(input_folder))):
-        os.mkdir(os.path.join(project_dir, 'modz.{}'.format(input_folder)))
-    if not os.path.exists(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder))):
-        os.mkdir(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder)))
+    if not os.path.exists(os.path.join(project_dir, 'MODZ.{}'.format(input_folder))):
+        os.mkdir(os.path.join(project_dir, 'MODZ.{}'.format(input_folder)))
+    if not os.path.exists(os.path.join(project_dir, 'MODZ.{}.COMBAT'.format(input_folder))):
+        os.mkdir(os.path.join(project_dir, 'MODZ.{}.COMBAT'.format(input_folder)))
 
 
 def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop=True):
 
     gct_list = define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_name)
 
-    if not os.path.exists(os.path.join(proj_dir, 'modz.{}'.format(input_folder), replicate_set_name)):
-        os.mkdir(os.path.join(proj_dir, 'modz.{}'.format(input_folder), replicate_set_name))
+    if not os.path.exists(os.path.join(proj_dir, 'MODZ.{}'.format(input_folder), replicate_set_name)):
+        os.mkdir(os.path.join(proj_dir, 'MODZ.{}'.format(input_folder), replicate_set_name))
 
     reload(distil)
 
