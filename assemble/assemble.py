@@ -5,17 +5,19 @@ along with all of the relevant meta data.
 
 The meta data inputs are a plate map, a cell set definition file, a plate tracking file, and a davepool-analyte mapping.
 """
-import merino.setup_logger as setup_logger
-import logging
-import merino.assemble.davepool_data as davepool_data
-import prism_metadata
 import os
-import argparse
-import merino
 import sys
 import ast
+import logging
+import argparse
 import ConfigParser
-import assemble_core
+
+import merino
+import merino.setup_logger as setup_logger
+import merino.assemble.davepool_data as davepool_data
+import merino.assemble.prism_metadata as prism_metadata
+import merino.assemble.assemble_core as assemble_core
+import merino.utils.exceptions as merino_exception
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -136,15 +138,16 @@ def build_prism_cell_list(config_parser, cell_set_definition_file, analyte_mappi
             pc.davepool_id = cell_davepool.davepool_id
             pc.barcode_id = cell_davepool.barcode_id
             if pc.pool_id != cell_davepool.pool_id:
-                raise Exception ("Cell set pool id does not match davepool mapping pool id at cell id {}".format(pc.feature_id))
+                msg = "Cell set pool id does not match davepool mapping pool id at cell id {}".format(pc.feature_id)
+                raise merino_exception.DataMappingMismatch(msg)
         else:
             cell_list_id_not_in_davepool_mapping.add(pc.feature_id)
 
     if len(cell_list_id_not_in_davepool_mapping) > 0:
         cell_list_id_not_in_davepool_mapping = list(cell_list_id_not_in_davepool_mapping)
         cell_list_id_not_in_davepool_mapping.sort()
-        message2 = ("some cell ids were found in the cell set but not in the davepool mapping - IDs: {}".format(cell_list_id_not_in_davepool_mapping))
-        raise Exception ("assemble build_prism_cell_list " + message2)
+        msg = ("some cell ids were found in the cell set but not in the davepool mapping - IDs: {}".format(cell_list_id_not_in_davepool_mapping))
+        raise merino_exception.DataMappingMismatch(msg)
 
     return prism_cell_list
 
@@ -171,7 +174,8 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
                 if c not in platemap_well_list:
                     del davepool_data_objects[0].count_data[c]
         else:
-            raise Exception("Assemble truncate data objects to plate map: Well lists of platemap and csv do not match")
+            msg = "Assemble truncate data objects to plate map: Well lists of platemap and csv do not match"
+            raise merino_exception.DataMappingMismatch(msg)
 
     return davepool_data_objects
 
@@ -245,6 +249,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
         with open(failure_path, "w") as file:
             file.write("plate {} failed for reason {}".format(prism_replicate_name, e))
         return
+
     success_path = os.path.join(os.path.basename(args.outfile), "success.txt")
     with open(success_path, "w") as file:
         file.write("plate {} successfully assembled".format(prism_replicate_name))

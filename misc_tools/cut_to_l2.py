@@ -1,7 +1,15 @@
 import os
-
+import merino.utils.exceptions as merino_exception
 
 def cut_l1(list_of_plate_paths):
+    """
+
+    :param list_of_plate_paths:
+    :return:
+
+    Culls through provided list of plate paths to find presence of L2s and remove their correspondent L1 from set of paths,
+    returns a curated list of paths
+    """
     curated_plate_path_list = []
     all_replicate_set_names = set(['_'.join(os.path.basename(replicate_path).split('_')[:-2]) for replicate_path in list_of_plate_paths])
 
@@ -23,8 +31,9 @@ def cut_l1(list_of_plate_paths):
                 replicateLXs = [replicate for replicate in all_possible_replicates if ".L" in replicate]
 
                 if len(replicateLXs) == 0:
-                    print base_replicate_num
-                    raise Exception(UnableToDifferentiateReplicates)
+                    msg = "Unable to differentiate between replicates for replicate set {} replicate number {}".format(
+                        replicate_set_name, base_replicate_num)
+                    raise merino_exception.UnableToDifferentiateReplicates(msg)
 
                 max_l = max([int(replicate[-1]) for replicate in replicateLXs])
                 desired_replicate = [replicate for replicate in replicateLXs if replicate.endswith(str(max_l))]
@@ -35,6 +44,3 @@ def cut_l1(list_of_plate_paths):
         [curated_plate_path_list.append(replicate) for replicate in keep_files]
 
     return curated_plate_path_list
-
-class UnableToDifferentiateReplicates(Exception):
-    pass

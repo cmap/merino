@@ -1,20 +1,19 @@
 import os
 import glob
-import distil
-import functools
-import shear
-import pandas as pd
-import cmapPy.pandasGEXpress.parse as pe
-import cmapPy.pandasGEXpress.GCToo as GCToo
-import merino.setup_logger as setup_logger
+import sys
+import json
 import logging
 import argparse
-import sys
-import cmapPy.pandasGEXpress.write_gct as wg
-import json
-import ConfigParser
-import merino.normalization.batch_adjust as batch_adjust
 
+import cmapPy.pandasGEXpress.parse as pe
+import cmapPy.pandasGEXpress.GCToo as GCToo
+import cmapPy.pandasGEXpress.write_gct as wg
+
+import merino.setup_logger as setup_logger
+import merino.normalization.distil as distil
+import merino.normalization.batch_adjust as batch_adjust
+import merino.misc_tools.cut_to_l2 as cut
+import merino.utils.exceptions as merino_exception
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -36,19 +35,21 @@ def build_parser():
     replicate_sets.add_argument("-replicate_set_name", "-rsn", help="Run on specified replicate_set", type=str, default=None)
     replicate_sets.add_argument("-search_pattern", "-sp", help="Run on plates which contain this pattern", type=str, default=None)
 
+    parser.add_argument("-aggregate_output_dir", "-outdir", help="directory where all outputs will be aggregated", type=str, default=None)
 
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
-    parser.add_argument("-group_by", "-gb", help="Field(s) to group by for modZ. If you are using more than one field separate columns names with a comma"
+    parser.add_argument("-group_by", "-gb", help="Field(s) to group by for MODZ. If you are using more than one field separate columns names with a comma"
                         ,type=str,default='pert_well')
-    parser.add_argument("-skip", "-sk", help="Dictionary indicating which columns to exclude from the modZ calculation "
+    parser.add_argument("-skip", "-sk", help="Dictionary indicating which columns to exclude from the MODZ calculation "
                                              "eg. {'pert_type': ['ctl_vehicle', 'trt_poscon']}, to exclude controls",
                         type=str,default=None)
+    #todo: changed this action to store_false, check that this is intended use
     parser.add_argument("-log_tf", "-log", help="True or false, if true log transform the data",
-                        action="store_true", default=True)
+                        action="store_false", default=True)
     parser.add_argument("-nprofile_drop", "-nd",
-                        help="Drop sigs from modZ with less than two profiles",
+                        help="Drop sigs from MODZ with less than two profiles",
                         action="store_false")
     parser.add_argument("-davepool_combat", "-dc",
                         help="Perform combat on the two detection plates - pertains to older data format",
@@ -70,148 +71,146 @@ def main(args):
         for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, input, glob_value))
             if not replicate_sets_search_results:
-                continue
-
+                logger.info("Insufficient inputs for input folder {} to run weave. Skipping... ".format(input))
+                pass
             # Setup directories after passing checks for work to do
-            setup_directories(args.proj_dir, input)
+            setup_directories(args.proj_dir, input, args.aggregate_output_dir)
 
             # Naming convention: pertPlate_assayType_pertTime_replicateNum_beadBatch
-            # weave group defined by first three tokens
+            # Weave grouping is defined by first three tokens
             n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
-            replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
-            if len(replicate_sets) > 1:
-                for replicate_set in replicate_sets:
-                    print replicate_set, input
-                    weave(args.proj_dir, replicate_set, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
+            all_replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
+            if len(all_replicate_sets) > 1:
+                for replicate_set_name in all_replicate_sets:
+                    logger.info("Weaving together {} {} files".format(replicate_set_name, input))
+                    weave(args.proj_dir, replicate_set_name, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
             else:
-                replicate_set = replicate_sets.pop()
-                print replicate_set, input
-                weave(args.proj_dir, replicate_set, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
+                replicate_set_name = all_replicate_sets.pop()
+                logger.info("Weaving together {} {} files".format(replicate_set_name, input))
+                weave(args.proj_dir, replicate_set_name, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
 
     else:
-        setup_directories(args.proj_dir, args.input_folder)
+        setup_directories(args.proj_dir, args.input_folder, args.aggregate_output_dir)
         replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, args.input_folder, glob_value))
+        if not replicate_sets_search_results:
+            msg = "Unable to find sufficient inputs for input folder {} to run weave using '{}' to search".format(
+                args.input_folder, glob_value)
+            raise merino_exception.ReplicateSetSearchFailure(msg)
 
         n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
-        replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
-        if len(replicate_sets) > 1:
-            for replicate_set in replicate_sets:
-                print replicate_set, args.input_folder
-                weave(args.proj_dir, replicate_set, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+        all_replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
+        if len(all_replicate_sets) > 1:
+            for replicate_set_name in all_replicate_sets:
+                logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_folder))
+                weave(args.proj_dir, replicate_set_name, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
         else:
-            replicate_set = replicate_sets.pop()
-            print replicate_set, args.input_folder
-            weave(args.proj_dir, replicate_set, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+            replicate_set_name = all_replicate_sets.pop()
+            logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_folder))
+            weave(args.proj_dir, replicate_set_name, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
 
-def setup_directories(project_dir, input_folder):
-    if not os.path.exists(os.path.join(project_dir, 'modz.{}'.format(input_folder))):
-        os.mkdir(os.path.join(project_dir, 'modz.{}'.format(input_folder)))
-    if not os.path.exists(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder))):
-        os.mkdir(os.path.join(project_dir, 'modz.{}.COMBAT'.format(input_folder)))
 
-def weave(proj_dir, rep_set, args, input_folder='ZSPC', nprofile_drop=True):
+def setup_directories(project_dir, input_folder, aggregate_out):
+    """
+    For a given input folder sets up MODZ and MODZ COMBAT top level directories used to store weave results.
+    If aggregate_out is not None, will create top-level directory for all outputs
+    """
+    if aggregate_out is not None:
+        top_level_dir = os.path.join(project_dir, aggregate_out)
+    else:
+        top_level_dir = project_dir
 
-    (pert, gct_list) = define_pert(proj_dir, input_folder, rep_set)
+    if not os.path.exists(top_level_dir):
+        os.mkdir(top_level_dir)
+    if not os.path.exists(os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder))):
+        os.mkdir(os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder)))
+    if not os.path.exists(os.path.join(top_level_dir, 'MODZ.{}.COMBAT'.format(input_folder))):
+        os.mkdir(os.path.join(top_level_dir, 'MODZ.{}.COMBAT'.format(input_folder)))
 
-    if not os.path.exists(os.path.join(proj_dir, 'modz.{}'.format(input_folder), pert)):
-        os.mkdir(os.path.join(proj_dir, 'modz.{}'.format(input_folder), pert))
+def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop=True):
+
+    gct_list = define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_name)
+
+    if args.aggregate_output_dir:
+        top_level_dir = os.path.join(proj_dir, args.aggregate_output_dir)
+    else:
+        top_level_dir = proj_dir
+
+    if not os.path.exists(os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder), replicate_set_name)):
+        os.mkdir(os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder), replicate_set_name))
 
     reload(distil)
 
-    group_by = [x for x in args.group_by.split(',')]
+    group_by_list = [x for x in args.group_by.split(',')]
 
+    #Perform ComBat adjustment
     if args.davepool_combat == True:
-        all_ds, pre_list = batch_adjust.combat_by_group(gct_list, col_group=group_by, batch_field='davepool_id')
-        all_ds, adj_list = batch_adjust.combat_by_group(pre_list, col_group=group_by, batch_field='pool_id')
+        all_ds, pre_list = batch_adjust.combat_by_group(gct_list, col_group=group_by_list, batch_field='davepool_id')
+        all_ds, combat_adjusted_gct_list = batch_adjust.combat_by_group(pre_list, col_group=group_by_list, batch_field='pool_id')
 
     else:
-        print 'here'
-        all_ds, adj_list = batch_adjust.combat_by_group(gct_list, col_group=group_by, batch_field='pool_id')
-        print adj_list[0].data_df.shape
+        all_ds, combat_adjusted_gct_list = batch_adjust.combat_by_group(gct_list, col_group=group_by_list, batch_field='pool_id')
+        logger.debug("sample combat adjusted gct shape {}".format(combat_adjusted_gct_list[0].data_df.shape))
+
+    # Write out ComBat adjusted GCTs
+    for combat_adjusted_gct in combat_adjusted_gct_list:
+        replicate_name = combat_adjusted_gct.col_metadata_df['prism_replicate'].unique()[0]
+
+        if not os.path.exists(os.path.join(top_level_dir, '{}.COMBAT'.format(input_folder))):
+            os.mkdir(os.path.join(top_level_dir, '{}.COMBAT'.format(input_folder)))
+
+        if not os.path.exists(os.path.join(top_level_dir, '{}.COMBAT'.format(input_folder), replicate_name)):
+            os.mkdir(os.path.join(top_level_dir, '{}.COMBAT'.format(input_folder), replicate_name))
+
+        wg.write(combat_adjusted_gct, os.path.join(top_level_dir, input_folder + '.COMBAT', replicate_name, replicate_name + '_' + input_folder + '.COMBAT.gct'))
 
 
-    new_list = []
-    for g in adj_list:
-        g.data_df = g.data_df.astype(float)
-        new_list.append(g)
-
-    for thing in new_list:
-        replicate_name = thing.col_metadata_df['prism_replicate'].unique()[0]
-
-        if not os.path.exists(os.path.join(args.proj_dir, '{}.COMBAT'.format(args.input_folder))):
-            os.mkdir(os.path.join(args.proj_dir, '{}.COMBAT'.format(args.input_folder)))
-
-        if not os.path.exists(os.path.join(args.proj_dir, '{}.COMBAT'.format(args.input_folder), replicate_name)):
-            os.mkdir(os.path.join(args.proj_dir, '{}.COMBAT'.format(args.input_folder), replicate_name))
-
-        wg.write(thing, os.path.join(proj_dir, input_folder + '.COMBAT', replicate_name, replicate_name + '_' + input_folder + '.CB.gct'))
-
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
     if args.skip is not None:
-        modZ_GCT, cc_q75_df, weights = distil.calculate_modz(gct_list, group_by=group_by, skip=json.loads(args.skip))
-        cb_modZ_GCT, cb_cc_q75_df, cb_weights = distil.calculate_modz(new_list, group_by=group_by, skip=json.loads(args.skip))
-    else:
-        modZ_GCT, cc_q75_df, weights = distil.calculate_modz(gct_list, group_by=group_by)
-        cb_modZ_GCT, cb_cc_q75_df, cb_weights = distil.calculate_modz(new_list, group_by=group_by)
+        modZ_GCT, cc_q75_df, weights = distil.calculate_modz(gct_list, group_by=group_by_list, skip=json.loads(args.skip))
+        cb_modZ_GCT, cb_cc_q75_df, cb_weights = distil.calculate_modz(combat_adjusted_gct_list, group_by=group_by_list, skip=json.loads(args.skip))
 
-    # Drop sigs where nprofile =1
+    else:
+        modZ_GCT, cc_q75_df, weights = distil.calculate_modz(gct_list, group_by=group_by_list)
+        cb_modZ_GCT, cb_cc_q75_df, cb_weights = distil.calculate_modz(combat_adjusted_gct_list, group_by=group_by_list)
+
+    # Filter out signatures where nprofile = 1
     if nprofile_drop==True:
         (modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df) = drop_less_than_2_replicates(modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df)
 
-    outfile = os.path.join(proj_dir, 'modz.{}'.format(input_folder), pert)
-    cb_outfile = os.path.join(proj_dir, 'modz.{}.COMBAT'.format(input_folder), pert)
+    outfile = os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder), replicate_set_name)
+    cb_outfile = os.path.join(top_level_dir, 'MODZ.{}.COMBAT'.format(input_folder), replicate_set_name)
+
+    write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, outfile, replicate_set_name, input_folder, cb_outfile, replicate_set_name)
 
 
-    if not os.path.exists(outfile):
-        os.mkdir(outfile)
-    if not os.path.exists(cb_outfile):
-        os.mkdir(cb_outfile)
+def define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_name):
+    """
+    Searches for plates with replicate_set_name substring in their name to find replicates.
+    Curates replicate list to remove L1s where there are L2s, and reads in all resulting replicate set GCTs.
+    Returns a list of GCToo objects.
+    """
 
-
-    write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, outfile, rep_set, input_folder, cb_outfile, pert)
-
-def define_pert(proj_dir, input_folder, rep_set):
-    print rep_set
-    plate_directories = glob.glob(os.path.join(proj_dir, input_folder, rep_set + '_*'))
-    plate_names = [os.path.basename(x) for x in plate_directories]
-    replicate_ids = [x.split("_")[2] for x in plate_names]
-    short_reps = [x.split('.')[0] for x in replicate_ids]
-    keep = []
-
-
-    for r in set(short_reps):
-        temp = [y for y in replicate_ids if y.startswith(r)]
-        print temp
-
-
-        if len(temp) == 1:
-            keep.append(temp[0])
-        else:
-
-
-            temp2 = [z for z in temp if "." in z]
-            max_l = max([int(x[-1]) for x in temp2])
-            temp3 = [b for b in temp2 if b.endswith(str(max_l))]
-            keep.append(temp3[0])
-
-    keep_perts = [x for x in plate_names if x.split('_')[2] in keep]
-    keep_files = [glob.glob(path + '/*')[0] for path in plate_directories if os.path.basename(path) in keep_perts]
-
-    pert = plate_names[0].split('_')[0] + '_' + plate_names[0].split('_')[1]
+    logger.info("defining replicate set files for {}".format(replicate_set_name))
+    plate_directories = glob.glob(os.path.join(proj_dir, input_folder, replicate_set_name + '*', '*'))
+    keep_files = cut.cut_l1(plate_directories)
+    if len(keep_files) <= 1:
+        msg = "Insufficient number of replicates for replicate set {} in {} input folder".format(replicate_set_name, input_folder)
+        raise merino_exception.ReplicateSetSearchFailure(msg)
 
     gct_list = []
     for path in keep_files:
         gct = pe.parse(path)
-        print gct.data_df.shape
+        logger.info("parsed GCT {} with data_df.shape {}".format(os.path.basename(path), gct.data_df.shape))
         gct_list.append(gct)
 
-    return (pert, gct_list)
+
+    return gct_list
 
 
 def drop_less_than_2_replicates(modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df):
+    """
+    For all input data frames, removes signature entries where the number of profiles in that signature (nprofile) = 1.
+    Returns filtered data frames.
+    """
     sub_mat = modZ_GCT.data_df.drop(cc_q75_df[cc_q75_df['nprofile'] < 2].index, axis=1)
     sub_col_mat = modZ_GCT.col_metadata_df.drop(cc_q75_df[cc_q75_df['nprofile'] < 2].index)
     modZ_GCT = GCToo.GCToo(data_df=sub_mat, col_metadata_df=sub_col_mat, row_metadata_df=modZ_GCT.row_metadata_df)
@@ -227,6 +226,11 @@ def drop_less_than_2_replicates(modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df):
 
 def write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, outfile, rep_set, input_folder, cb_outfile, pert):
 
+    if not os.path.exists(outfile):
+        os.mkdir(outfile)
+    if not os.path.exists(cb_outfile):
+        os.mkdir(cb_outfile)
+
     weights[0].to_csv(os.path.join(outfile, rep_set + '_norm_weights.txt'), sep='\t')
     cb_weights[0].to_csv(os.path.join(cb_outfile, rep_set + '_norm_weights.txt'), sep='\t')
     weights[1].to_csv(os.path.join(outfile, rep_set + '_raw_weights.txt'), sep='\t')
@@ -235,8 +239,6 @@ def write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q
     wg.write(cb_modZ_GCT, os.path.join(cb_outfile, pert + '_MODZ.{}.COMBAT'.format(input_folder)))
     cc_q75_df.to_csv(os.path.join(outfile, rep_set + '_cc_q75.txt'), sep='\t')
     cb_cc_q75_df.to_csv(os.path.join(cb_outfile, rep_set + '_cc_q75.txt'), sep='\t')
-
-
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
