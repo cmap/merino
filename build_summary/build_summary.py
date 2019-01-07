@@ -51,8 +51,6 @@ def globandparse(search_pattern):
 def read_build_data(proj_dir):
     print "Reading LEVEL2 Data"
 
-
-
     data_pattern_list = ['*MFI*.gctx', '*COUNT*.gctx', '*NORM*.gctx', '*_ZSPC_*.gctx', '*_ZSPC.COMBAT_*.gctx',
                     '*_ZSVC_*.gctx', '*4_LFCPC_*.gctx', '*4_LFCVC_*.gctx', '*MODZ.ZSPC_*.gctx', '*MODZ.ZSPC.COMBAT_*.gctx']
 
@@ -125,7 +123,7 @@ def main(proj_dir, out_dir, invar=True, sense=False):
     if sense == True:
         expected_sense.wtks(data_map['combat_modz'], metadata_map['sig'], os.path.join(out_dir, 'sensitivities'))
 
-
+    prism_plots.sc_plot(metadata_map['sig'], os.path.join(out_dir,'sc_modz.zspc.png'))
 
 
     comp.modz_dist(modz_gct, sig_info, [], os.path.join(out_dir, 'modz_dist.png'))
