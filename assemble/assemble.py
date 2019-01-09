@@ -241,16 +241,17 @@ def main(args, all_perturbagens=None, assay_plates=None):
     truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, args.truncate_to_plate_map)
 
     # Pass python objects to the core assembly module (this is where command line and automated assembly intersect)
+    # here the outfile for automation is defined as project_dir/prism_replicate_set_name
     try:
         assemble_core.main(prism_replicate_name, args.outfile, all_perturbagens, davepool_data_objects, prism_cell_list)
 
     except Exception as e:
-        failure_path = os.path.join(os.path.basename(args.outfile), "failure.txt")
+        failure_path = os.path.join(os.path.basename(args.outfile), "assemble", prism_replicate_name,  "failure.txt")
         with open(failure_path, "w") as file:
             file.write("plate {} failed for reason {}".format(prism_replicate_name, e))
         return
 
-    success_path = os.path.join(os.path.basename(args.outfile), "success.txt")
+    success_path = os.path.join(os.path.basename(args.outfile), "assemble", prism_replicate_name, "success.txt")
     with open(success_path, "w") as file:
         file.write("plate {} successfully assembled".format(prism_replicate_name))
 

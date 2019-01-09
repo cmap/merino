@@ -66,21 +66,21 @@ def reader_writer(input_file, output_file, function, check_size=False):
 def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False):
 
     # Make Level 3 data folder
-    if not os.path.exists(os.path.join(proj_dir, 'normalize')):
-        os.mkdir(os.path.join(proj_dir, 'normalize'))
+    if not os.path.exists(os.path.join(proj_dir, 'card')):
+        os.mkdir(os.path.join(proj_dir, 'card'))
 
     # Get path to raw mfi
     assemble_path = os.path.join(proj_dir, 'assemble', plate_name, plate_name + '_MEDIAN.gct')
     # Get path to beadcount values
     count_path = os.path.join(proj_dir, 'assemble', plate_name, plate_name + '_COUNT.gct')
     # Get path to LEVEL3 norm values
-    norm_path = os.path.join(proj_dir, 'normalize', plate_name, plate_name + '_NORM.gct')
+    norm_path = os.path.join(proj_dir, 'card', plate_name, plate_name + '_NORM.gct')
     # Set plate_failure variable to false
     plate_failure = False
 
-    if not os.path.exists(os.path.join(proj_dir, 'normalize', plate_name)):
+    if not os.path.exists(os.path.join(proj_dir, 'card', plate_name)):
         # Create norm folder for plate if it doesn't exist already
-        os.mkdir(os.path.join(proj_dir, 'normalize', plate_name))
+        os.mkdir(os.path.join(proj_dir, 'card', plate_name))
 
         # Create norm file
         if dp == True:
@@ -99,33 +99,30 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
 
     if log_tf==True:
     # Map denoting each type of LEVEL4 data, its folder name, the function to create it, and the file ending.
-        lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
+        lvl4_card_jobs = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
                      'ZSPC': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
-                     'LFCPC': [functools.partial(viability.log_viability, plate_control=True, log=True), '_FCPC.gct'],
-                     'LFCVC': [functools.partial(viability.log_viability, plate_control=False,log=True), '_FCVC.gct']}
+                     'LFCPC': [functools.partial(viability.log_viability, plate_control=True, log=True), '_LFCPC.gct'],
+                     'LFCVC': [functools.partial(viability.log_viability, plate_control=False,log=True), '_LFCVC.gct']}
 
     else:
-        lvl4_card_map = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
+        lvl4_card_jobs = {'ZSVC': [zscore.calculate_zscore, '_ZSVC.gct'],
                          'ZSPC': [functools.partial(zscore.calculate_zscore, plate_control=True), '_ZSPC.gct'],
-                         'LFCPC': [functools.partial(viability.log_viability, plate_control=True, log=False), '_FCPC.gct'],
-                         'LFCVC': [functools.partial(viability.log_viability, plate_control=False, log=False), '_FCVC.gct']}
+                         'LFCPC': [functools.partial(viability.log_viability, plate_control=True, log=False), '_LFCPC.gct'],
+                         'LFCVC': [functools.partial(viability.log_viability, plate_control=False, log=False), '_LFCVC.gct']}
 
     # Loop through this map to output all level 4 data
-    for dir_name in lvl4_card_map.keys():
-        if not os.path.exists(os.path.join(proj_dir, dir_name)):
-            os.mkdir(os.path.join(proj_dir, dir_name))
-        if not os.path.exists(os.path.join(proj_dir, dir_name, plate_name)):
-            os.mkdir(os.path.join(proj_dir, dir_name, plate_name))
+    for job in lvl4_card_jobs.keys():
 
-            output_path = os.path.join(proj_dir, dir_name, plate_name, plate_name + lvl4_card_map[dir_name][1])
+        output_path = os.path.join(proj_dir, "card", plate_name, plate_name + lvl4_card_jobs[job][1])
 
-            reader_writer(input_file=norm_path, output_file=output_path, function=lvl4_card_map[dir_name][0])
+        reader_writer(input_file=norm_path, output_file=output_path, function=lvl4_card_jobs[job][0])
 
     # Return status of plate failure
     return plate_failure
 
 
 def main(args):
+    # NB: automation sets project_dir to project_dir/prism_replicate_set_name to set up fs for s3
     if args.search_pattern:
         failure_list = []
         for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
@@ -146,11 +143,11 @@ def main(args):
     else:
         failure = card(args.proj_dir, args.plate_name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
         if failure:
-            plate_failure_path = os.path.join(args.proj_dir, "normalize", args.plate_name, "failure.txt")
+            plate_failure_path = os.path.join(args.proj_dir, "card", args.plate_name, "failure.txt")
             with open(plate_failure_path, "w") as file:
                 file.write("{} failed size checks".format(args.plate_name))
         else:
-            success_path = os.path.join(args.proj_dir, "normalize", args.plate_name, "success.txt")
+            success_path = os.path.join(args.proj_dir, "card", args.plate_name, "success.txt")
             with open(success_path, "w") as file:
                 file.write("succesfully processed {}".format(args.plate_name))
 

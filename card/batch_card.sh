@@ -24,15 +24,18 @@ esac
 shift # past argument or value
 done
 
-PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}"
-
-echo CONFIG_ROOT = "${CONFIG_ROOT}"
-echo PROJECT_DIR = "${PROJECT_DIR}"
-
 IFS=',' read -r -a plates <<< "${PLATES}"
 
 batch_index=${AWS_BATCH_JOB_ARRAY_INDEX}
 PLATE_NAME="${plates[${batch_index}]}"
+
+IFS='_' read -r -a plate_token <<< "${PLATE_NAME}";
+
+PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${plate_token[0]}_${plate_token[1]}_${plate_token[2]}"
+
+echo CONFIG_ROOT = "${CONFIG_ROOT}"
+echo PROJECT_DIR = "${PROJECT_DIR}"
+
 
 echo PLATE_NAME = "${PLATE_NAME}"
 
