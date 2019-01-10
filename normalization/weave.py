@@ -26,7 +26,7 @@ def build_parser():
                         type=str, required=True)
 
     input = parser.add_mutually_exclusive_group(required=True)
-    input.add_argument("-input_folder", "-if", help="Search for this string in the directory, only run plates which contain it.",
+    input.add_argument("-input_type", "-itype", help="Search for this string in the directory, only run plates which contain it.",
                         type=str, default='ZSPC')
     input.add_argument("-all_inputs", "-ai", help="Run on every card output", action="store_true", default=False)
 
@@ -35,7 +35,7 @@ def build_parser():
     replicate_sets.add_argument("-replicate_set_name", "-rsn", help="Run on specified replicate_set", type=str, default=None)
     replicate_sets.add_argument("-search_pattern", "-sp", help="Run on plates which contain this pattern", type=str, default=None)
 
-    parser.add_argument("-aggregate_output_dir", "-outdir", help="directory where all outputs will be aggregated", type=str, default=None)
+    parser.add_argument("-aggregate_output", "-aggregate", help="Flag to aggregate all output into single weave directory", action="store_true", default=False)
 
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
@@ -69,74 +69,74 @@ def main(args):
     # NB required choose one of input_folder options: all_inputs, input_folder
     if args.all_inputs:
         for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
-            replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, input, glob_value))
-            if not replicate_sets_search_results:
+
+            replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, "card", glob_value, "*"+input+"*"))
+            if not replicate_sets_search_results: # no files for input type
                 logger.info("Insufficient inputs for input folder {} to run weave. Skipping... ".format(input))
-                pass
-            # Setup directories after passing checks for work to do
-            setup_directories(args.proj_dir, input, args.aggregate_output_dir)
+                continue
 
             # Naming convention: pertPlate_assayType_pertTime_replicateNum_beadBatch
             # Weave grouping is defined by first three tokens
             n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
             all_replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
+
+            setup_directories(args.proj_dir, args.aggregate_output, all_replicate_sets)
+
             if len(all_replicate_sets) > 1:
+
                 for replicate_set_name in all_replicate_sets:
                     logger.info("Weaving together {} {} files".format(replicate_set_name, input))
-                    weave(args.proj_dir, replicate_set_name, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
+                    weave(args.proj_dir, replicate_set_name, input_type=input, nprofile_drop=args.nprofile_drop, args=args)
             else:
                 replicate_set_name = all_replicate_sets.pop()
                 logger.info("Weaving together {} {} files".format(replicate_set_name, input))
-                weave(args.proj_dir, replicate_set_name, input_folder=input, nprofile_drop=args.nprofile_drop, args=args)
+                weave(args.proj_dir, replicate_set_name, input_type=input, nprofile_drop=args.nprofile_drop, args=args)
 
     else:
-        setup_directories(args.proj_dir, args.input_folder, args.aggregate_output_dir)
-        replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, args.input_folder, glob_value))
+        replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, "card", glob_value, "*" + args.input_type + "*"))
+
         if not replicate_sets_search_results:
-            msg = "Unable to find sufficient inputs for input folder {} to run weave using '{}' to search".format(
-                args.input_folder, glob_value)
+            msg = "Unable to find sufficient inputs for input type {} to run weave using '{}' to search".format(
+                args.input_type, glob_value)
             raise merino_exception.ReplicateSetSearchFailure(msg)
 
         n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
         all_replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
+
+        setup_directories(args.proj_dir, args.aggregate_output, all_replicate_sets)
+
         if len(all_replicate_sets) > 1:
             for replicate_set_name in all_replicate_sets:
                 logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_folder))
-                weave(args.proj_dir, replicate_set_name, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+                weave(args.proj_dir, replicate_set_name, input_type=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
         else:
             replicate_set_name = all_replicate_sets.pop()
             logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_folder))
-            weave(args.proj_dir, replicate_set_name, input_folder=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+            weave(args.proj_dir, replicate_set_name, input_type=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
 
 
-def setup_directories(project_dir, input_folder, aggregate_out):
-    """
-    For a given input folder sets up MODZ and MODZ COMBAT top level directories used to store weave results.
-    If aggregate_out is not None, will create top-level directory for all outputs
-    """
-    if aggregate_out is not None:
-        top_level_dir = os.path.join(project_dir, aggregate_out)
+def setup_directories(project_dir, aggregate_out=False, replicate_set_list=None):
+
+    if (aggregate_out):
+
+        if not os.path.exists(os.path.join(project_dir, "weave")):
+            os.mkdir(os.path.join(project_dir, "weave"))
     else:
-        top_level_dir = project_dir
 
-    if not os.path.exists(top_level_dir):
-        os.mkdir(top_level_dir)
-    if not os.path.exists(os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder))):
-        os.mkdir(os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder)))
-    if not os.path.exists(os.path.join(top_level_dir, 'MODZ.{}.COMBAT'.format(input_folder))):
-        os.mkdir(os.path.join(top_level_dir, 'MODZ.{}.COMBAT'.format(input_folder)))
+        for replicate_set_name in replicate_set_list:
 
-def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop=True):
+            if not os.path.exists(os.path.join(project_dir, "weave", replicate_set_name)):
+                os.mkdir(os.path.join(project_dir, "weave", replicate_set_name))
 
-    gct_list = define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_name)
 
-    if args.aggregate_output_dir:
-        top_level_dir = os.path.join(proj_dir, args.aggregate_output_dir)
+def weave(proj_dir, replicate_set_name, args, input_type='ZSPC', nprofile_drop=True):
+
+    gct_list = define_replicate_set_files_and_parse(proj_dir, input_type, replicate_set_name)
+
+    if args.aggregate_output:
+        top_level_dir = os.path.join(proj_dir, "weave")
     else:
-        top_level_dir = proj_dir
-
-    if not os.path.exists(os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder), replicate_set_name)):
-        os.mkdir(os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder), replicate_set_name))
+        top_level_dir = os.path.join(proj_dir, replicate_set_name)
 
     reload(distil)
 
@@ -154,14 +154,7 @@ def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop
     # Write out ComBat adjusted GCTs
     for combat_adjusted_gct in combat_adjusted_gct_list:
         replicate_name = combat_adjusted_gct.col_metadata_df['prism_replicate'].unique()[0]
-
-        if not os.path.exists(os.path.join(top_level_dir, '{}.COMBAT'.format(input_folder))):
-            os.mkdir(os.path.join(top_level_dir, '{}.COMBAT'.format(input_folder)))
-
-        if not os.path.exists(os.path.join(top_level_dir, '{}.COMBAT'.format(input_folder), replicate_name)):
-            os.mkdir(os.path.join(top_level_dir, '{}.COMBAT'.format(input_folder), replicate_name))
-
-        wg.write(combat_adjusted_gct, os.path.join(top_level_dir, input_folder + '.COMBAT', replicate_name, replicate_name + '_' + input_folder + '.COMBAT.gct'))
+        wg.write(combat_adjusted_gct, os.path.join(top_level_dir, replicate_name + '_' + input_type + '.COMBAT.gct'))
 
 
     if args.skip is not None:
@@ -176,13 +169,13 @@ def weave(proj_dir, replicate_set_name, args, input_folder='ZSPC', nprofile_drop
     if nprofile_drop==True:
         (modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df) = drop_less_than_2_replicates(modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df)
 
-    outfile = os.path.join(top_level_dir, 'MODZ.{}'.format(input_folder), replicate_set_name)
-    cb_outfile = os.path.join(top_level_dir, 'MODZ.{}.COMBAT'.format(input_folder), replicate_set_name)
+    # outfile = os.path.join(top_level_dir, 'MODZ.{}'.format(input_type), replicate_set_name)
+    # cb_outfile = os.path.join(top_level_dir, 'MODZ.{}.COMBAT'.format(input_type), replicate_set_name)
 
-    write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, outfile, replicate_set_name, input_folder, cb_outfile, replicate_set_name)
+    write_outputs(top_level_dir,weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, replicate_set_name, input_type)
 
 
-def define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_name):
+def define_replicate_set_files_and_parse(proj_dir, input_type, replicate_set_name):
     """
     Searches for plates with replicate_set_name substring in their name to find replicates.
     Curates replicate list to remove L1s where there are L2s, and reads in all resulting replicate set GCTs.
@@ -190,10 +183,10 @@ def define_replicate_set_files_and_parse(proj_dir, input_folder, replicate_set_n
     """
 
     logger.info("defining replicate set files for {}".format(replicate_set_name))
-    plate_directories = glob.glob(os.path.join(proj_dir, input_folder, replicate_set_name + '*', '*'))
+    plate_directories = glob.glob(os.path.join(proj_dir, "card", replicate_set_name + '*', '*'+input_type+"*"))
     keep_files = cut.cut_l1(plate_directories)
     if len(keep_files) <= 1:
-        msg = "Insufficient number of replicates for replicate set {} in {} input folder".format(replicate_set_name, input_folder)
+        msg = "Insufficient number of replicates for replicate set {} in {} input folder".format(replicate_set_name, input_type)
         raise merino_exception.ReplicateSetSearchFailure(msg)
 
     gct_list = []
@@ -224,21 +217,20 @@ def drop_less_than_2_replicates(modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df):
 
     return (modZ_GCT, cc_q75_df, cb_modZ_GCT, cb_cc_q75_df)
 
-def write_outputs(weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, outfile, rep_set, input_folder, cb_outfile, pert):
+def write_outputs(top_level_dir, weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_q75_df, cb_cc_q75_df, rep_set, input_type):
 
-    if not os.path.exists(outfile):
-        os.mkdir(outfile)
-    if not os.path.exists(cb_outfile):
-        os.mkdir(cb_outfile)
+    if not os.path.exists(top_level_dir):
+        os.mkdir(top_level_dir)
 
-    weights[0].to_csv(os.path.join(outfile, rep_set + '_norm_weights.txt'), sep='\t')
-    cb_weights[0].to_csv(os.path.join(cb_outfile, rep_set + '_norm_weights.txt'), sep='\t')
-    weights[1].to_csv(os.path.join(outfile, rep_set + '_raw_weights.txt'), sep='\t')
-    cb_weights[1].to_csv(os.path.join(cb_outfile, rep_set + '_raw_weights.txt'), sep='\t')
-    wg.write(modZ_GCT, os.path.join(outfile, pert + '_MODZ.{}'.format(input_folder)))
-    wg.write(cb_modZ_GCT, os.path.join(cb_outfile, pert + '_MODZ.{}.COMBAT'.format(input_folder)))
-    cc_q75_df.to_csv(os.path.join(outfile, rep_set + '_cc_q75.txt'), sep='\t')
-    cb_cc_q75_df.to_csv(os.path.join(cb_outfile, rep_set + '_cc_q75.txt'), sep='\t')
+
+    weights[0].to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_norm_weights.txt'), sep='\t')
+    cb_weights[0].to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_norm_weights.txt'), sep='\t')
+    weights[1].to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_raw_weights.txt'), sep='\t')
+    cb_weights[1].to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_raw_weights.txt'), sep='\t')
+    wg.write(modZ_GCT, os.path.join(top_level_dir, rep_set + '_MODZ.{}'.format(input_type)))
+    wg.write(cb_modZ_GCT, os.path.join(top_level_dir, rep_set + '_MODZ.{}.COMBAT'.format(input_type)))
+    cc_q75_df.to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_cc_q75.txt'), sep='\t')
+    cb_cc_q75_df.to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_cc_q75.txt'), sep='\t')
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
