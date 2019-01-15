@@ -59,6 +59,7 @@ def build_parser():
 
 def main(args):
     # NB required to choose one of replicate set options: all_plates, replicate_set_name, search_pattern
+    print args.input_type
     if args.search_pattern is not None:
         glob_value = args.search_pattern
     if args.replicate_set_name is not None:
@@ -68,7 +69,7 @@ def main(args):
 
     # NB required choose one of input_folder options: all_inputs, input_folder
     if args.all_inputs:
-        for input in ["ZSPC", "ZSVC", "LFCVC", "LFCPC"]:
+        for input in ["ZSPC", "LFCPC", "ZSVC", "LFCVC"]:
 
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, "card", glob_value, "*"+input+"*"))
             if not replicate_sets_search_results: # no files for input type
@@ -86,7 +87,8 @@ def main(args):
 
                 for replicate_set_name in all_replicate_sets:
                     logger.info("Weaving together {} {} files".format(replicate_set_name, input))
-                    weave(args.proj_dir, replicate_set_name, input_type=input, nprofile_drop=args.nprofile_drop, args=args)
+                    if len(glob.glob(os.path.join(args.proj_dir, 'weave', replicate_set_name, '*{}*'.format(input)))) < 1:
+                        weave(args.proj_dir, replicate_set_name, input_type=input, nprofile_drop=args.nprofile_drop, args=args)
             else:
                 replicate_set_name = all_replicate_sets.pop()
                 logger.info("Weaving together {} {} files".format(replicate_set_name, input))
@@ -125,18 +127,27 @@ def setup_directories(project_dir, aggregate_out=False, replicate_set_list=None)
 
         for replicate_set_name in replicate_set_list:
 
+            if not os.path.exists(os.path.join(project_dir, "weave")):
+                os.mkdir(os.path.join(project_dir, "weave"))
+
             if not os.path.exists(os.path.join(project_dir, "weave", replicate_set_name)):
                 os.mkdir(os.path.join(project_dir, "weave", replicate_set_name))
+
+
+
 
 
 def weave(proj_dir, replicate_set_name, args, input_type='ZSPC', nprofile_drop=True):
 
     gct_list = define_replicate_set_files_and_parse(proj_dir, input_type, replicate_set_name)
 
+    if gct_list == False:
+        return
+
     if args.aggregate_output:
         top_level_dir = os.path.join(proj_dir, "weave")
     else:
-        top_level_dir = os.path.join(proj_dir, replicate_set_name)
+        top_level_dir = os.path.join(proj_dir, 'weave', replicate_set_name)
 
     reload(distil)
 
@@ -154,7 +165,7 @@ def weave(proj_dir, replicate_set_name, args, input_type='ZSPC', nprofile_drop=T
     # Write out ComBat adjusted GCTs
     for combat_adjusted_gct in combat_adjusted_gct_list:
         replicate_name = combat_adjusted_gct.col_metadata_df['prism_replicate'].unique()[0]
-        wg.write(combat_adjusted_gct, os.path.join(top_level_dir, replicate_name + '_' + input_type + '.COMBAT.gct'))
+        wg.write(combat_adjusted_gct, os.path.join(proj_dir, 'card', replicate_name,replicate_name + '_' + input_type + '.COMBAT.gct'))
 
 
     if args.skip is not None:
@@ -183,11 +194,13 @@ def define_replicate_set_files_and_parse(proj_dir, input_type, replicate_set_nam
     """
 
     logger.info("defining replicate set files for {}".format(replicate_set_name))
-    plate_directories = glob.glob(os.path.join(proj_dir, "card", replicate_set_name + '*', '*'+input_type+"*"))
+    plate_directories = glob.glob(os.path.join(proj_dir, "card", replicate_set_name + '*', '*'+input_type+".gct"))
     keep_files = cut.cut_l1(plate_directories)
     if len(keep_files) <= 1:
         msg = "Insufficient number of replicates for replicate set {} in {} input folder".format(replicate_set_name, input_type)
-        raise merino_exception.ReplicateSetSearchFailure(msg)
+        print merino_exception.ReplicateSetSearchFailure(msg)
+        return False
+
 
     gct_list = []
     for path in keep_files:
@@ -223,14 +236,14 @@ def write_outputs(top_level_dir, weights, cb_weights, modZ_GCT, cb_modZ_GCT, cc_
         os.mkdir(top_level_dir)
 
 
-    weights[0].to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_norm_weights.txt'), sep='\t')
-    cb_weights[0].to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_norm_weights.txt'), sep='\t')
-    weights[1].to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_raw_weights.txt'), sep='\t')
-    cb_weights[1].to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_raw_weights.txt'), sep='\t')
-    wg.write(modZ_GCT, os.path.join(top_level_dir, rep_set + '_MODZ.{}'.format(input_type)))
-    wg.write(cb_modZ_GCT, os.path.join(top_level_dir, rep_set + '_MODZ.{}.COMBAT'.format(input_type)))
-    cc_q75_df.to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_cc_q75.txt'), sep='\t')
-    cb_cc_q75_df.to_csv(os.path.join(top_level_dir, rep_set +input_type+ '_cc_q75.txt'), sep='\t')
+    weights[0].to_csv(os.path.join(top_level_dir,rep_set + '_'+input_type+ '_norm_weights.txt'), sep='\t')
+    cb_weights[0].to_csv(os.path.join(top_level_dir,rep_set + '_'+input_type+ '_norm_weights.txt'), sep='\t')
+    weights[1].to_csv(os.path.join(top_level_dir,rep_set + '_'+input_type+ '_raw_weights.txt'), sep='\t')
+    cb_weights[1].to_csv(os.path.join(top_level_dir,rep_set + '_'+input_type+ '_raw_weights.txt'), sep='\t')
+    wg.write(modZ_GCT, os.path.join(top_level_dir,rep_set + '_MODZ.{}'.format(input_type.split('.')[0])))
+    wg.write(cb_modZ_GCT, os.path.join(top_level_dir,rep_set + '_MODZ.{}.COMBAT'.format(input_type.split('.')[0])))
+    cc_q75_df.to_csv(os.path.join(top_level_dir,rep_set + '_' + 'MODZ.{}_cc_q75.txt'.format(input_type.split('.')[0])), sep='\t')
+    cb_cc_q75_df.to_csv(os.path.join(top_level_dir,rep_set + '_' + 'MODZ.' + input_type + '.COMBAT' + '_cc_q75.txt'), sep='\t')
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])

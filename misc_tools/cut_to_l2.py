@@ -13,6 +13,7 @@ def cut_l1(list_of_plate_paths):
     curated_plate_path_list = []
     all_replicate_set_names = set(['_'.join(os.path.basename(replicate_path).split('_')[:-2]) for replicate_path in list_of_plate_paths])
 
+
     for replicate_set_name in all_replicate_set_names:
         print replicate_set_name
         replicate_set_paths = [path for path in list_of_plate_paths if os.path.basename(path).startswith(replicate_set_name)]

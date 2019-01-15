@@ -33,7 +33,7 @@ def build_parser():
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
-                        type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100"])
+                        type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100", "COP23"])
     parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True, default="120H")
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
@@ -246,12 +246,12 @@ def main(args, all_perturbagens=None, assay_plates=None):
         assemble_core.main(prism_replicate_name, args.outfile, all_perturbagens, davepool_data_objects, prism_cell_list)
 
     except Exception as e:
-        failure_path = os.path.join(os.path.basename(args.outfile), "assemble", prism_replicate_name,  "failure.txt")
+        failure_path = os.path.join(args.outfile, "assemble", prism_replicate_name,  "failure.txt")
         with open(failure_path, "w") as file:
             file.write("plate {} failed for reason {}".format(prism_replicate_name, e))
         return
 
-    success_path = os.path.join(os.path.basename(args.outfile), "assemble", prism_replicate_name, "success.txt")
+    success_path = os.path.join(args.outfile, "assemble", prism_replicate_name, "success.txt")
     with open(success_path, "w") as file:
         file.write("plate {} successfully assembled".format(prism_replicate_name))
 

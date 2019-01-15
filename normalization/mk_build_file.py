@@ -82,79 +82,172 @@ def build(search_pattern, outfile, file_suffix, cut=True):
 
     print concat_gct_wo_meta.data_df.shape
 
+    import pdb
+    pdb.set_trace()
+
     wg.write(concat_gct_wo_meta, outfile + 'n{}x{}'.format(concat_gct.data_df.shape[1], concat_gct.data_df.shape[0]) + file_suffix)
 
     return concat_gct
 
-def main(args):
 
-    modz_path = os.path.join(args.proj_dir, 'modz.ZSPC', args.search_pattern, '*.gct')
+def mk_cell_metadata(args):
+    paths = glob.glob(os.path.join(args.proj_dir, 'card', args.search_pattern, '*NORM.gct'))
+    cell_temp = pe.parse(paths[0])
+    cell_temp.row_metadata_df.to_csv(os.path.join(args.build_folder, args.cohort_name + '_cell_info.txt'), sep='\t')
+
+    # Calculate SSMD matrix using paths that were just grabbed and write out
+    ssmd_mat = ssmd.ssmd_matrix(paths)
+
+    ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, row_metadata_df=pd.DataFrame(index=ssmd_mat.index),
+                           col_metadata_df=pd.DataFrame(index=ssmd_mat.columns))
+    wgx.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
+
+    ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, col_metadata_df=pd.DataFrame(index=ssmd_mat.columns),
+                           row_metadata_df=pd.DataFrame(index=ssmd_mat.index))
+    wgct.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
+
+def mk_inst_info(inst_data, norm_data, args):
+
+    inst_info = inst_data.col_metadata_df
+    inst_info['profile_id'] = inst_info.index
+
+    for x in ['data_level', 'provenance']:
+        del inst_info[x]
+
+    inst_info.set_index('profile_id', inplace=True)
+    inst_info['is_well_failure'] = False
+    inst_info.loc[[x for x in inst_info.index if x not in norm_data.data_df.columns], 'is_well_failure'] = True
+    inst_info.to_csv(os.path.join(args.build_folder, args.cohort_name + '_inst_info.txt'), sep='\t')
+
+
+def mk_sig_info(search_pattern_dict, data_dict, args):
+
+    for key in search_pattern_dict:
+
+        if 'MODZ' in key:
+
+            jon = pd.DataFrame()
+
+            data_id = key.split('.g')[0].replace('*', '')
+
+            meta_paths = glob.glob(os.path.join(args.proj_dir, 'weave', args.search_pattern, '*{}_cc_q75.txt'.format(data_id)))
+
+
+            if len(meta_paths) == 0:
+                print "No metadata found for {}".format(data_id)
+                continue
+
+            for y in meta_paths:
+                temp = pd.read_table(y)
+
+                jon = jon.append(temp)
+
+
+
+            jon.set_index('sig_id', inplace=True)
+
+            sig_data = data_dict[key]
+
+            fcpc_sig_info = jon.join(sig_data.col_metadata_df)
+
+            for x in ['data_level', 'prism_replicate', 'det_well']:
+                del fcpc_sig_info[x]
+
+            fcpc_sig_info.to_csv(os.path.join(args.build_folder, args.cohort_name + '_sig_metrics_{}.txt'.format(data_id)), sep='\t')
+
+
+def main(args):
+    search_pattern_dict = {'*MEDIAN.gct': ['assemble', '_LEVEL2_MFI_'],
+                           '*COUNT.gct': ['assemble', '_LEVEL2_COUNT'],
+                           '*NORM.gct': ['card', '_LEVEL3_NORM_'],
+                           '*ZSPC.gct': ['card', '_LEVEL4_ZSPC_'],
+                           '*ZSPC.COMBAT.gct': ['card', '_LEVEL4_ZSPC.COMBAT_'],
+                           '*ZSVC.gct': ['card', '_LEVEL4_ZSVC_'],
+                           '*LFCPC.gct': ['card', '_LEVEL4_LFCPC_'],
+                           '*LFCPC.COMBAT.gct': ['card', '_LEVEL4_LFCPC.COMBAT_'],
+                           '*LFCVC.gct': ['card', '_LEVEL4_LFCVC_'],
+                           '*MODZ.ZSPC.gct':['weave', '_LEVEL5_MODZ.ZSPC_'],
+                           '*MODZ.LFCPC.gct':['weave', '_LEVEL5_MODZ.LFCPC_'],
+                           '*MODZ.ZSPC.COMBAT.gct': ['weave', '_LEVEL5_MODZ.ZSPC.COMBAT_'],
+                           '*MODZ.LFCPC.COMBAT.gct': ['weave', '_LEVEL5_MODZ.LFCPC.COMBAT_']}
+
+    data_dict = {}
+
+    for key in search_pattern_dict:
+        path = os.path.join(args.proj_dir, search_pattern_dict[key][0],
+                            args.search_pattern,key)
+        print path
+        out_path = os.path.join(args.build_folder, args.cohort_name + search_pattern_dict[key][1])
+        print key
+        if 'MODZ' in key:
+            data = build(path,out_path, '.gctx', cut=False)
+        else:
+            data = build(path, out_path, '.gctx', cut=True)
+        data_dict[key] = data
+
+    mk_inst_info(data_dict['*MEDIAN.gct'], data_dict['*NORM.gct'], args)
+
+    mk_sig_info(search_pattern_dict, data_dict, args)
+
+    mk_cell_metadata(args)
+
+def dep(args):
+
+    modz_path = os.path.join(args.proj_dir, 'weave', args.search_pattern,'*MODZ.ZSPC.gct')
     print modz_path
     modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.ZSPC_')
     print 'MODZ'
     zspc_sig_data = build(modz_path,modz_out_path, '.gctx', cut=False)
 
-    cb_modz_path = os.path.join(args.proj_dir, 'modz.ZSPC.COMBAT', args.search_pattern, '*.gct')
+    cb_modz_path = os.path.join(args.proj_dir, 'weave', args.search_pattern, '*MODZ.ZSPC.COMBAT.gct')
     print cb_modz_path
     cb_modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.ZSPC.COMBAT_')
     print 'MODZ'
     cb_zspc_sig_data = build(cb_modz_path, cb_modz_out_path, '.gctx', cut=False)
 
-    modz_path = os.path.join(args.proj_dir, 'modz.LFCPC', args.search_pattern, '*.gct')
+    modz_path = os.path.join(args.proj_dir, 'weave', args.search_pattern, '*MODZ.LFCPC.gct')
     print modz_path
     modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LFCPC_')
     print 'MODZ'
     fcpc_sig_data = build(modz_path,modz_out_path, '.gctx', cut=False)
 
-    modz_path = os.path.join(args.proj_dir, 'modz.LFCPC.COMBAT', args.search_pattern, '*.gct')
+    modz_path = os.path.join(args.proj_dir, 'weave', args.search_pattern, '*MODZ.LFCPC.COMBAT.gct')
     print modz_path
     modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LFCPC.COMBAT_')
     print 'MODZ'
     cb_fcpc_sig_data = build(modz_path, modz_out_path, '.gctx', cut=False)
 
-    modz_path = os.path.join(args.proj_dir, 'modz.LMEM.CB', args.search_pattern, '*.gct')
-    print modz_path
-    modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LMEM.COMBAT_')
-    print 'MODZ'
-    cb_lfem_sig_data = build(modz_path, modz_out_path, '.gctx', cut=False)
-
-    modz_path = os.path.join(args.proj_dir, 'modz.LMEM.', args.search_pattern, '*.gct')
-    print modz_path
-    modz_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL5_MODZ.LMEM_')
-    print 'MODZ'
-    lfem_sig_data = build(modz_path, modz_out_path, '.gctx', cut=False)
-
-    zscorepc_path = os.path.join(args.proj_dir, 'ZSPC', args.search_pattern, '*ZSPC*.gct')
+    zscorepc_path = os.path.join(args.proj_dir, 'card', args.search_pattern, '*_ZSPC.gct')
     zscorepc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_ZSPC_')
     print 'ZSPC'
     build(zscorepc_path, zscorepc_out_path, '.gctx')
 
-    zscorepc_path = os.path.join(args.proj_dir, 'ZSPC.COMBAT', args.search_pattern, '*ZSPC*.gct')
+    zscorepc_path = os.path.join(args.proj_dir, 'card', args.search_pattern, '_ZSPC.COMBAT.gct')
     zscorepc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_ZSPC.COMBAT_')
     print 'ZSPC.CB'
     build(zscorepc_path, zscorepc_out_path, '.gctx')
 
-    zscorevc_path = os.path.join(args.proj_dir, 'ZSVC', args.search_pattern, '*.gct')
+    zscorevc_path = os.path.join(args.proj_dir, 'card', args.search_pattern, '*_ZSVC.gct')
     zscorevc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_ZSVC_')
     print 'ZSVC'
     build(zscorevc_path, zscorevc_out_path, '.gctx')
 
-    viabilitypc_path = os.path.join(args.proj_dir, 'LFCPC', args.search_pattern, '*.gct')
+    viabilitypc_path = os.path.join(args.proj_dir, 'card', args.search_pattern, '*_LFCPC.gct')
     viabilitypc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LFCPC_')
     print 'LFCPC'
     build(viabilitypc_path, viabilitypc_out_path, '.gctx')
 
-    viabilitypc_path = os.path.join(args.proj_dir, 'LFCPC.COMBAT', args.search_pattern, '*.gct')
+    viabilitypc_path = os.path.join(args.proj_dir, 'card', args.search_pattern, '*_LFCPC.COMBAT.gct')
     viabilitypc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LFCPC.COMBAT_')
     print 'LFCPC'
     build(viabilitypc_path, viabilitypc_out_path, '.gctx')
 
-    viabilityvc_path = os.path.join(args.proj_dir, 'LFCVC', args.search_pattern, '*.gct')
+    viabilityvc_path = os.path.join(args.proj_dir, 'card', args.search_pattern, '*_LFCVC.gct')
     viabilityvc_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL4_LFCVC_')
     print 'LFCVC'
     build(viabilityvc_path, viabilityvc_out_path, '.gctx')
 
-    norm_path = os.path.join(args.proj_dir, 'normalize', args.search_pattern, '*.gct')
+    norm_path = os.path.join(args.proj_dir, 'card', args.search_pattern, '*_NORM.gct')
     norm_out_path = os.path.join(args.build_folder, args.cohort_name + '_LEVEL3_NORM_')
     print 'NORM'
     norm_data = build(norm_path, norm_out_path, '.gctx')
