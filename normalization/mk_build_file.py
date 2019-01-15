@@ -1,24 +1,20 @@
-import merino.misc_tools.cut_to_l2 as cut_to_l2
-import glob
+import os
 import sys
+import glob
+import logging
+import argparse
+import functools
+import ConfigParser
+import pandas as pd
+
 import cmapPy.pandasGEXpress.concat as cg
 import cmapPy.pandasGEXpress.GCToo as GCToo
 import cmapPy.pandasGEXpress.parse as pe
+import cmapPy.pandasGEXpress.write_gct as wg
+import cmapPy.pandasGEXpress.write_gctx as wgx
 
-import cmapPy.pandasGEXpress.write_gct as wgct
-import cmapPy.pandasGEXpress.write_gctx as wg
-import pandas as pd
-import glob
-import merino.misc_tools.cut_to_l2
-import cmapPy.pandasGEXpress.write_gct as wgx
-import cmapPy.pandasGEXpress.parse as pe
-import functools
+import merino.misc_tools.cut_to_l2 as cut_to_l2
 import merino.setup_logger as setup_logger
-import logging
-import argparse
-import sys
-import ConfigParser
-import os
 import merino.build_summary.ssmd_analysis as ssmd
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -39,6 +35,7 @@ def build_parser():
                         help="Search for this string in the directory, only run plates which contain it. "
                              "Default is wildcard",
                         type=str, default='*', required=False)
+    parser.add_argument("-aggregate_out", "-agg", help="whether weave used aggregate_out flag", action="store_true", default=False)
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
@@ -80,18 +77,19 @@ def build(search_pattern, outfile, file_suffix, cut=True):
     concat_gct_wo_meta = GCToo.GCToo(data_df = concat_gct.data_df, row_metadata_df = pd.DataFrame(index=concat_gct.data_df.index),
                                      col_metadata_df=pd.DataFrame(index=concat_gct.col_metadata_df.index))
 
-    print concat_gct_wo_meta.data_df.shape
+    logger.debug("gct shape without metadata: " + concat_gct_wo_meta.data_df.shape)
 
-    import pdb
-    pdb.set_trace()
-
-    wg.write(concat_gct_wo_meta, outfile + 'n{}x{}'.format(concat_gct.data_df.shape[1], concat_gct.data_df.shape[0]) + file_suffix)
+    wgx.write(concat_gct_wo_meta, outfile + 'n{}x{}'.format(concat_gct.data_df.shape[1], concat_gct.data_df.shape[0]) + file_suffix)
 
     return concat_gct
 
 
 def mk_cell_metadata(args):
-    paths = glob.glob(os.path.join(args.proj_dir, 'card', args.search_pattern, '*NORM.gct'))
+    if args.aggregate_out:
+        paths = glob.glob(os.path.join((args.proj_dir, args.search_pattern, 'card', '*NORM.gct')))
+    else:
+        paths = glob.glob(os.path.join(args.proj_dir, 'card', args.search_pattern, '*NORM.gct'))
+
     cell_temp = pe.parse(paths[0])
     cell_temp.row_metadata_df.to_csv(os.path.join(args.build_folder, args.cohort_name + '_cell_info.txt'), sep='\t')
 
@@ -100,11 +98,11 @@ def mk_cell_metadata(args):
 
     ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, row_metadata_df=pd.DataFrame(index=ssmd_mat.index),
                            col_metadata_df=pd.DataFrame(index=ssmd_mat.columns))
-    wgx.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
+    wg.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
 
     ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, col_metadata_df=pd.DataFrame(index=ssmd_mat.columns),
                            row_metadata_df=pd.DataFrame(index=ssmd_mat.index))
-    wgct.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
+    wg.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
 
 def mk_inst_info(inst_data, norm_data, args):
 
@@ -130,19 +128,20 @@ def mk_sig_info(search_pattern_dict, data_dict, args):
 
             data_id = key.split('.g')[0].replace('*', '')
 
-            meta_paths = glob.glob(os.path.join(args.proj_dir, 'weave', args.search_pattern, '*{}_cc_q75.txt'.format(data_id)))
+            if args.aggregate_out:
+                meta_paths = glob.glob(os.path.join(args.proj_dir, args.search_pattern, 'weave', '*{}_cc_q75.txt'.format(data_id)))
+            else:
+                meta_paths = glob.glob(os.path.join(args.proj_dir, 'weave', args.search_pattern, '*{}_cc_q75.txt'.format(data_id)))
 
 
             if len(meta_paths) == 0:
-                print "No metadata found for {}".format(data_id)
+                logger.debug("No metadata found for {}".format(data_id))
                 continue
 
             for y in meta_paths:
                 temp = pd.read_table(y)
 
                 jon = jon.append(temp)
-
-
 
             jon.set_index('sig_id', inplace=True)
 
@@ -174,13 +173,18 @@ def main(args):
     data_dict = {}
 
     for key in search_pattern_dict:
-        path = os.path.join(args.proj_dir, search_pattern_dict[key][0],
+        if args.aggregate_out:
+            path = os.path.join(args.proj_dir, args.search_pattern, search_pattern_dict[key][0], key)
+        else:
+            path = os.path.join(args.proj_dir, search_pattern_dict[key][0],
                             args.search_pattern,key)
-        print path
+
+
         out_path = os.path.join(args.build_folder, args.cohort_name + search_pattern_dict[key][1])
-        print key
+
+        logger.debug("working on {}".format(path))
         if 'MODZ' in key:
-            data = build(path,out_path, '.gctx', cut=False)
+            data = build(path, out_path, '.gctx', cut=False)
         else:
             data = build(path, out_path, '.gctx', cut=True)
         data_dict[key] = data
@@ -285,12 +289,12 @@ def dep(args):
 
     ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, row_metadata_df=pd.DataFrame(index=ssmd_mat.index),
                            col_metadata_df=pd.DataFrame(index=ssmd_mat.columns))
-    wgx.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
+    wg.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
 
 
     ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, col_metadata_df=pd.DataFrame(index=ssmd_mat.columns),
                 row_metadata_df=pd.DataFrame(index=ssmd_mat.index))
-    wgct.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
+    wg.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
     ###################################################################################
     jon = pd.DataFrame()
     for y in glob.glob(os.path.join(args.proj_dir, 'modz.ZSPC', args.search_pattern, '*cc_q75.txt')):

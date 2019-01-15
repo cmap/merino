@@ -119,22 +119,15 @@ def main(args):
 
 def setup_directories(project_dir, aggregate_out=False, replicate_set_list=None):
 
-    if (aggregate_out):
+    if not os.path.exists(os.path.join(project_dir, "weave")):
+        os.mkdir(os.path.join(project_dir, "weave"))
 
-        if not os.path.exists(os.path.join(project_dir, "weave")):
-            os.mkdir(os.path.join(project_dir, "weave"))
-    else:
+    if aggregate_out is False:
 
         for replicate_set_name in replicate_set_list:
 
-            if not os.path.exists(os.path.join(project_dir, "weave")):
-                os.mkdir(os.path.join(project_dir, "weave"))
-
             if not os.path.exists(os.path.join(project_dir, "weave", replicate_set_name)):
                 os.mkdir(os.path.join(project_dir, "weave", replicate_set_name))
-
-
-
 
 
 def weave(proj_dir, replicate_set_name, args, input_type='ZSPC', nprofile_drop=True):
