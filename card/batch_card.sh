@@ -35,8 +35,6 @@ PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${plate_token[0]}_${plate_token[1]}_$
 
 echo CONFIG_ROOT = "${CONFIG_ROOT}"
 echo PROJECT_DIR = "${PROJECT_DIR}"
-
-
 echo PLATE_NAME = "${PLATE_NAME}"
 
 # Activate conda environment
@@ -48,5 +46,8 @@ cd /cmap/
 python merino/setup_merino.py develop
 
 python /cmap/merino/normalization/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME}
+exit_code=$?
 
 source deactivate
+
+exit $exit_code
