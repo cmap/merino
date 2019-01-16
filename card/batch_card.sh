@@ -45,7 +45,7 @@ cd /cmap/
 
 python merino/setup_merino.py develop
 
-python /cmap/merino/normalization/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME}
+python /cmap/merino/card/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME}
 exit_code=$?
 
 source deactivate
