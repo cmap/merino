@@ -34,6 +34,7 @@ def build_parser():
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
                         type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100", "COP23"])
+    #todo: remove pert-time, idek why this is here anymore
     parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True, default="120H")
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
@@ -226,7 +227,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
         plate_name = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
         (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
-        prism_replicate_name = "_".join([pert_plate, args.assay_type, args.pert_time,replicate_number, bead])
+        prism_replicate_name = "_".join([pert_plate, assay, args.pert_time, replicate_number, bead])
 
 
     prism_cell_list = build_prism_cell_list(cp, cell_set_file, analyte_mapping_file)
