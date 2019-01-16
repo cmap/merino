@@ -53,7 +53,7 @@ IFS='_' read -r -a plate_token <<< "${PLATE}";
 PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.src"
 
 echo PLATE_MAP_PATH = "${PLATE_MAP_PATH}"
-OUTFILE="${CONFIG_ROOT}${PROJECT_CODE}/${plate_token[0]}_${plate_token[1]_${plate_token[2]}"
+OUTFILE="${CONFIG_ROOT}${PROJECT_CODE}/${plate_token[0]}_${plate_token[1]}_${plate_token[2]}"
 
 echo OUTFILE = "${OUTFILE}"
 # Activate conda environment
@@ -66,8 +66,8 @@ python merino/setup_merino.py develop
 
 if [ "${ASSAY_TYPE}" = "DP78" ];
 then
-    DP7_PLATE="${plate_token[0]}_DP7_${PERT_TIME}_${plate_token[3]}_${plate_token[4]}";
-    DP8_PLATE="${plate_token[0]}_DP8_${PERT_TIME}_${plate_token[3]}_${plate_token[4]}";
+    DP7_PLATE="${plate_token[0]}_DP7_${PERT_TIME}_${plate_token[3]}_${plate_token[4]}"
+    DP8_PLATE="${plate_token[0]}_DP8_${PERT_TIME}_${plate_token[3]}_${plate_token[4]}"
 
     DP7_CSV_PATH="${CONFIG_ROOT}${PROJECT_CODE}/lxb/${DP7_PLATE}/${DP7_PLATE}.csv"
     DP8_CSV_PATH="${CONFIG_ROOT}${PROJECT_CODE}/lxb/${DP8_PLATE}/${DP8_PLATE}.csv"
@@ -75,15 +75,14 @@ then
     echo "DAVEPOOL_ID_CSV_FILEPATH_PAIRS ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS}"
 
     python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS} -out ${OUTFILE}
-
+    exit_code=$?
 else
     CSV_FILEPATH="${CONFIG_ROOT}${PROJECT_CODE}/lxb/${PLATE}/${PLATE}.csv"
     echo CSV_FILEPATH = "${CSV_FILEPATH}"
     python /cmap/merino/assemble/assemble.py -config_filepath ${CONFIG_FILEPATH} -assay_type ${ASSAY_TYPE} -pert_time ${PERT_TIME} -pmp ${PLATE_MAP_PATH} -csv ${CSV_FILEPATH} -out ${OUTFILE}
-
+    exit_code=$?
 fi
 
 # Deactivate conda environment
 source deactivate
-
-
+exit $exit_code
