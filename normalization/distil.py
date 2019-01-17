@@ -94,11 +94,8 @@ def calculate_modz(gct_list, group_by=['pert_well'], skip=None):
     #TODO Change to replicate set ID when we have it in assemble
     #TODO change prism_replicate to replicate_id in assemble
 
-    components = gct_list[0].col_metadata_df.index[0].split('_')
-    length = len(components)
-    del components[length - 1]
-    replicate_set_id = '_'.join(components)
-
+    ncomponents = len(gct_list[0].col_metadata_df.index[0].split('_'))
+    replicate_set_id = gct_list[0].col_metadata_df.index[0].rsplit("_", ncomponents - 3)[0]
 
     cc_q75_df = pd.DataFrame(
         columns=['weave_prefix', 'det_well', 'profile_ids', 'cc_ut', 'cc_q75', 'nprofile', 'ss_ltn3', 'ss_ltn2',

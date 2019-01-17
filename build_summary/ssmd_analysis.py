@@ -1,5 +1,7 @@
 import sys
 import cmapPy.pandasGEXpress.parse as pe
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import os
