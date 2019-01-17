@@ -59,7 +59,6 @@ def build_parser():
 
 def main(args):
     # NB required to choose one of replicate set options: all_plates, replicate_set_name, search_pattern
-    print args.input_type
     if args.search_pattern is not None:
         glob_value = args.search_pattern
     if args.replicate_set_name is not None:
@@ -73,7 +72,7 @@ def main(args):
 
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, "card", glob_value, "*"+input+"*"))
             if not replicate_sets_search_results: # no files for input type
-                logger.info("Insufficient inputs for input folder {} to run weave. Skipping... ".format(input))
+                logger.info("Insufficient inputs for input type {} to run weave. Skipping... ".format(input))
                 continue
 
             # Naming convention: pertPlate_assayType_pertTime_replicateNum_beadBatch
@@ -87,6 +86,7 @@ def main(args):
 
                 for replicate_set_name in all_replicate_sets:
                     logger.info("Weaving together {} {} files".format(replicate_set_name, input))
+                    # Check that weave was not already run on replicate set
                     if len(glob.glob(os.path.join(args.proj_dir, 'weave', replicate_set_name, '*{}*'.format(input)))) < 1:
                         weave(args.proj_dir, replicate_set_name, input_type=input, nprofile_drop=args.nprofile_drop, args=args)
             else:

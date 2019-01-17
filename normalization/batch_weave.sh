@@ -23,18 +23,17 @@ case $key in
 esac
 shift # past argument or value
 done
-
-PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}"
-
-echo CONFIG_ROOT = "${CONFIG_ROOT}"
-echo PROJECT_DIR = "${PROJECT_DIR}"
-
 IFS=',' read -r -a replicate_sets <<< "${REPLICATE_SETS}"
 
 batch_index=${AWS_BATCH_JOB_ARRAY_INDEX}
 REPLICATE_SET_NAME="${replicate_sets[${batch_index}]}"
 
+PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${REPLICATE_SET_NAME}"
+
+echo CONFIG_ROOT = "${CONFIG_ROOT}"
+echo PROJECT_DIR = "${PROJECT_DIR}"
 echo REPLICATE_SET_NAME = "${REPLICATE_SET_NAME}"
+
 
 # Activate conda environment
 
