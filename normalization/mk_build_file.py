@@ -135,7 +135,7 @@ def mk_sig_info(search_pattern_dict, data_dict, args):
 
 
             if len(meta_paths) == 0:
-                logger.debug("No metadata found for {}".format(data_id))
+                logger.info("No metadata found for {}".format(data_id))
                 continue
 
             for y in meta_paths:
@@ -174,7 +174,7 @@ def main(args):
 
     for key in search_pattern_dict:
         if args.aggregate_out:
-            path = os.path.join(args.proj_dir, args.search_pattern, search_pattern_dict[key][0], key)
+            path = os.path.join(args.proj_dir, args.search_pattern, search_pattern_dict[key][0], '*', key)
         else:
             path = os.path.join(args.proj_dir, search_pattern_dict[key][0],
                             args.search_pattern,key)
@@ -182,7 +182,7 @@ def main(args):
 
         out_path = os.path.join(args.build_folder, args.cohort_name + search_pattern_dict[key][1])
 
-        logger.debug("working on {}".format(path))
+        logger.info("working on {}".format(path))
         if 'MODZ' in key:
             data = build(path, out_path, '.gctx', cut=False)
         else:
