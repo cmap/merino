@@ -175,7 +175,7 @@ def main(args):
     for key in search_pattern_dict:
         if args.aggregate_out:
             if search_pattern_dict[key][0] == "weave":
-                path = os.path.join(args.proj_dir, args.search_patter, search_pattern_dict[key][0], key)
+                path = os.path.join(args.proj_dir, args.search_pattern, search_pattern_dict[key][0], key)
             else:
                 path = os.path.join(args.proj_dir, args.search_pattern, search_pattern_dict[key][0], '*', key)
         else:
