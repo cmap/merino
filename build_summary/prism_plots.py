@@ -7,6 +7,7 @@ import os
 import seaborn as sns
 import pandas as pd
 import string
+import matplotlib as mpl
 
 invariants = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670', '671', '672', '673', '674', '675', '676', '677', '678', '679', '680']
 
@@ -40,6 +41,7 @@ def stacked_heatmap(df, column_metadata, title, outfile, lims):
     sns.heatmap(heatmap_df, linewidths=.1, cmap='coolwarm', vmin=lims[0], vmax=lims[1])
     plt.yticks(rotation=1)
     plt.title(title)
+    plt.axis('equal')
     plt.savefig(outfile)
     plt.clf()
 
@@ -56,6 +58,7 @@ def sc_plot(signature_info, outfile):
                      height=6, palette=colors[0:len(_types)])
     ax.set(xlabel='Replicate Correlation (CC_Q75)', ylabel='Num. Sens. Cell Lines (SS_ltn2)')
     plt.savefig(outfile)
+    plt.clf()
 
 def modz_distribution(df, col_metadata_df, outfile):
 

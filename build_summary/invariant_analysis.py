@@ -10,6 +10,9 @@ import pandas as pd
 import numpy as np
 import cmapPy.pandasGEXpress.GCToo as GCToo
 import generic_heatmap
+import matplotlib
+plt.rcParams['figure.figsize'] = (10.0,8.0)
+
 
 
 
@@ -115,7 +118,7 @@ def invariant_monotonicity(mfi_gct, col_metadata, outfile):
     'DMSO': neg_mono_values.dropna()}
 
 def invariant_curves_plot(df, col_metadata_df, outfile):
-
+    matplotlib.rcParams['figure.figsize'] = (8.0, 6.0)
     inv_df = extract_invariants(df)
 
     neg_dex = col_metadata_df[col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()

@@ -19,6 +19,7 @@ import numpy as np
 import sc_plot
 import sys
 import seaborn as sns
+plt.rcParams['figure.figsize'] = (10.0,8.0)
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -40,6 +41,7 @@ def build_parser():
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
 
 
+    return parser
     return parser
 
 def globandparse(search_pattern):
@@ -133,10 +135,13 @@ def main(proj_dir, out_dir, invar=True, sense=False):
 
     ssmd.ssmd_by_pool(metadata_map['ssmd'], metadata_map['cell'], out_dir)
 
-    ssmd.ssmd_ecdf(GCToo.GCToo(data_df=data_map['norm'], col_metadata_df=metadata_map['inst'].loc[data_map['norm'].data_df.columns],
-                               row_metadata_df=data_map['norm'].row_metadata_df),
-                   GCToo.GCToo(data_df=data_map['mfi'].data_df, col_metadata_df=metadata_map['inst'].loc[data_map['mfi'].data_df.columns],
-                               row_metadata_df=data_map['mfi'].row_metadata_df), 'SSMD ECDF for {}'.format(os.path.dirname(proj_dir))
+    norm_cell_metadata = metadata_map['cell'].loc[[x for x in metadata_map['cell'].index if x in data_map['norm'].row_metadata_df.index]]
+
+    ssmd.ssmd_ecdf(GCToo.GCToo(data_df=data_map['norm'].data_df, col_metadata_df=metadata_map['inst'].loc[data_map['norm'].data_df.columns],
+                               row_metadata_df=norm_cell_metadata),
+                   GCToo.GCToo(data_df=data_map['mfi'].data_df,
+                               col_metadata_df=metadata_map['inst'].loc[data_map['mfi'].data_df.columns],
+                               row_metadata_df=metadata_map['cell']), 'SSMD ECDF for {}'.format(os.path.dirname(proj_dir))
                    ,os.path.join(out_dir))
 
 
@@ -153,24 +158,24 @@ def main(proj_dir, out_dir, invar=True, sense=False):
 
         plate_mfi = GCToo.GCToo(data_df=data_map['mfi'].data_df[metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index],
                                 col_metadata_df=metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate],
-                                row_metadata_df=data_map['mfi'].row_metadata_df)
+                                row_metadata_df=metadata_map['cell'])
         print plate_mfi.data_df.shape
 
         plate_count = GCToo.GCToo(data_df=data_map['count'].data_df[metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index],
                                 col_metadata_df=metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate],
-                                row_metadata_df=data_map['count'].row_metadata_df)
+                                row_metadata_df=metadata_map['cell'])
 
         plate_norm = GCToo.GCToo(data_df=data_map['norm'].data_df.loc[:,[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
                                 col_metadata_df=metadata_map['inst'].loc[[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                row_metadata_df=data_map['norm'].row_metadata_df)
+                                row_metadata_df=norm_cell_metadata)
 
         plate_zscore = GCToo.GCToo(data_df=data_map['zspc'].data_df.loc[:,[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
                                 col_metadata_df=metadata_map['inst'].loc[[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                row_metadata_df=data_map['zspc'].row_metadata_df)
+                                row_metadata_df=norm_cell_metadata)
 
         plate_viability = GCToo.GCToo(data_df=data_map['lfcpc'].data_df.loc[:,[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
                                 col_metadata_df=metadata_map['inst'].loc[[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                row_metadata_df=data_map['zspc'].row_metadata_df)
+                                row_metadata_df=norm_cell_metadata)
 
         if not os.path.exists(os.path.join(out_dir, plate)):
             os.mkdir(os.path.join(out_dir, plate))

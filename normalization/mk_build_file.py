@@ -157,7 +157,7 @@ def mk_sig_info(search_pattern_dict, data_dict, args):
 
 def main(args):
     search_pattern_dict = {'*MEDIAN.gct': ['assemble', '_LEVEL2_MFI_'],
-                           '*COUNT.gct': ['assemble', '_LEVEL2_COUNT'],
+                           '*COUNT.gct': ['assemble', '_LEVEL2_COUNT_'],
                            '*NORM.gct': ['card', '_LEVEL3_NORM_'],
                            '*ZSPC.gct': ['card', '_LEVEL4_ZSPC_'],
                            '*ZSPC.COMBAT.gct': ['card', '_LEVEL4_ZSPC.COMBAT_'],

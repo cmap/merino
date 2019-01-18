@@ -68,7 +68,7 @@ def main(args):
 
     # NB required choose one of input_folder options: all_inputs, input_folder
     if args.all_inputs:
-        for input in ["ZSPC", "LFCPC", "ZSVC", "LFCVC"]:
+        for input in ["ZSPC", "LFCPC", "ZSVC", "LFCVC", "LMEM"]:
 
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, "card", glob_value, "*"+input+"*"))
             if not replicate_sets_search_results: # no files for input type
@@ -78,7 +78,7 @@ def main(args):
             # Naming convention: pertPlate_assayType_pertTime_replicateNum_beadBatch
             # Weave grouping is defined by first three tokens
             n_tokens = len(os.path.basename(replicate_sets_search_results[0]).split("_"))
-            all_replicate_sets = set([ os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
+            all_replicate_sets = set([os.path.basename(x).rsplit("_",n_tokens-3)[0] for x in replicate_sets_search_results])
 
             setup_directories(args.proj_dir, args.aggregate_output, all_replicate_sets)
 

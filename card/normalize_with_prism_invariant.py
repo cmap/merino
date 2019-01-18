@@ -66,8 +66,8 @@ def remove_outlier_invariants(gctoo):
 
     bad_wells = invdata.median()[invdata.median() < 600].index
 
-    data = gctoo.data_df.drop(bad_wells, axis=1)
-    col_data = gctoo.col_metadata_df.drop(bad_wells, axis=0)
+    data = gctoo.data_df.drop(bad_wells, axis=1).dropna(axis=1, how='all').shape
+    col_data = gctoo.col_metadata_df.loc[data.columns]
 
     new_gctoo = GCToo.GCToo(data_df=data, col_metadata_df=col_data, row_metadata_df=gctoo.row_metadata_df)
 
