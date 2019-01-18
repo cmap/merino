@@ -77,7 +77,7 @@ def build(search_pattern, outfile, file_suffix, cut=True):
     concat_gct_wo_meta = GCToo.GCToo(data_df = concat_gct.data_df, row_metadata_df = pd.DataFrame(index=concat_gct.data_df.index),
                                      col_metadata_df=pd.DataFrame(index=concat_gct.col_metadata_df.index))
 
-    logger.debug("gct shape without metadata: " + concat_gct_wo_meta.data_df.shape)
+    logger.debug("gct shape without metadata: {}".format(concat_gct_wo_meta.data_df.shape))
 
     wgx.write(concat_gct_wo_meta, outfile + 'n{}x{}'.format(concat_gct.data_df.shape[1], concat_gct.data_df.shape[0]) + file_suffix)
 
