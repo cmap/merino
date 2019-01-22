@@ -35,7 +35,7 @@ echo PROJECT_DIR = "${PROJECT_DIR}"
 echo COHORT_NAME = "${COHORT_NAME}"
 
 # Activate conda environment
-BUILD_FOLDER="${PROJECT_DIR}/${COHORT_NAME}/build"
+BUILD_FOLDER="${PROJECT_DIR}/build"
 mkdir -p "${BUILD_FOLDER}"
 
 source activate merino
