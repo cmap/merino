@@ -86,7 +86,7 @@ def build(search_pattern, outfile, file_suffix, cut=True):
 
 def mk_cell_metadata(args):
     if args.aggregate_out:
-        paths = glob.glob(os.path.join((args.proj_dir, args.search_pattern, 'card', '*', '*NORM.gct')))
+        paths = glob.glob(os.path.join(args.proj_dir, args.search_pattern, 'card', '*', '*NORM.gct'))
     else:
         paths = glob.glob(os.path.join(args.proj_dir, 'card', args.search_pattern, '*NORM.gct'))
 
