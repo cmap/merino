@@ -33,7 +33,7 @@ def build_parser():
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
-                        type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100", "COP23"])
+                        type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100", "COP23", "COP22"])
     #todo: remove pert-time, idek why this is here anymore
     parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True, default="120H")
     parser.add_argument("-plate_map_path", "-pmp",

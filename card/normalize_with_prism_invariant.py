@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 # TODO add to metadata
-invariant_rids = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670']
+invariant_rids = ['c-661', 'c-662', 'c-663', 'c-664', 'c-665', 'c-666', 'c-667', 'c-668', 'c-669', 'c-670']
 
 def normalize(mfi_gctoo, log=True, inv=True):
 

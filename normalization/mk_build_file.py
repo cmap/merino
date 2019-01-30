@@ -90,11 +90,12 @@ def mk_cell_metadata(args):
     else:
         paths = glob.glob(os.path.join(args.proj_dir, 'card', args.search_pattern, '*NORM.gct'))
 
-    cell_temp = pe.parse(paths[0])
+    mfi_paths = glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern, '*MEDIAN.gct'))
+    cell_temp = pe.parse(mfi_paths[0])
     cell_temp.row_metadata_df.to_csv(os.path.join(args.build_folder, args.cohort_name + '_cell_info.txt'), sep='\t')
 
     # Calculate SSMD matrix using paths that were just grabbed and write out
-    ssmd_mat = ssmd.ssmd_matrix(paths)
+    ssmd_mat = ssmd.ssmd_matrix(cut_to_l2.cut_l1(paths))
 
     ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, row_metadata_df=pd.DataFrame(index=ssmd_mat.index),
                            col_metadata_df=pd.DataFrame(index=ssmd_mat.columns))

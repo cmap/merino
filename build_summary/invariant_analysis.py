@@ -11,7 +11,6 @@ import numpy as np
 import cmapPy.pandasGEXpress.GCToo as GCToo
 import generic_heatmap
 import matplotlib
-plt.rcParams['figure.figsize'] = (10.0,8.0)
 
 
 
@@ -26,7 +25,7 @@ def spearmanwrapper(sequence):
 
 def extract_invariants(gctoo):
 
-    invariants = [str(x) for x in range(661,671)]
+    invariants = ['c-' + str(x) for x in range(661,671)]
     #invariants = [str(x) for x in range(661, 665)]
     #invariants = range(661,671)
 
