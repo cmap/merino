@@ -13,9 +13,11 @@ import logging
 import argparse
 import requests
 import ConfigParser
+import urllib2
 
 import merino
 import merino.setup_logger as setup_logger
+import merino.utils.path_utils as path_utils
 import merino.assemble.davepool_data as davepool_data
 import merino.assemble.prism_metadata as prism_metadata
 import merino.assemble.assemble_core as assemble_core
@@ -189,8 +191,14 @@ def setup_input_files(args):
 
     cp = ConfigParser.ConfigParser()
 
-    if os.path.exists(args.config_filepath):
-        cp.read(args.config_filepath)
+    if args.config_filepath:
+        config_path = path_utils.validate_path_as_uri(args.config_filepath)
+        page = urllib2.urlopen(config_path)
+        f = open("local.cfg", "w")
+        content = page.read()
+        f.write(content)
+        f.close()
+        cp.read('local.cfg')
     else:
         #todo: download from s3 to overwrite local prism_pipeline.cfg
         pass
