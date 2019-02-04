@@ -8,8 +8,10 @@ The meta data inputs are a plate map, a cell set definition file, a plate tracki
 import os
 import sys
 import ast
+import json
 import logging
 import argparse
+import requests
 import ConfigParser
 
 import merino
@@ -18,6 +20,7 @@ import merino.assemble.davepool_data as davepool_data
 import merino.assemble.prism_metadata as prism_metadata
 import merino.assemble.assemble_core as assemble_core
 import merino.utils.exceptions as merino_exception
+import merino.misc_tools.config_yaml as cyaml
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -33,7 +36,7 @@ def build_parser():
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
-                        type=str, required=True, choices=["DP78", "PR500", "PR300", "KJ100", "COP23", "COP22"])
+                        type=str, required=False, choices=["DP78", "PR500", "PR300", "KJ100", "COP23", "COP22"])
     #todo: remove pert-time, idek why this is here anymore
     parser.add_argument("-pert_time", "-time", help="the assay time point in hours", type=str, required=True, default="120H")
     parser.add_argument("-plate_map_path", "-pmp",
@@ -197,18 +200,8 @@ def setup_input_files(args):
 
     return (cp, cell_set_file_path, analyte_mapping_file_path)
 
+
 def main(args, all_perturbagens=None, assay_plates=None):
-    (cp, cell_set_file, analyte_mapping_file) = setup_input_files(args)
-
-    if all_perturbagens is None:
-        all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, args.pert_time)
-
-    for pert in all_perturbagens:
-        pert.validate_properties(ast.literal_eval(cp.get("required_metadata_fields", "column_metadata_fields")))
-
-    args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
-
-    #read actual data from relevant csv files, associate it with davepool ID
 
     if args.davepool_id_csv_filepath_pairs is not None:
         davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
@@ -217,17 +210,55 @@ def main(args, all_perturbagens=None, assay_plates=None):
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
         plate_name = os.path.basename(davepool_id_csv_list[0][1]).rsplit(".", 1)[0]
         (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
-        prism_replicate_name = "_".join([pert_plate, args.assay_type, args.pert_time,replicate_number, bead])
+
+        if args.assay_type == None:
+            msg = "No assay type found from beadset - must be specified in arg -assay_type"
+            raise merino_exception.NoAssayTypeFound(msg)
+
+        prism_replicate_name = "_".join([pert_plate, args.assay_type, tp,replicate_number, bead])
 
     elif args.csv_filepath is not None:
-        davepool_id_csv_list = args.csv_filepath
-        davepool_data_objects = []
-        davepool_data_objects.append(read_csv(davepool_id_csv_list, args.assay_type))
 
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
         plate_name = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
         (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
-        prism_replicate_name = "_".join([pert_plate, assay, args.pert_time, replicate_number, bead])
+
+        if bead is not None:
+            api_call = os.path.join('https://api.clue.io/api', 'beadset', bead)
+            db_entry = requests.get(api_call)
+            args.assay_type = json.loads(db_entry.text)['assay_variant']
+
+        if args.assay_type == None:
+            msg = "No assay type found from beadset - must be specified in arg -assay_type"
+            raise merino_exception.NoAssayTypeFound(msg)
+
+        prism_replicate_name = "_".join([pert_plate, assay, tp, replicate_number, bead])
+
+
+        davepool_id_csv_list = args.csv_filepath
+        davepool_data_objects = []
+        davepool_data_objects.append(read_csv(davepool_id_csv_list, args.assay_type))
+
+
+
+    # Set up output directory
+    if not os.path.exists(os.path.join(args.outfile, "assemble", prism_replicate_name)):
+        os.makedirs(os.path.join(args.outfile, "assemble", prism_replicate_name))
+
+    # Write args used to yaml file
+    cyaml.write_args_to_file(args, os.path.join(args.outfile, "assemble", prism_replicate_name, 'config.yaml'))
+
+    (cp, cell_set_file, analyte_mapping_file) = setup_input_files(args)
+
+    if all_perturbagens is None:
+        all_perturbagens = prism_metadata.build_perturbagens_from_file(args.plate_map_path, tp)
+
+    for pert in all_perturbagens:
+        pert.validate_properties(ast.literal_eval(cp.get("required_metadata_fields", "column_metadata_fields")))
+
+    args.ignore_assay_plate_barcodes = set(args.ignore_assay_plate_barcodes) if args.ignore_assay_plate_barcodes is not None else set()
+
+    #read actual data from relevant csv files, associate it with davepool ID
 
 
     prism_cell_list = build_prism_cell_list(cp, cell_set_file, analyte_mapping_file)

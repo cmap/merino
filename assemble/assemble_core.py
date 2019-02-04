@@ -196,9 +196,6 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects,
                                                                      davepool_id_to_cells_map)
 
-    if not os.path.exists(os.path.join(outfile, "assemble", prism_replicate_name)):
-        os.makedirs(os.path.join(outfile, "assemble", prism_replicate_name))
-
     # Create full outfile, build the gct, and write it out!
     median_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)

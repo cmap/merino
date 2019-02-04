@@ -7,3 +7,5 @@ class UnableToDifferentiateReplicates(Exception):
 class ReplicateSetSearchFailure(Exception):
     pass
 
+class NoAssayTypeFound(Exception):
+    pass

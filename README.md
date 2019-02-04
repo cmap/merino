@@ -6,7 +6,7 @@ Pre-publication version of data Flow for converting raw PR500 data into processe
 
 1.  Create a local conda environment
     
-    ```<path to conda bin>/conda create --name merino -c bioconda python=2.7.11 numpy=1.11.2 pandas=0.20 h5py=2.6.0 requests=2.13.0 cmapPy scipy setuptools pathlib patsy matplotlib seaborn statsmodels```
+    ```<path to conda bin>/conda create --name merino -c bioconda python=2.7.11 numpy=1.11.2 pandas=0.20 h5py=2.6.0 requests=2.13.0 cmapPy scipy setuptools pathlib patsy matplotlib seaborn statsmodels yaml```
 2.  Activate the environment:
     ```source <path to conda bin>/activate merino```
 3.  Add the merino code directory to the python path: 
