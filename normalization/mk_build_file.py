@@ -87,10 +87,11 @@ def build(search_pattern, outfile, file_suffix, cut=True):
 def mk_cell_metadata(args):
     if args.aggregate_out:
         paths = glob.glob(os.path.join(args.proj_dir, args.search_pattern, 'card', '*', '*NORM.gct'))
+        mfi_paths = glob.glob(os.path.join(args.proj_dir, args.search_pattern, 'assemble', '*', '*MEDIAN.gct'))
     else:
         paths = glob.glob(os.path.join(args.proj_dir, 'card', args.search_pattern, '*NORM.gct'))
+        mfi_paths = glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern, '*MEDIAN.gct'))
 
-    mfi_paths = glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern, '*MEDIAN.gct'))
     cell_temp = pe.parse(mfi_paths[0])
     cell_temp.row_metadata_df.to_csv(os.path.join(args.build_folder, args.cohort_name + '_cell_info.txt'), sep='\t')
 
