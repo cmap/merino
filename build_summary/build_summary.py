@@ -202,7 +202,7 @@ def main(proj_dir, out_dir, project_name,invar=True, sense=False):
         project_name = os.path.basename(os.path.dirname(proj_dir))
 
     # Make distributions and heatmaps of all data at each data level
-    #mk_distributions(data_map, metadata_map, project_name, out_dir)
+    mk_distributions(data_map, metadata_map, project_name, out_dir)
 
     # If expected sensitivities arg is set to true, run expected sensitivities analysis
     # TODO add argument for defining sensitivity cell set
@@ -210,13 +210,10 @@ def main(proj_dir, out_dir, project_name,invar=True, sense=False):
         expected_sense.wtks(data_map['combat_modz'], metadata_map['sig'], os.path.join(out_dir, 'sensitivities'))
 
     # Make standard SC plot for whole dataset, signal strength vs correlation
-    #prism_plots.sc_plot(metadata_map['sig'], os.path.join(out_dir,'sc_modz.zspc.png'))
+    prism_plots.sc_plot(metadata_map['sig'], os.path.join(out_dir,'sc_modz.zspc.png'))
 
     # Make modz distribuions split by pert type
     comp.modz_dist(data_map['combat_modz'], metadata_map['cb_sig'], [], os.path.join(out_dir, 'modz_dist.png'))
-
-    import pdb
-    pdb.set_trace()
 
     # If running on data with control barcodes, plot monotonicity of curves
     if invar is True:

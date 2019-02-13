@@ -36,12 +36,11 @@ def stacked_heatmap(df, column_metadata, title, outfile, lims):
     values_unstacked = values.unstack().reset_index().drop('level_1', axis=1)
     values_unstacked['well_row'] = [x[1:] for x in values_unstacked['pert_well']]
     values_unstacked['well_col'] = [x[0] for x in values_unstacked['pert_well']]
-    heatmap_df = values_unstacked.pivot_table(values=0, index='well_row', columns='well_col')
+    heatmap_df = values_unstacked.pivot_table(values=0, index='well_row', columns='well_col').T
 
     sns.heatmap(heatmap_df, linewidths=.1, cmap='coolwarm', vmin=lims[0], vmax=lims[1])
     plt.yticks(rotation=1)
     plt.title(title)
-    plt.axis('equal')
     plt.savefig(outfile)
     plt.clf()
 
@@ -54,11 +53,12 @@ def sc_plot(signature_info, outfile):
     _types = signature_info['pert_type'].unique().tolist()
     colors = ['b', 'g', 'r', 'orange', 'y']
     data_df = signature_info[(signature_info.pert_type.isin(_types))]
-    ax = sns.relplot(data=data_df, x='cc_q75', y='ss_ltn2', size='pert_idose', hue='pert_type', col='pert_type', \
-                     height=6, palette=colors[0:len(_types)])
+    ax = sns.relplot(data=data_df, x='cc_q75', y='ss_ltn2', size='pert_idose', hue='pert_type', col='pert_type', palette=colors[0:len(_types)])
     ax.set(xlabel='Replicate Correlation (CC_Q75)', ylabel='Num. Sens. Cell Lines (SS_ltn2)')
     plt.savefig(outfile)
+    plt.cla()
     plt.clf()
+    ax.fig.set_size_inches(10, 10)
 
 def modz_distribution(df, col_metadata_df, outfile):
 
