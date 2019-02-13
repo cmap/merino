@@ -155,12 +155,9 @@ def calculate_modz(gct_list, group_by=['pert_well'], skip=None):
 
         cis1_5, cis1, cis_5 = calculate_cis(ss1_5, ss1, ss_5, q75, len(modz_values))
 
-        print ','.join(weights.index.values.tolist())
-
         modz_values[modz_values < -10] = -10
         modz_values[modz_values > 10] = 10
         wells = ''.join(pd.Series([x[-4:] for x in mat.columns]).unique())
-        print [x.split('_')[2] for x in mat.columns]
         replicate_set_id = replicate_set_id.replace('COP23', 'KJ100').replace('_X1', '').replace('_X2', '')
         modZ_mat[replicate_set_id + wells] = modz_values
 

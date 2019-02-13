@@ -119,6 +119,7 @@ def invariant_monotonicity(mfi_gct, col_metadata, outfile):
 def invariant_curves_plot(df, col_metadata_df, outfile):
     matplotlib.rcParams['figure.figsize'] = (8.0, 6.0)
     inv_df = extract_invariants(df)
+    inv_df.data_df.index = [int(x.replace('c-', '')) for x in inv_df.data_df.index]
 
     neg_dex = col_metadata_df[col_metadata_df['pert_type'] == 'ctl_vehicle'].index.tolist()
     pos_dex = col_metadata_df[(col_metadata_df['pert_type'] == 'trt_poscon') | (col_metadata_df['pert_iname'] == 'MG-132')].index.tolist()

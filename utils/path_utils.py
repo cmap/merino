@@ -2,6 +2,7 @@ from pathlib import Path
 
 def validate_path_as_uri(path):
     #ensures that path formatting is amenable to urlopen-ing, i.e. converts to absolute URI
+
     p = Path(path)
 
     if p.parts[0] == "https:":

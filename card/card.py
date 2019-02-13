@@ -83,17 +83,19 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
         os.mkdir(os.path.join(proj_dir, 'card', plate_name))
 
         # Create norm file
-        if dp == True:
-            reader_writer(assemble_path, norm_path, norm.no_inv_norm)
-        else:
-            reader_writer(assemble_path, norm_path, functools.partial(norm.normalize, log=log_tf, inv=inv_tf))
+    if dp == True:
+        reader_writer(assemble_path, norm_path, norm.no_inv_norm)
+    else:
+        reader_writer(assemble_path, norm_path, functools.partial(norm.normalize, log=log_tf, inv=inv_tf))
 
         # Read in count file
-        count_gctoo = pe.parse(count_path)
-        # Remove low bead count wells and check GCT size, if too many wells have been stripped it will qualify as a failure
-        plate_failure = reader_writer(norm_path, norm_path, functools.partial(norm.remove_low_bead_wells, count_gct=count_gctoo), check_size=True)
-        # Shear predetermined bad wells (if any exist)
-        reader_writer(norm_path, norm_path, functools.partial(shear.shear, bad_wells=bad_wells))
+    count_gctoo = pe.parse(count_path)
+
+    # Remove low bead count wells and check GCT size, if too many wells have been stripped it will qualify as a failure
+    plate_failure = reader_writer(norm_path, norm_path, functools.partial(norm.remove_low_bead_wells, count_gct=count_gctoo), check_size=True)
+
+    # Shear predetermined bad wells (if any exist)
+    reader_writer(norm_path, norm_path, functools.partial(shear.shear, bad_wells=bad_wells))
 
     reload(viability)
 
@@ -123,6 +125,7 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
 
 def main(args):
     # NB: automation sets project_dir to project_dir/prism_replicate_set_name to set up fs for s3
+
     if args.search_pattern:
         failure_list = []
         for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):

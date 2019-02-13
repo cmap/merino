@@ -1,17 +1,18 @@
-import pestle.cmap.io.gmt as gmt
-import merino.compute_wtcs as compute_wtcs
-import merino.plot_enrichment_score as plot_enrichment_score
-import pandas as pd
-import cmapPy.pandasGEXpress.parse as pe
-import os
-import matplotlib.pyplot as plt
-import numpy as np
-import bisect
-from statsmodels.distributions.empirical_distribution import ECDF
-import merino.setup_logger as setup_logger
-import logging
 import argparse
+import bisect
+import logging
+import os
 import sys
+
+import compute_wtcs as compute_wtcs
+import plot_enrichment_score as plot_enrichment_score
+import cmapPy.pandasGEXpress.parse as pe
+import matplotlib.pyplot as plt
+import merino.setup_logger as setup_logger
+import numpy as np
+import pandas as pd
+import pestle.cmap.io.gmt as gmt
+from statsmodels.distributions.empirical_distribution import ECDF
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -57,16 +58,15 @@ def make_sqi_map(sensitivity_map, col_meta, data):
     s_qi_map = {}
 
     for key in sensitivity_map:
-        print key
         key = key.replace('_UP', '')
         if key in col_meta['pert_id'].tolist():
 
-            for dose in col_meta[col_meta['pert_id'] == key]['pert_dose'].unique():
-                for well in col_meta[(col_meta['pert_id'] == key) & (col_meta['pert_dose'] == dose)]['pert_well'].unique():
+            for dose in col_meta[col_meta['pert_id'] == key]['pert_idose'].unique():
+                for well in col_meta[(col_meta['pert_id'] == key) & (col_meta['pert_idose'] == dose)]['pert_well'].unique():
 
                     if type(dose) is float:
                         dose = 'ctl_vehicle'
-                    s_value = data[col_meta[(col_meta['pert_id'] == key) & (col_meta['pert_dose'] == dose) & (col_meta['pert_well'] == well)].index]
+                    s_value = data[col_meta[(col_meta['pert_id'] == key) & (col_meta['pert_idose'] == dose) & (col_meta['pert_well'] == well)].index]
                     s_value = s_value[~s_value.index.isin(invariants)]
 
                     if s_value.shape[1] != 1:
@@ -94,8 +94,6 @@ def wtks(gct, metadata, outfolder, gmt_path='/Users/elemire/Workspace/merino/ful
 
     expected_sensitivity_ranks = []
 
-    print 'meta'
-    print 'data'
 
     for rep in metadata[group_col].dropna().unique():
 
@@ -123,10 +121,8 @@ def wtks(gct, metadata, outfolder, gmt_path='/Users/elemire/Workspace/merino/ful
         for key in s_qi_map:
             if key.split('_')[0] in col_meta['pert_id'].tolist():
                 if len(s_qi_map[key][0]) > 0 and len(s_qi_map[key][1]) > 0:
-                    print key
                     #calculate enrichment score
                     sensitivity_score, cumsum = compute_wtcs.compute_wtcs(pd.Series(s_qi_map[key][0]), pd.Series(s_qi_map[key][1]))
-                    print sensitivity_score
                     #make mountain plot of enrichment score
                     plot_enrichment_score.plot_enrichment_score(sensitivity_score, cumsum,
                                                                 title='Enrichment Score of {}, Set Size = {}'.format
@@ -146,7 +142,6 @@ def wtks(gct, metadata, outfolder, gmt_path='/Users/elemire/Workspace/merino/ful
 
                     brd = key.split('_')[0]
                     rids = sensitivity_map[brd]
-                    print rids
 
                     ################################
 
@@ -203,7 +198,6 @@ def wtks(gct, metadata, outfolder, gmt_path='/Users/elemire/Workspace/merino/ful
                         neg_x.append(neg)
                         neg_y.append(ecdf.y[y - 1])
 
-                    print mark
                     plt.figure()
                     plt.plot(ecdf.x, ecdf.y)
                     plt.scatter(poscons_x, poscons_y, marker='o', color='g', label='Bortezomib')

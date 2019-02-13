@@ -19,6 +19,7 @@ import numpy as np
 import sc_plot
 import sys
 import seaborn as sns
+import make_gallery as galleries
 plt.rcParams['figure.figsize'] = (10.0,8.0)
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -32,6 +33,9 @@ def build_parser():
                         type=str, required=True)
     parser.add_argument("-qc_folder", "-qc", help="string designating the prefix to each build file eg. PCAL075-126_T2B",
                         type=str, required=True)
+    parser.add_argument("-project_name", "-pn",
+                        help="Code for project eg. PCAL",
+                        type=str, required=False)
     parser.add_argument("-invar", "-inv",
                         help="Drop sigs from modZ with less than one profile",
                         action="store_false")
@@ -42,29 +46,49 @@ def build_parser():
 
 
     return parser
-    return parser
 
 def globandparse(search_pattern):
+    """
+    Search for inputs based on a search pattern and read in file
+    Args:
+        search_pattern: Identifier to find a given build file using glob search
+
+    Returns: GCToo object found through glob search and read in
+
+    """
     path = glob.glob(search_pattern)[0]
     gct = pe.parse(path)
     return gct
 
 
 def read_build_data(proj_dir):
-    print "Reading LEVEL2 Data"
+    """
 
+    Args:
+        proj_dir: Folder containing all build files
+
+    Returns: data_df: Dictionary linking an identifier of each data level to its corresponding GCToo object
+             metadata_df: Dictionary of metadata with identifiers linked to pandas dataframes.
+
+    """
+    print "Reading Data"
+
+    # Standard search patterns for a merino build
     data_pattern_list = ['*MFI*.gctx', '*COUNT*.gctx', '*NORM*.gctx', '*_ZSPC_*.gctx', '*_ZSPC.COMBAT_*.gctx',
                     '*_ZSVC_*.gctx', '*4_LFCPC_*.gctx', '*4_LFCVC_*.gctx', '*MODZ.ZSPC_*.gctx', '*MODZ.ZSPC.COMBAT_*.gctx']
 
+    # Link identifiers to path to build folder
     data_search_patterns = [os.path.join(proj_dir, x) for x in data_pattern_list]
 
+    # Search for and reaad in each file in the build
     gcts = [globandparse(x) for x in data_search_patterns]
 
+    # Make dictionary and link each GCToo object to a corresponding key
     data_map = dict(zip(['mfi', 'count', 'norm', 'zspc', 'combat_zspc',
                 'zsvc', 'lfcpc', 'lfcvc', 'modz', 'combat_modz'], gcts))
 
-
     print "Reading Metadata"
+    # Read in each metadata file
     inst_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*inst_info*.txt'))[0], index_col='profile_id')
     sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*sig_metrics_MODZ.ZSPC.txt'))[0], index_col='sig_id')
     cb_sig_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*sig_metrics_MODZ.ZSPC.COMBAT.txt'))[0], index_col='sig_id')
@@ -72,17 +96,17 @@ def read_build_data(proj_dir):
     cell_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*cell_info*.txt'))[0], index_col='rid')
     ssmd_info = pe.parse(glob.glob(os.path.join(proj_dir, '*ssmd*.gct'))[0]).data_df
 
+    # Make metadata map
     metadata_map = {'inst': inst_info, 'sig': sig_info, 'cell': cell_info, 'ssmd': ssmd_info, 'cb_sig': cb_sig_info}
 
     return data_map, metadata_map
 
-def mk_folders(out_dir):
 
-    if not os.path.exists(os.path.join(out_dir, 'sensitivities')):
-        os.mkdir(os.path.join(out_dir, 'sensitivities'))
+def mk_folders(out_dir, folders):
 
-    if not os.path.exists(os.path.join(out_dir, 'distributions')):
-        os.mkdir(os.path.join(out_dir, 'distributions'))
+    for folder in folders:
+        if not os.path.exists(os.path.join(out_dir, folder)):
+            os.mkdir(os.path.join(out_dir, folder))
 
 
 def mk_distributions(data_map, metadata_map,project_name, out_dir):
@@ -108,35 +132,103 @@ def mk_distributions(data_map, metadata_map,project_name, out_dir):
 
         prism_plots.stacked_heatmap(df=df.data_df, column_metadata=meta.loc[df.data_df.columns],
                                     title='Median {} Across {}'.format(plot_map[df][0],project_name),
-                                    outfile=os.path.join(out_dir, 'distributions', 'heatmap_{}_{}.png'.format(project_name,plot_map[df][0])),
+                                    outfile=os.path.join(out_dir, 'heatmaps', 'heatmap_{}_{}.png'.format(project_name,plot_map[df][0])),
                                                          lims=[plot_map[df][1], plot_map[df][2]])
 
 
-def main(proj_dir, out_dir, invar=True, sense=False):
-    # READ EM ALL IN
+def plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar):
 
+    for plate in metadata_map['inst']['prism_replicate'].unique():
+        print plate
+        plate_data_map = {}
+        for key in data_map:
+            if key == 'count' or key =='mfi':
+                cell_dex = metadata_map['cell'].index
+                plate_data_map[key] = GCToo.GCToo(data_df=data_map[key].data_df[metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index],
+                                col_metadata_df=metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate],
+                                row_metadata_df=metadata_map['cell'])
+            else:
+                plate_data_map[key]= GCToo.GCToo(data_df=data_map[key].data_df.loc[:, [x for x in metadata_map['inst'][
+                    metadata_map['inst']['prism_replicate'] == plate].index if x in data_map[key].data_df.columns]],
+                                         col_metadata_df=metadata_map['inst'].loc[[x for x in metadata_map['inst'][
+                                             metadata_map['inst']['prism_replicate'] == plate].index if x in data_map[key].data_df.columns]],
+                                         row_metadata_df=norm_cell_metadata)
+
+        print plate_data_map['norm'].data_df.shape
+
+        mk_folders(out_dir, [plate])
+        mk_folders(os.path.join(out_dir, plate), ['invariants', 'distributions', 'heatmaps', 'ssmd', 'cp_strength'])
+
+        if invar is True:
+            for func in [inv.invariant_monotonicity, inv.invariant_curves_plot, inv.invariant_range_distributions]:
+                func(plate_data_map['mfi'], plate_data_map['mfi'].col_metadata_df, os.path.join(out_dir, plate, 'invariants'))
+
+            inv.invariant_heatmap(plate_data_map['mfi'], os.path.join(out_dir, plate, 'invariants', 'inv_heatmap.png'), lims=[0,25000])
+
+        mk_distributions(data_map=plate_data_map,  metadata_map=metadata_map, project_name=project_name,
+                         out_dir=os.path.join(out_dir, plate))
+
+        ssmd.norm_v_mfi_ssmd(plate_data_map['norm'], plate_data_map['mfi'], os.path.join(out_dir, plate, 'ssmd'))
+
+        ssmd.ssmd_ecdf(plate_data_map['norm'], plate_data_map['mfi'], 'SSMD ECDF for {}'.format(plate),os.path.join(out_dir, plate, 'ssmd'))
+
+        cp.median_ZSPC_histogram(plate_data_map['zspc'], plate_data_map['zspc'].col_metadata_df,
+                                 os.path.join(out_dir, plate, 'cp_strength'), det=plate)
+
+        cp.median_ZSPC_ecdf(plate_data_map['zspc'], plate_data_map['zspc'].col_metadata_df,
+                                 os.path.join(out_dir, plate, 'cp_strength'), det=plate)
+
+
+def qc_galleries(proj_dir, proj_name):
+    for x in glob.glob(os.path.join(proj_dir, proj_name, '*')):
+        print x
+        images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
+                  'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/median_count_dist.png',
+                  'distributions/norm_control_dist.png', 'heatmaps/COUNT.png', 'heatmaps/MFI.png', 'heatmaps/NORM.png',
+                  'heatmaps/ZSCORE.png']
+        outfolder = os.path.join(x, 'gallery.html')
+        galleries.mk_gal(images, outfolder)
+
+
+def main(proj_dir, out_dir, project_name,invar=True, sense=False):
+    # Read in the data
     data_map, metadata_map = read_build_data(proj_dir=proj_dir)
 
-    mk_folders(out_dir=out_dir)
+    # Make folders for different outputs
+    mk_folders(out_dir=out_dir, folders=['sensitivities', 'distributions', 'heatmaps'])
 
-    project_name = os.path.basename(proj_dir)
+    # Check if project name arg is filled, if not use base folder name
+    if project_name is None:
+        project_name = os.path.basename(os.path.dirname(proj_dir))
 
-    mk_distributions(data_map, metadata_map, project_name, out_dir)
+    # Make distributions and heatmaps of all data at each data level
+    #mk_distributions(data_map, metadata_map, project_name, out_dir)
 
-    if sense == True:
+    # If expected sensitivities arg is set to true, run expected sensitivities analysis
+    # TODO add argument for defining sensitivity cell set
+    if sense is True:
         expected_sense.wtks(data_map['combat_modz'], metadata_map['sig'], os.path.join(out_dir, 'sensitivities'))
 
-    prism_plots.sc_plot(metadata_map['sig'], os.path.join(out_dir,'sc_modz.zspc.png'))
+    # Make standard SC plot for whole dataset, signal strength vs correlation
+    #prism_plots.sc_plot(metadata_map['sig'], os.path.join(out_dir,'sc_modz.zspc.png'))
 
+    # Make modz distribuions split by pert type
     comp.modz_dist(data_map['combat_modz'], metadata_map['cb_sig'], [], os.path.join(out_dir, 'modz_dist.png'))
 
-    if invar==True:
+    import pdb
+    pdb.set_trace()
+
+    # If running on data with control barcodes, plot monotonicity of curves
+    if invar is True:
         inv.invariant_monotonicity(data_map['mfi'], metadata_map['inst'], out_dir)
 
+    # Calculate median SSMD by pool and output in table
     ssmd.ssmd_by_pool(metadata_map['ssmd'], metadata_map['cell'], out_dir)
 
+    # Get cell metadata without control barcodes for later use
     norm_cell_metadata = metadata_map['cell'].loc[[x for x in metadata_map['cell'].index if x in data_map['norm'].row_metadata_df.index]]
 
+    # ECDF of SSMD Scores in Norm Data and MFI Data
     ssmd.ssmd_ecdf(GCToo.GCToo(data_df=data_map['norm'].data_df, col_metadata_df=metadata_map['inst'].loc[data_map['norm'].data_df.columns],
                                row_metadata_df=norm_cell_metadata),
                    GCToo.GCToo(data_df=data_map['mfi'].data_df,
@@ -144,84 +236,11 @@ def main(proj_dir, out_dir, invar=True, sense=False):
                                row_metadata_df=metadata_map['cell']), 'SSMD ECDF for {}'.format(os.path.dirname(proj_dir))
                    ,os.path.join(out_dir))
 
+    # Make a bunch of plots at the plate level for each plate in cohort
+    plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
 
-
-
-
-    for plate in metadata_map['inst']['prism_replicate'].unique():
-
-        print plate
-
-
-        if plate in ['CBRANT008_KJ100.48H_X5']:
-            continue
-
-        plate_mfi = GCToo.GCToo(data_df=data_map['mfi'].data_df[metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index],
-                                col_metadata_df=metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate],
-                                row_metadata_df=metadata_map['cell'])
-        print plate_mfi.data_df.shape
-
-        plate_count = GCToo.GCToo(data_df=data_map['count'].data_df[metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index],
-                                col_metadata_df=metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate],
-                                row_metadata_df=metadata_map['cell'])
-
-        plate_norm = GCToo.GCToo(data_df=data_map['norm'].data_df.loc[:,[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                col_metadata_df=metadata_map['inst'].loc[[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                row_metadata_df=norm_cell_metadata)
-
-        plate_zscore = GCToo.GCToo(data_df=data_map['zspc'].data_df.loc[:,[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                col_metadata_df=metadata_map['inst'].loc[[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                row_metadata_df=norm_cell_metadata)
-
-        plate_viability = GCToo.GCToo(data_df=data_map['lfcpc'].data_df.loc[:,[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                col_metadata_df=metadata_map['inst'].loc[[x for x in metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index if x in data_map['norm'].data_df.columns]],
-                                row_metadata_df=norm_cell_metadata)
-
-        if not os.path.exists(os.path.join(out_dir, plate)):
-            os.mkdir(os.path.join(out_dir, plate))
-            for fold in ['invariants', 'distributions', 'heatmaps', 'ssmd', 'cp_strength']:
-                os.mkdir(os.path.join(out_dir, plate, fold))
-
-       # dist.distributions(plate_norm, plate_mfi, plate_count, plate_zscore, plate_viability,
-        #                   plate_norm.col_metadata_df, os.path.join(out_dir, plate, 'distributions'))
-
-
-        if invar == True:
-            for func in [inv.invariant_monotonicity, inv.invariant_curves_plot, inv.invariant_range_distributions]:
-                try:
-                    func(plate_mfi, plate_mfi.col_metadata_df, os.path.join(out_dir, plate, 'invariants'))
-                except:
-                    print 'skipping function'
-
-
-            inv.invariant_heatmap(plate_mfi, os.path.join(out_dir, plate, 'invariants', 'inv_heatmap.png'), lims=[0,25000])
-
-        map.mk_heatmap(plate_norm.data_df, 'Heatmap of Median Norm Values',
-                       os.path.join(out_dir, plate,'heatmaps', 'NORM.png'), lims=[-5,5])
-
-        map.mk_heatmap(plate_mfi.data_df, 'Heatmap of Median MFI Values',
-                       os.path.join(out_dir, plate, 'heatmaps', 'MFI.png'), lims=[0,20000], colormap='Reds')
-
-        map.mk_heatmap(plate_count.data_df, 'Heatmap of Median COUNT Values',
-                       os.path.join(out_dir, plate, 'heatmaps', 'COUNT.png'), lims=[0,80], colormap='Reds')
-
-        map.mk_heatmap(plate_zscore.data_df, 'Heatmap of Median ZSCORE Values',
-                       os.path.join(out_dir, plate, 'heatmaps', 'ZSCORE.png'),lims=[-5,5])
-
-        map.mk_heatmap(plate_viability.data_df, 'Heatmap of Median FCPC Values',
-                       os.path.join(out_dir, plate, 'heatmaps', 'FCPC.png'),lims=[-5,5])
-
-        ssmd.norm_v_mfi_ssmd(plate_norm, plate_mfi, os.path.join(out_dir, plate, 'ssmd'))
-
-        ssmd.ssmd_ecdf(plate_norm, plate_mfi, 'SSMD ECDF for {}'.format(plate),os.path.join(out_dir, plate, 'ssmd'))
-
-
-        cp.median_ZSPC_histogram(plate_zscore, plate_zscore.col_metadata_df,
-                                 os.path.join(out_dir, plate, 'cp_strength'), det=plate)
-
-        cp.median_ZSPC_ecdf(plate_zscore, plate_zscore.col_metadata_df,
-                                 os.path.join(out_dir, plate, 'cp_strength'), det=plate)
-
+    # Put plate level plots into html galleries
+    qc_galleries(out_dir, project_name)
 
 
 if __name__ == "__main__":
@@ -230,7 +249,7 @@ if __name__ == "__main__":
 
     logger.debug("args:  {}".format(args))
 
-    main(proj_dir=args.build_folder, out_dir=args.qc_folder, invar=args.invar, sense=args.sensitivities)
+    main(proj_dir=args.build_folder, out_dir=args.qc_folder, project_name=args.project_name, invar=args.invar, sense=args.sensitivities)
 
 
 

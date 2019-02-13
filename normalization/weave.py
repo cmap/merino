@@ -68,7 +68,7 @@ def main(args):
 
     # NB required choose one of input_folder options: all_inputs, input_folder
     if args.all_inputs:
-        for input in ["ZSPC", "LFCPC", "ZSVC", "LFCVC", "LMEM"]:
+        for input in ["ZSPC", "LFCPC", "ZSVC", "LFCVC"]:
 
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, "card", glob_value, "*"+input+"*"))
             if not replicate_sets_search_results: # no files for input type
