@@ -39,7 +39,6 @@ def build_parser():
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
                         type=str, required=False, choices=["DP78", "PR500", "PR300", "KJ100", "COP23", "COP22"])
-    #todo: remove pert-time, idek why this is here anymore
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
 
