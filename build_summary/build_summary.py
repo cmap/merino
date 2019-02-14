@@ -11,7 +11,6 @@ import compound_strength as cp
 import comp_strength_overview as comp
 import merino.setup_logger as setup_logger
 import logging
-import expected_sensitivities as expected_sense
 import count_heatmap as c_map
 import argparse
 import matplotlib
@@ -41,9 +40,6 @@ def build_parser():
     parser.add_argument("-invar", "-inv",
                         help="Drop sigs from modZ with less than one profile",
                         action="store_false")
-    parser.add_argument("-sensitivities", "-sense",
-                        help="Perform expected sensitivity analysis (time consuming)",
-                        action="store_true")
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
 
 
@@ -191,7 +187,7 @@ def qc_galleries(proj_dir, proj_name):
         galleries.mk_gal(images, outfolder)
 
 
-def main(proj_dir, out_dir, project_name,invar=True, sense=False):
+def main(proj_dir, out_dir, project_name,invar=True):
     # Read in the data
     data_map, metadata_map = read_build_data(proj_dir=proj_dir)
 
@@ -207,8 +203,6 @@ def main(proj_dir, out_dir, project_name,invar=True, sense=False):
 
     # If expected sensitivities arg is set to true, run expected sensitivities analysis
     # TODO add argument for defining sensitivity cell set
-    if sense is True:
-        expected_sense.wtks(data_map['combat_modz'], metadata_map['sig'], os.path.join(out_dir, 'sensitivities'))
 
     # Make standard SC plot for whole dataset, signal strength vs correlation
     prism_plots.sc_plot(metadata_map['sig'], os.path.join(out_dir,'sc_modz.zspc.png'))
@@ -249,7 +243,7 @@ if __name__ == "__main__":
 
     logger.debug("args:  {}".format(args))
 
-    main(proj_dir=args.build_folder, out_dir=args.qc_folder, project_name=args.project_name, invar=args.invar, sense=args.sensitivities)
+    main(proj_dir=args.build_folder, out_dir=args.qc_folder, project_name=args.project_name, invar=args.invar)
 
 
 
