@@ -44,7 +44,7 @@ def build_parser():
 
     return parser
 
-def build(search_pattern, outfile, file_suffix, cut=True):
+def build(search_pattern, outfile, file_suffix, cut=True, check_size=False):
     gct_list = glob.glob(search_pattern)
     old_len = len(gct_list)
 
@@ -59,11 +59,12 @@ def build(search_pattern, outfile, file_suffix, cut=True):
         return
 
     gcts = []
+    failure_list = []
     for gct in gct_list:
-        if gct.endswith('X4'):
-            continue
         temp = pe.parse(gct)
         gcts.append(temp)
+        if temp.data_df.shape[1] <= 349 and check_size == True:
+            failure_list.append(os.path.basename(gct).replace('_NORM.gct', ''))
 
     for ct in gcts:
         ct.row_metadata_df = gcts[0].row_metadata_df
@@ -81,10 +82,10 @@ def build(search_pattern, outfile, file_suffix, cut=True):
 
     wgx.write(concat_gct_wo_meta, outfile + 'n{}x{}'.format(concat_gct.data_df.shape[1], concat_gct.data_df.shape[0]) + file_suffix)
 
-    return concat_gct
+    return concat_gct, failure_list
 
 
-def mk_cell_metadata(args):
+def mk_cell_metadata(args, failed_plates):
     if args.aggregate_out:
         paths = glob.glob(os.path.join(args.proj_dir, args.search_pattern, 'card', '*', '*NORM.gct'))
         mfi_paths = glob.glob(os.path.join(args.proj_dir, args.search_pattern, 'assemble', '*', '*MEDIAN.gct'))
@@ -106,7 +107,6 @@ def mk_cell_metadata(args):
                            row_metadata_df=pd.DataFrame(index=ssmd_mat.index))
     wg.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix_n{}_{}.gct'.format(ssmd_gct.data_df.shape[1], ssmd_gct.data_df.shape[0])))
 
-    failed_plates = pd.read_table(os.path.join(args.proj_dir, 'failed_plates.txt'), index_col = 0, header=None)
     ssmd_failures = ssmd_gct.data_df.median()[ssmd_gct.data_df.median() < 2].index.tolist()
     pd.DataFrame({'dropout_failures': failed_plates[1], 'ssmd_failures': pd.Series(ssmd_failures)}).to_csv(os.path.join(args.build_folder, 'failed_plates.txt'), sep='\t', index=False)
 
@@ -193,16 +193,18 @@ def main(args):
 
         logger.info("working on {}".format(path))
         if 'MODZ' in key:
-            data = build(path, out_path, '.gctx', cut=False)
+            data, _ = build(path, out_path, '.gctx', cut=False)
+        elif 'NORM' in key:
+            data, failure_list = build(path, out_path, '.gctx', cut=True, check_size=True)
         else:
-            data = build(path, out_path, '.gctx', cut=True)
+            data, _ = build(path, out_path, '.gctx', cut=True)
         data_dict[key] = data
 
     mk_inst_info(data_dict['*MEDIAN.gct'], data_dict['*NORM.gct'], args)
 
     mk_sig_info(search_pattern_dict, data_dict, args)
 
-    mk_cell_metadata(args)
+    mk_cell_metadata(args, failure_list)
 
 
 
