@@ -1,6 +1,5 @@
 import sys
 sys.path.append('/Users/elemire/Workspace/l1ktools')
-import python.broadinstitute_cmap.io.pandasGEXpress.parse as pe
 import matplotlib.pyplot as plt
 import numpy as np
 import os
