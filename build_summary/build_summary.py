@@ -14,6 +14,8 @@ import logging
 import expected_sensitivities as expected_sense
 import count_heatmap as c_map
 import argparse
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import sc_plot
