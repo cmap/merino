@@ -13,7 +13,7 @@ def mk_gal(images, outfolder):
 
 
 
-    print(outputText)
+    #print(outputText)
 
     with open(outfolder, "wb") as fh:
         fh.write(outputText)

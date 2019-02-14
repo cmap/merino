@@ -25,10 +25,13 @@ def data_distribution(data_df, xlabel, title, outfile, xlim):
 
 
 
-def stacked_heatmap(df, column_metadata, title, outfile, lims):
+def stacked_heatmap(df, column_metadata, title, outfile, lims, reduce_upper_limit=False):
 
     my_palette = sns.cubehelix_palette(8, start=0.5, rot=-.8, dark=0.2, light=.90)
     data_df = df
+
+    if reduce_upper_limit is True:
+        lims[1] = lims[1] / 2
 
     data_df.columns = column_metadata['pert_well']
     values = data_df.unstack().reset_index().pivot_table(columns='pert_well', values=0, aggfunc=np.median)

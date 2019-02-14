@@ -111,8 +111,8 @@ def mk_folders(out_dir, folders):
 
 def mk_distributions(data_map, metadata_map,project_name, out_dir):
 
-    plot_map = {data_map['mfi']: ['MFI', 0, 50000], data_map['count']: ['Bead Count', 0, 220],
-              data_map['norm']: ['NORM', -10, 6],
+    plot_map = {data_map['mfi']: ['MFI', 0, 50000], data_map['count']: ['BEAD', 0, 300],
+              data_map['norm']: ['NORM', -10, 10],
               data_map['zspc']: ['ZSPC', -10, 10], data_map['zsvc']: ['ZSVC', -10, 10],
               data_map['lfcpc']: ['LFCPC', -10, 10], data_map['lfcvc']: ['LFCVC', -10, 10],
               data_map['modz']: ['MODZ', -10, 10], data_map['combat_modz']: ['COMBAT MODZ', -10, 10],
@@ -127,13 +127,13 @@ def mk_distributions(data_map, metadata_map,project_name, out_dir):
 
         prism_plots.data_distribution(data_df=df.data_df, xlabel=plot_map[df][0],
                                       title='Distribution for {} {}'.format(project_name, plot_map[df][0]),
-                                      outfile=os.path.join(out_dir, 'distributions', 'histogram_{}_{}.png'.format(project_name,plot_map[df][0])),
+                                      outfile=os.path.join(out_dir, 'distributions', 'histogram_{}.png'.format(plot_map[df][0])),
                                       xlim=[plot_map[df][1], plot_map[df][2]])
 
         prism_plots.stacked_heatmap(df=df.data_df, column_metadata=meta.loc[df.data_df.columns],
                                     title='Median {} Across {}'.format(plot_map[df][0],project_name),
-                                    outfile=os.path.join(out_dir, 'heatmaps', 'heatmap_{}_{}.png'.format(project_name,plot_map[df][0])),
-                                                         lims=[plot_map[df][1], plot_map[df][2]])
+                                    outfile=os.path.join(out_dir, 'heatmaps', 'heatmap_{}.png'.format(plot_map[df][0])),
+                                                         lims=[plot_map[df][1], plot_map[df][2]], reduce_upper_limit=True)
 
 
 def plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar):
@@ -143,7 +143,6 @@ def plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, 
         plate_data_map = {}
         for key in data_map:
             if key == 'count' or key =='mfi':
-                cell_dex = metadata_map['cell'].index
                 plate_data_map[key] = GCToo.GCToo(data_df=data_map[key].data_df[metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate].index],
                                 col_metadata_df=metadata_map['inst'][metadata_map['inst']['prism_replicate'] == plate],
                                 row_metadata_df=metadata_map['cell'])
@@ -180,12 +179,12 @@ def plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, 
 
 
 def qc_galleries(proj_dir, proj_name):
-    for x in glob.glob(os.path.join(proj_dir, proj_name, '*')):
+    for x in glob.glob(os.path.join(proj_dir, proj_name + '*')):
         print x
         images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
-                  'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/median_count_dist.png',
-                  'distributions/norm_control_dist.png', 'heatmaps/COUNT.png', 'heatmaps/MFI.png', 'heatmaps/NORM.png',
-                  'heatmaps/ZSCORE.png']
+                  'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/histogram_BEAD.png',
+                  'heatmaps/heatmap_BEAD.png', 'heatmaps/heatmap_MFI.png', 'heatmaps/heatmap_NORM.png',
+                  'heatmaps/heatmap_ZSCORE.png']
         outfolder = os.path.join(x, 'gallery.html')
         galleries.mk_gal(images, outfolder)
 
@@ -237,7 +236,9 @@ def main(proj_dir, out_dir, project_name,invar=True, sense=False):
     plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
 
     # Put plate level plots into html galleries
+
     qc_galleries(out_dir, project_name)
+
 
 
 if __name__ == "__main__":
