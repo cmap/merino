@@ -35,6 +35,8 @@ echo BUILD_FOLDER = "${BUILD_FOLDER}"
 
 QC_FOLDER="${PROJECT_DIR}/qc"
 echo QC_FOLDER = "${QC_FOLDER}"
+
+mkdir -p "${QC_FOLDER}"
 # Activate conda environment
 
 source activate merino
