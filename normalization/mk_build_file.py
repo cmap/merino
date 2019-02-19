@@ -107,8 +107,13 @@ def mk_cell_metadata(args, failed_plates):
                            row_metadata_df=pd.DataFrame(index=ssmd_mat.index))
     wg.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix_n{}_{}.gct'.format(ssmd_gct.data_df.shape[1], ssmd_gct.data_df.shape[0])))
 
+    import pdb
+    pdb.set_trace()
+
     ssmd_failures = ssmd_gct.data_df.median()[ssmd_gct.data_df.median() < 2].index.tolist()
-    pd.DataFrame({'dropout_failures': failed_plates, 'ssmd_failures': pd.Series(ssmd_failures)}).to_csv(os.path.join(args.build_folder, 'failed_plates.txt'), sep='\t', index=False)
+    fails_dict = dict({'dropout_failures': failed_plates, 'ssmd_failures': ssmd_failures})
+    fails_df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in fails_dict.iteritems()]))
+    fails_df.to_csv(os.path.join(args.build_folder, 'failed_plates.txt'), sep='\t', index=False)
 
 def mk_inst_info(inst_data, norm_data, args):
 
