@@ -2,8 +2,7 @@ import sys
 import pandas as pd
 import seaborn as sns
 import string
-import matplotlib
-matplotlib.use("Agg")
+from broadinstitute_cmap.io.pandasGEXpress import parse as pe
 import matplotlib.pyplot as plt
 import os
 

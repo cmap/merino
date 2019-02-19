@@ -1,6 +1,4 @@
 import seaborn as sns
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 def modz_dist(df, col_metadata_df, exclude_wells, outfile):

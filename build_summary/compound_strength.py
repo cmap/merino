@@ -1,7 +1,6 @@
 import sys
 import bisect
-import matplotlib
-matplotlib.use("Agg")
+import python.broadinstitute_cmap.io.pandasGEXpress.parse as pe
 import matplotlib.pyplot as plt
 from statsmodels.distributions.empirical_distribution import ECDF
 import numpy as np

@@ -11,9 +11,7 @@ git clone -b automation https://github.com/cmap/merino.git && \
 cp /cmap/merino/assemble/batch_assemble.sh /cmap/bin/assemble && \
 cp /cmap/merino/card/batch_card.sh /cmap/bin/card && \
 cp /cmap/merino/normalization/batch_weave.sh /cmap/bin/weave && \
-cp /cmap/merino/normalization/batch_mk_build.sh /cmap/bin/mk_build  && \
-cp /cmap/merino/build_summary/qc.sh /cmap/bin/qc
-
+cp /cmap/merino/normalization/batch_mk_build.sh /cmap/bin/mk_build
 WORKDIR /cmap/bin
 env PATH /cmap/bin:$PATH
 RUN ["chmod","-R", "+x", "/cmap/merino/"]

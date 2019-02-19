@@ -7,8 +7,6 @@ import sys
 import compute_wtcs as compute_wtcs
 import plot_enrichment_score as plot_enrichment_score
 import cmapPy.pandasGEXpress.parse as pe
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import merino.setup_logger as setup_logger
 import numpy as np
