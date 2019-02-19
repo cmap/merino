@@ -99,10 +99,6 @@ def mk_cell_metadata(args, failed_plates):
     # Calculate SSMD matrix using paths that were just grabbed and write out
     ssmd_mat = ssmd.ssmd_matrix(cut_to_l2.cut_l1(paths))
 
-    ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, row_metadata_df=pd.DataFrame(index=ssmd_mat.index),
-                           col_metadata_df=pd.DataFrame(index=ssmd_mat.columns))
-    wg.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix.gct'))
-
     ssmd_gct = GCToo.GCToo(data_df=ssmd_mat, col_metadata_df=pd.DataFrame(index=ssmd_mat.columns),
                            row_metadata_df=pd.DataFrame(index=ssmd_mat.index))
     wg.write(ssmd_gct, os.path.join(args.build_folder, args.cohort_name + '_ssmd_matrix_n{}_{}.gct'.format(ssmd_gct.data_df.shape[1], ssmd_gct.data_df.shape[0])))
