@@ -37,7 +37,7 @@ def build_parser():
                         help="Code for project eg. PCAL",
                         type=str, required=False)
     parser.add_argument("-invar", "-inv",
-                        help="Drop sigs from modZ with less than one profile",
+                        help="Flag to turn off invariant QC",
                         action="store_false")
     parser.add_argument("-sensitivities", "-sense",
                         help="Perform expected sensitivity analysis (time consuming)",
@@ -189,7 +189,7 @@ def qc_galleries(proj_dir, proj_name):
         galleries.mk_gal(images, outfolder)
 
 
-def main(proj_dir, out_dir, project_name,invar=True, sense=False):
+def main(proj_dir, out_dir, project_name, invar=True, sense=False):
     # Read in the data
     data_map, metadata_map = read_build_data(proj_dir=proj_dir)
 
