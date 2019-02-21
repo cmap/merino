@@ -1,5 +1,6 @@
 import sys
-import python.broadinstitute_cmap.io.pandasGEXpress.parse as pe
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np

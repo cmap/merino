@@ -3,6 +3,8 @@ import cmapPy.pandasGEXpress.parse as pe
 import numpy
 import os
 from scipy import stats
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 import seaborn as sns

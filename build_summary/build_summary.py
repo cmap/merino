@@ -11,9 +11,10 @@ import compound_strength as cp
 import comp_strength_overview as comp
 import merino.setup_logger as setup_logger
 import logging
-import expected_sensitivities as expected_sense
 import count_heatmap as c_map
 import argparse
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import sc_plot
@@ -39,12 +40,10 @@ def build_parser():
     parser.add_argument("-invar", "-inv",
                         help="Flag to turn off invariant QC",
                         action="store_false")
-    parser.add_argument("-sensitivities", "-sense",
-                        help="Perform expected sensitivity analysis (time consuming)",
-                        action="store_true")
     parser.add_argument("-plate_qc", "-pq",
                         help="Perform QC at a plate level",
                         action="store_true")
+
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
 
 
@@ -191,8 +190,40 @@ def qc_galleries(proj_dir, proj_name):
         outfolder = os.path.join(x, 'gallery.html')
         galleries.mk_gal(images, outfolder)
 
+    links = glob.glob(os.path.join(proj_dir, proj_name + '*', '*.html'))
+    dex = [os.path.basename(os.path.dirname(x)) for x in links]
+    ssmd_medians = metadata_map['ssmd'].median().loc[dex]
+    ssmd_failures = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex]
+    ssmd_pct_failure = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex] / metadata_map['ssmd'].shape[
+        0]
+    plate_shapes = []
+    well_dropouts = []
+    signal_strengths = []
+    correlations = []
+    unique_perts = []
+    for plate in dex:
+        temp_sig = metadata_map['sig'].loc[
+            [x for x in metadata_map['sig'].index if x.startswith(plate.rsplit('_', 2)[0])]]
+        temp_inst = metadata_map['inst'].loc[[x for x in metadata_map['inst'].index if x.startswith(plate)]]
 
-def main(proj_dir, out_dir, project_name, invar=True, sense=False):
+        plate_shapes.append(temp_inst.shape[0])
+        well_dropouts.append(384 - temp_inst.shape[0])
+        signal_strengths.append(temp_sig['ss_ltn2'].median())
+        correlations.append(temp_sig['cc_q75'].median())
+        unique_perts.append(len(temp_inst.loc[temp_inst['pert_type'] == 'trt_cp', 'pert_id'].unique()))
+
+    index_table = pd.DataFrame({'galleries': links, 'median_ssmd_score': ssmd_medians,
+                                'number_ssmd_failures': ssmd_failures, 'pct_ssmd_failures': ssmd_pct_failure
+                                   , 'number_of_wells': plate_shapes, 'number_of_dropouts': well_dropouts,
+                                'median_signal_strength': signal_strengths, 'median_cc_q75': correlations,
+                                'number_unique_perts': unique_perts}, index=dex)
+
+    index_table.sort_index(inplace=True)
+    galleries.mk_index(table=index_table)
+
+
+def main(proj_dir, out_dir, project_name,invar=True):
+
     # Read in the data
     data_map, metadata_map = read_build_data(proj_dir=proj_dir)
 
@@ -208,8 +239,6 @@ def main(proj_dir, out_dir, project_name, invar=True, sense=False):
 
     # If expected sensitivities arg is set to true, run expected sensitivities analysis
     # TODO add argument for defining sensitivity cell set
-    if sense is True:
-        expected_sense.wtks(data_map['combat_modz'], metadata_map['sig'], os.path.join(out_dir, 'sensitivities'))
 
     # Make standard SC plot for whole dataset, signal strength vs correlation
     prism_plots.sc_plot(metadata_map['sig'], os.path.join(out_dir,'sc_modz.zspc.png'))
@@ -251,7 +280,7 @@ if __name__ == "__main__":
 
     logger.debug("args:  {}".format(args))
 
-    main(proj_dir=args.build_folder, out_dir=args.qc_folder, project_name=args.project_name, invar=args.invar, sense=args.sensitivities)
+    main(proj_dir=args.build_folder, out_dir=args.qc_folder, project_name=args.project_name, invar=args.invar)
 
 
 

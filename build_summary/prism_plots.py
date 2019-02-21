@@ -1,12 +1,11 @@
-import sys
-sys.path.append('/Users/elemire/Workspace/l1ktools')
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import seaborn as sns
 import pandas as pd
 import string
-import matplotlib as mpl
 
 invariants = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670', '671', '672', '673', '674', '675', '676', '677', '678', '679', '680']
 

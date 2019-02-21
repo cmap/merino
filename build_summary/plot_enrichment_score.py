@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 def plot_enrichment_score(wtcs, cumsum, title, outfile):
