@@ -122,7 +122,7 @@ def plate_qc(proj_dir, out_dir, plate_name, invar=True, agg=True):
                  os.path.join(out_dir, plate_name, 'invariants'))
 
         inv.invariant_heatmap(plate_data_map['mfi'], os.path.join(out_dir, plate_name, 'invariants', 'inv_heatmap.png'),
-                              lims=[0, 25000])
+                              lims=[0, 15000])
 
     mk_distributions(data_map=plate_data_map, project_name=plate_name,
                      out_dir=os.path.join(out_dir, plate_name))

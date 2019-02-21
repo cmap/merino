@@ -42,6 +42,9 @@ def build_parser():
     parser.add_argument("-sensitivities", "-sense",
                         help="Perform expected sensitivity analysis (time consuming)",
                         action="store_true")
+    parser.add_argument("-plate_qc", "-pq",
+                        help="Perform QC at a plate level",
+                        action="store_true")
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
 
 
@@ -233,11 +236,12 @@ def main(proj_dir, out_dir, project_name, invar=True, sense=False):
                    ,os.path.join(out_dir))
 
     # Make a bunch of plots at the plate level for each plate in cohort
-    plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
+    if args.plate_qc == True:
+        plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
 
-    # Put plate level plots into html galleries
+        # Put plate level plots into html galleries
 
-    qc_galleries(out_dir, project_name)
+        qc_galleries(out_dir, project_name)
 
 
 
