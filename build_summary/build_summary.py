@@ -1,26 +1,24 @@
-import glob
 import os
-import cmapPy.pandasGEXpress.parse as pe
-import cmapPy.pandasGEXpress.GCToo as GCToo
-import prism_plots
-import invariant_analysis as inv
-import pandas as pd
-import generic_heatmap as map
-import ssmd_analysis as ssmd
-import compound_strength as cp
-import comp_strength_overview as comp
-import merino.setup_logger as setup_logger
+import sys
+import glob
 import logging
-import count_heatmap as c_map
 import argparse
+import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
-import sc_plot
-import sys
-import seaborn as sns
+
+import cmapPy.pandasGEXpress.parse as pe
+import cmapPy.pandasGEXpress.GCToo as GCToo
+
+import prism_plots
+import invariant_analysis as inv
+import ssmd_analysis as ssmd
+import compound_strength as cp
+import comp_strength_overview as comp
+import setup_logger
 import make_gallery as galleries
+
 plt.rcParams['figure.figsize'] = (10.0,8.0)
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
@@ -58,6 +56,7 @@ def globandparse(search_pattern):
     Returns: GCToo object found through glob search and read in
 
     """
+    print search_pattern
     path = glob.glob(search_pattern)[0]
     gct = pe.parse(path)
     return gct
@@ -180,7 +179,9 @@ def plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, 
                                  os.path.join(out_dir, plate, 'cp_strength'), det=plate)
 
 
-def qc_galleries(proj_dir, proj_name):
+def qc_galleries(proj_dir, proj_name, metadata_map):
+    pd.set_option('display.max_colwidth', -1)
+
     for x in glob.glob(os.path.join(proj_dir, proj_name + '*')):
         print x
         images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
@@ -190,12 +191,12 @@ def qc_galleries(proj_dir, proj_name):
         outfolder = os.path.join(x, 'gallery.html')
         galleries.mk_gal(images, outfolder)
 
-    links = glob.glob(os.path.join(proj_dir, proj_name + '*', '*.html'))
-    dex = [os.path.basename(os.path.dirname(x)) for x in links]
+    local_paths = glob.glob(os.path.join(proj_dir, proj_name + '*', '*.html'))
+    dex = [os.path.basename(os.path.dirname(x)) for x in local_paths]
+
     ssmd_medians = metadata_map['ssmd'].median().loc[dex]
     ssmd_failures = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex]
-    ssmd_pct_failure = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex] / metadata_map['ssmd'].shape[
-        0]
+    ssmd_pct_failure = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex] / metadata_map['ssmd'].shape[0]
     plate_shapes = []
     well_dropouts = []
     signal_strengths = []
@@ -212,14 +213,21 @@ def qc_galleries(proj_dir, proj_name):
         correlations.append(temp_sig['cc_q75'].median())
         unique_perts.append(len(temp_inst.loc[temp_inst['pert_type'] == 'trt_cp', 'pert_id'].unique()))
 
-    index_table = pd.DataFrame({'galleries': links, 'median_ssmd_score': ssmd_medians,
-                                'number_ssmd_failures': ssmd_failures, 'pct_ssmd_failures': ssmd_pct_failure
-                                   , 'number_of_wells': plate_shapes, 'number_of_dropouts': well_dropouts,
-                                'median_signal_strength': signal_strengths, 'median_cc_q75': correlations,
-                                'number_unique_perts': unique_perts}, index=dex)
+    def make_url(ref, name):
+        ref = os.path.relpath(ref, proj_dir)
+        return '<a target="_blank" href="{}">{}</a>'.format(ref, name)
 
-    index_table.sort_index(inplace=True)
-    galleries.mk_index(table=index_table)
+    premadelinks = [make_url(x, dex[i]) for i, x in enumerate(local_paths)]
+
+    headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'n wells',
+               'n dropouts', 'median signal strength', 'median ccQ75', 'n unique perts']
+
+    index_info = zip(premadelinks, ssmd_medians,
+                     ssmd_failures, ssmd_pct_failure, plate_shapes,
+                     well_dropouts, signal_strengths, correlations,
+                     unique_perts)
+    #print index_info
+    galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=proj_dir, project_name=proj_name)
 
 
 def main(proj_dir, out_dir, project_name,invar=True):
@@ -267,10 +275,10 @@ def main(proj_dir, out_dir, project_name,invar=True):
     # Make a bunch of plots at the plate level for each plate in cohort
     if args.plate_qc == True:
         plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
-
+    #todo: add a check for plate_qc before running qc_galleries --> dependent
         # Put plate level plots into html galleries
 
-        qc_galleries(out_dir, project_name)
+    qc_galleries(out_dir, project_name, metadata_map)
 
 
 

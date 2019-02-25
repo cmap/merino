@@ -53,7 +53,7 @@ def build(search_pattern, outfile, file_suffix, cut=True, check_size=False):
 
     new_len = len(gct_list)
 
-    print 'Number of old lysate plates removed = {}'.format(old_len - new_len)
+    logger.info('Number of old lysate plates removed = {}'.format(old_len - new_len))
 
     if new_len == 0:
         return
