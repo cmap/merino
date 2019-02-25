@@ -180,7 +180,6 @@ def plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, 
 
 
 def qc_galleries(proj_dir, proj_name, metadata_map):
-    pd.set_option('display.max_colwidth', -1)
 
     for x in glob.glob(os.path.join(proj_dir, proj_name + '*')):
         print x
@@ -230,7 +229,7 @@ def qc_galleries(proj_dir, proj_name, metadata_map):
     galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=proj_dir, project_name=proj_name)
 
 
-def main(proj_dir, out_dir, project_name,invar=True):
+def main(args, proj_dir, out_dir, project_name,invar=True):
 
     # Read in the data
     data_map, metadata_map = read_build_data(proj_dir=proj_dir)
@@ -273,11 +272,12 @@ def main(proj_dir, out_dir, project_name,invar=True):
                    ,os.path.join(out_dir))
 
     # Make a bunch of plots at the plate level for each plate in cohort
-    if args.plate_qc == True:
+    if args.plate_qc:
         plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
     #todo: add a check for plate_qc before running qc_galleries --> dependent
-        # Put plate level plots into html galleries
 
+
+    # Put plate level plots into html galleries
     qc_galleries(out_dir, project_name, metadata_map)
 
 
@@ -288,7 +288,7 @@ if __name__ == "__main__":
 
     logger.debug("args:  {}".format(args))
 
-    main(proj_dir=args.build_folder, out_dir=args.qc_folder, project_name=args.project_name, invar=args.invar)
+    main(args, proj_dir=args.build_folder, out_dir=args.qc_folder, project_name=args.project_name, invar=args.invar)
 
 
 
