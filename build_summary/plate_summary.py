@@ -1,26 +1,19 @@
 import glob
 import os
-import cmapPy.pandasGEXpress.parse as pe
-import cmapPy.pandasGEXpress.GCToo as GCToo
+
 import prism_plots
 import invariant_analysis as inv
-import pandas as pd
-import generic_heatmap as map
+
 import ssmd_analysis as ssmd
 import compound_strength as cp
-import comp_strength_overview as comp
-import merino.setup_logger as setup_logger
 import logging
-import expected_sensitivities as expected_sense
-import count_heatmap as c_map
+
 import argparse
-import matplotlib.pyplot as plt
-import numpy as np
-import sc_plot
+
 import sys
-import seaborn as sns
-import make_gallery as galleries
-import build_summary.build_summary as build_summary
+
+import build_summary as build_summary
+import setup_logger as setup_logger
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -42,8 +35,6 @@ def build_parser():
                         help="Flag to turn off invariant QC",
                         action="store_false")
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
-    parser.add_argument("-aggregate_out", "-agg", help="whether weave used aggregate_out flag", action="store_true",
-                        default=False)
 
 
     return parser
@@ -100,16 +91,10 @@ def mk_distributions(data_map, project_name, out_dir):
                                                          lims=[plot_map[df][1], plot_map[df][2]], reduce_upper_limit=True)
 
 
-def plate_qc(proj_dir, out_dir, plate_name, invar=True, agg=True):
+def plate_qc(proj_dir, out_dir, plate_name, invar=True):
 
-    if agg==True:
-        card_path = os.path.join(proj_dir, plate_name, 'card')
-        assemble_path = os.path.join(proj_dir, plate_name, 'assemble')
-
-    else:
-        card_path = os.path.join(proj_dir, 'card', plate_name)
-        assemble_path = os.path.join(proj_dir, 'assemble', plate_name)
-
+    card_path = os.path.join(proj_dir, 'card', plate_name)
+    assemble_path = os.path.join(proj_dir, 'assemble', plate_name)
 
     plate_data_map = read_build_data(assemble_path, card_path)
 
@@ -151,7 +136,7 @@ def main(args):
             plate_qc(args.project_folder, args.qc_folder, name, invar=args.invar, agg = args.aggregate_out)
     else:
 
-        plate_qc(args.proj_dir, args.qc_folder, args.plate_name, invar=args.invar, agg = args.aggregate_out)
+        plate_qc(args.project_folder, args.qc_folder, args.plate_name, invar=args.invar)
 
 
 if __name__ == "__main__":

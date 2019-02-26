@@ -56,7 +56,7 @@ def globandparse(search_pattern):
     Returns: GCToo object found through glob search and read in
 
     """
-    print search_pattern
+    logger.info("globbing for : {}".format(search_pattern))
     path = glob.glob(search_pattern)[0]
     gct = pe.parse(path)
     return gct

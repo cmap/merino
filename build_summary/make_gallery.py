@@ -9,7 +9,7 @@ def mk_gal(images, outfolder):
 
     TEMPLATE_FILE = "gallery_lazy.html"
     template = templateEnv.get_template(TEMPLATE_FILE)
-    opt = {'ncol':4, 'width': 230, 'height': 225build_qc.sh}
+    opt = {'ncol':4, 'width': 230, 'height': 225}
     outputText = template.render(imlist=images, opt=opt)  # this is where to put args to the template renderer
 
     #print(outputText)

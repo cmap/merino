@@ -27,10 +27,7 @@ done
 echo CONFIG_ROOT = "${CONFIG_ROOT}"
 echo PROJECT_CODE = "${PROJECT_CODE}"
 
-PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}"
-echo PROJECT_DIR = "${PROJECT_DIR}"
-
-BUILD_FOLDER="${PROJECT_DIR}/build"
+BUILD_FOLDER="${CONFIG_ROOT}${PROJECT_CODE}/build"
 echo BUILD_FOLDER = "${BUILD_FOLDER}"
 
 
@@ -40,6 +37,10 @@ batch_index=${AWS_BATCH_JOB_ARRAY_INDEX}
 PLATE="${plates[${batch_index}]}"
 echo PLATE = "${PLATE}"
 
+IFS='_' read -r -a plate_token <<< "${PLATE}";
+
+PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${plate_token[0]}_${plate_token[1]}_${plate_token[2]}"
+echo PROJECT_DIR = "${PROJECT_DIR}"
 
 QC_FOLDER="${PROJECT_DIR}/qc"
 echo QC_FOLDER = "${QC_FOLDER}"
@@ -53,7 +54,7 @@ cd /cmap/
 
 python merino/setup_merino.py develop
 
-python /cmap/merino/build_summary/plate_summary.py -project_folder ${PROJECT_DIR} -qc_folder ${QC_FOLDER} -plate_name ${PLATE} -aggregate_out
+python /cmap/merino/build_summary/plate_summary.py -project_folder ${PROJECT_DIR} -qc_folder ${QC_FOLDER} -plate_name ${PLATE}
 exit_code=$?
 
 source deactivate
