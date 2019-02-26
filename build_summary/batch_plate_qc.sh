@@ -50,9 +50,9 @@ mkdir -p "${QC_FOLDER}"
 
 source activate merino
 
-cd /cmap/
+cd /cmap/merino/
 
-python merino/setup.py develop
+python setup.py develop
 
 python /cmap/merino/build_summary/plate_summary.py -project_folder ${PROJECT_DIR} -qc_folder ${QC_FOLDER} -plate_name ${PLATE}
 exit_code=$?

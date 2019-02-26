@@ -41,9 +41,9 @@ echo PLATE_NAME = "${PLATE_NAME}"
 
 source activate merino
 
-cd /cmap/
+cd /cmap/merino/
 
-python merino/setup.py develop
+python setup.py develop
 
 python /cmap/merino/card/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME}
 exit_code=$?

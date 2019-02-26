@@ -45,9 +45,9 @@ echo OUTFILE = "${OUTFILE}"
 
 source activate merino
 
-cd /cmap/
+cd /cmap/merino/
 
-python merino/setup.py develop
+python setup.py develop
 
 if [ "${plate_token[1]}" = "DP78" ];
 then

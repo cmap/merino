@@ -39,9 +39,9 @@ echo REPLICATE_SET_NAME = "${REPLICATE_SET_NAME}"
 
 source activate merino
 
-cd /cmap/
+cd /cmap/merino/
 
-python merino/setup.py develop
+python setup.py develop
 
 python /cmap/merino/normalization/weave.py -proj_dir ${PROJECT_DIR} -replicate_set_name ${REPLICATE_SET_NAME} -all_inputs -aggregate_output
 exit_code=$?
