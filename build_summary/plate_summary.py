@@ -20,7 +20,7 @@ import sc_plot
 import sys
 import seaborn as sns
 import make_gallery as galleries
-import merino.build_summary.build_summary as build_summary
+import build_summary.build_summary as build_summary
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
