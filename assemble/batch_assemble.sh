@@ -47,7 +47,7 @@ source activate merino
 
 cd /cmap/
 
-python merino/setup_merino.py develop
+python merino/setup.py develop
 
 if [ "${plate_token[1]}" = "DP78" ];
 then

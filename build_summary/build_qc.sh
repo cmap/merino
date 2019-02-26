@@ -43,7 +43,7 @@ source activate merino
 
 cd /cmap/
 
-python merino/setup_merino.py develop
+python merino/setup.py develop
 
 python /cmap/merino/build_summary/build_summary.py -build_folder ${BUILD_FOLDER} -qc_folder ${QC_FOLDER} -project_name ${PROJECT_CODE}
 exit_code=$?

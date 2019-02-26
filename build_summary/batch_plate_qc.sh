@@ -52,7 +52,7 @@ source activate merino
 
 cd /cmap/
 
-python merino/setup_merino.py develop
+python merino/setup.py develop
 
 python /cmap/merino/build_summary/plate_summary.py -project_folder ${PROJECT_DIR} -qc_folder ${QC_FOLDER} -plate_name ${PLATE}
 exit_code=$?

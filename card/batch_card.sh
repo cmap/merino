@@ -43,7 +43,7 @@ source activate merino
 
 cd /cmap/
 
-python merino/setup_merino.py develop
+python merino/setup.py develop
 
 python /cmap/merino/card/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME}
 exit_code=$?

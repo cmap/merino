@@ -12,7 +12,7 @@ cp /cmap/merino/assemble/batch_assemble.sh /cmap/bin/assemble && \
 cp /cmap/merino/card/batch_card.sh /cmap/bin/card && \
 cp /cmap/merino/normalization/batch_weave.sh /cmap/bin/weave && \
 cp /cmap/merino/normalization/batch_mk_build.sh /cmap/bin/mk_build  && \
-cp /cmap/merino/build_summary/plate_qc.sh /cmap/bin/plate_qc && \
+cp /cmap/merino/build_summary/batch_plate_qc.sh /cmap/bin/plate_qc && \
 cp /cmap/merino/build_summary/build_qc.sh /cmap/bin/qc
 
 WORKDIR /cmap/bin

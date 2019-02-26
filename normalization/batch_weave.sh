@@ -41,7 +41,7 @@ source activate merino
 
 cd /cmap/
 
-python merino/setup_merino.py develop
+python merino/setup.py develop
 
 python /cmap/merino/normalization/weave.py -proj_dir ${PROJECT_DIR} -replicate_set_name ${REPLICATE_SET_NAME} -all_inputs -aggregate_output
 exit_code=$?
