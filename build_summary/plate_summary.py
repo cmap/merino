@@ -12,6 +12,7 @@ import argparse
 
 import sys
 
+import make_gallery as galleries
 import build_summary as build_summary
 import setup_logger as setup_logger
 
@@ -91,12 +92,14 @@ def mk_distributions(data_map, project_name, out_dir):
                                                          lims=[plot_map[df][1], plot_map[df][2]], reduce_upper_limit=True)
 
 
-def plate_qc(proj_dir, out_dir, plate_name, invar=True):
-
+def get_plate_qc_data_map(proj_dir, plate_name):
     card_path = os.path.join(proj_dir, 'card', plate_name)
     assemble_path = os.path.join(proj_dir, 'assemble', plate_name)
 
     plate_data_map = read_build_data(assemble_path, card_path)
+    return plate_data_map
+
+def plate_qc(out_dir, plate_name, plate_data_map, invar=True):
 
     build_summary.mk_folders(out_dir, [plate_name])
     build_summary.mk_folders(os.path.join(out_dir, plate_name), ['invariants', 'distributions', 'heatmaps', 'ssmd', 'cp_strength'])
@@ -123,8 +126,17 @@ def plate_qc(proj_dir, out_dir, plate_name, invar=True):
     cp.median_ZSPC_ecdf(plate_data_map['zspc'], plate_data_map['zspc'].col_metadata_df,
                         os.path.join(out_dir, plate_name, 'cp_strength'), det=plate_name)
 
-    build_summary.qc_galleries(out_dir, plate_name)
+    make_gallery(out_dir, plate_name)
 
+def make_gallery(qc_dir, plate_name):
+    plate_qc_dir = os.path.join(qc_dir, plate_name)
+
+    images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
+              'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/histogram_BEAD.png',
+              'heatmaps/heatmap_BEAD.png', 'heatmaps/heatmap_MFI.png', 'heatmaps/heatmap_NORM.png',
+              'heatmaps/heatmap_ZSCORE.png']
+    outfile = os.path.join(plate_qc_dir, 'gallery.html')
+    galleries.mk_gal(images, outfile)
 
 def main(args):
     # NB: automation sets project_dir to project_dir/prism_replicate_set_name to set up fs for s3
@@ -133,10 +145,11 @@ def main(args):
         for folder in glob.glob(os.path.join(args.project_folder, 'card', args.search_pattern)):
             name = os.path.basename(folder)
             logger.info("QCing {}".format(name))
-            plate_qc(args.project_folder, args.qc_folder, name, invar=args.invar, agg = args.aggregate_out)
+            plate_data = get_plate_qc_data_map(args.project_folder, name)
+            plate_qc(args.qc_folder, name, plate_data, invar=args.invar)
     else:
-
-        plate_qc(args.project_folder, args.qc_folder, args.plate_name, invar=args.invar)
+        plate_data = get_plate_qc_data_map(args.project_folder, args.plate_name)
+        plate_qc(args.qc_folder, args.plate_name, plate_data, invar=args.invar)
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ import compound_strength as cp
 import comp_strength_overview as comp
 import setup_logger
 import make_gallery as galleries
+import plate_summary
 
 plt.rcParams['figure.figsize'] = (10.0,8.0)
 
@@ -137,7 +138,7 @@ def mk_distributions(data_map, metadata_map,project_name, out_dir):
                                                          lims=[plot_map[df][1], plot_map[df][2]], reduce_upper_limit=True)
 
 
-def plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar):
+def get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar):
 
     for plate in metadata_map['inst']['prism_replicate'].unique():
         print plate
@@ -155,80 +156,46 @@ def plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, 
                                          row_metadata_df=norm_cell_metadata)
 
         print plate_data_map['norm'].data_df.shape
-
-        mk_folders(out_dir, [plate])
-        mk_folders(os.path.join(out_dir, plate), ['invariants', 'distributions', 'heatmaps', 'ssmd', 'cp_strength'])
-
-        if invar is True:
-            for func in [inv.invariant_monotonicity, inv.invariant_curves_plot, inv.invariant_range_distributions]:
-                func(plate_data_map['mfi'], plate_data_map['mfi'].col_metadata_df, os.path.join(out_dir, plate, 'invariants'))
-
-            inv.invariant_heatmap(plate_data_map['mfi'], os.path.join(out_dir, plate, 'invariants', 'inv_heatmap.png'), lims=[0,25000])
-
-        mk_distributions(data_map=plate_data_map,  metadata_map=metadata_map, project_name=project_name,
-                         out_dir=os.path.join(out_dir, plate))
-
-        ssmd.norm_v_mfi_ssmd(plate_data_map['norm'], plate_data_map['mfi'], os.path.join(out_dir, plate, 'ssmd'))
-
-        ssmd.ssmd_ecdf(plate_data_map['norm'], plate_data_map['mfi'], 'SSMD ECDF for {}'.format(plate),os.path.join(out_dir, plate, 'ssmd'))
-
-        cp.median_ZSPC_histogram(plate_data_map['zspc'], plate_data_map['zspc'].col_metadata_df,
-                                 os.path.join(out_dir, plate, 'cp_strength'), det=plate)
-
-        cp.median_ZSPC_ecdf(plate_data_map['zspc'], plate_data_map['zspc'].col_metadata_df,
-                                 os.path.join(out_dir, plate, 'cp_strength'), det=plate)
-
+        plate_summary.plate_qc(out_dir, plate, plate_data_map, invar=invar)
 
 def qc_galleries(proj_dir, proj_name, metadata_map=None):
+    local_paths = glob.glob(os.path.join(proj_dir, proj_name + '*', '*.html'))
+    dex = [os.path.basename(os.path.dirname(x)) for x in local_paths]
 
-    for x in glob.glob(os.path.join(proj_dir, proj_name + '*')):
-        print x
-        images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
-                  'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/histogram_BEAD.png',
-                  'heatmaps/heatmap_BEAD.png', 'heatmaps/heatmap_MFI.png', 'heatmaps/heatmap_NORM.png',
-                  'heatmaps/heatmap_ZSCORE.png']
-        outfolder = os.path.join(x, 'gallery.html')
-        galleries.mk_gal(images, outfolder)
+    ssmd_medians = metadata_map['ssmd'].median().loc[dex]
+    ssmd_failures = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex]
+    ssmd_pct_failure = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex] / metadata_map['ssmd'].shape[0]
+    plate_shapes = []
+    well_dropouts = []
+    signal_strengths = []
+    correlations = []
+    unique_perts = []
+    for plate in dex:
+        temp_sig = metadata_map['sig'].loc[
+            [x for x in metadata_map['sig'].index if x.startswith(plate.rsplit('_', 2)[0])]]
+        temp_inst = metadata_map['inst'].loc[[x for x in metadata_map['inst'].index if x.startswith(plate)]]
 
-    if metadata_map is not None:
+        plate_shapes.append(temp_inst.shape[0])
+        well_dropouts.append(384 - temp_inst.shape[0])
+        signal_strengths.append(temp_sig['ss_ltn2'].median())
+        correlations.append(temp_sig['cc_q75'].median())
+        unique_perts.append(len(temp_inst.loc[temp_inst['pert_type'] == 'trt_cp', 'pert_id'].unique()))
 
-        local_paths = glob.glob(os.path.join(proj_dir, proj_name + '*', '*.html'))
-        dex = [os.path.basename(os.path.dirname(x)) for x in local_paths]
+    def make_url(ref, name):
+        ref = os.path.relpath(ref, proj_dir)
+        return '<a target="_blank" href="{}">{}</a>'.format(ref, name)
 
-        ssmd_medians = metadata_map['ssmd'].median().loc[dex]
-        ssmd_failures = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex]
-        ssmd_pct_failure = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex] / metadata_map['ssmd'].shape[0]
-        plate_shapes = []
-        well_dropouts = []
-        signal_strengths = []
-        correlations = []
-        unique_perts = []
-        for plate in dex:
-            temp_sig = metadata_map['sig'].loc[
-                [x for x in metadata_map['sig'].index if x.startswith(plate.rsplit('_', 2)[0])]]
-            temp_inst = metadata_map['inst'].loc[[x for x in metadata_map['inst'].index if x.startswith(plate)]]
+    premadelinks = [make_url(x, dex[i]) for i, x in enumerate(local_paths)]
 
-            plate_shapes.append(temp_inst.shape[0])
-            well_dropouts.append(384 - temp_inst.shape[0])
-            signal_strengths.append(temp_sig['ss_ltn2'].median())
-            correlations.append(temp_sig['cc_q75'].median())
-            unique_perts.append(len(temp_inst.loc[temp_inst['pert_type'] == 'trt_cp', 'pert_id'].unique()))
+    headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'n wells',
+               'n dropouts', 'median signal strength', 'median ccQ75', 'n unique perts']
 
-        def make_url(ref, name):
-            ref = os.path.relpath(ref, proj_dir)
-            return '<a target="_blank" href="{}">{}</a>'.format(ref, name)
-
-        premadelinks = [make_url(x, dex[i]) for i, x in enumerate(local_paths)]
-
-        headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'n wells',
-                   'n dropouts', 'median signal strength', 'median ccQ75', 'n unique perts']
-
-        index_info = zip(premadelinks, ssmd_medians,
-                         ssmd_failures, ssmd_pct_failure, plate_shapes,
-                         well_dropouts, signal_strengths, correlations,
-                         unique_perts)
-        #print index_info
-        galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=proj_dir, project_name=proj_name)
+    index_info = zip(premadelinks, ssmd_medians,
+                     ssmd_failures, ssmd_pct_failure, plate_shapes,
+                     well_dropouts, signal_strengths, correlations,
+                     unique_perts)
+    #print index_info
+    galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=proj_dir, project_name=proj_name)
 
 
 def main(args, proj_dir, out_dir, project_name,invar=True):
@@ -275,9 +242,8 @@ def main(args, proj_dir, out_dir, project_name,invar=True):
 
     # Make a bunch of plots at the plate level for each plate in cohort
     if args.plate_qc:
-        plate_qc(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
-    #todo: add a check for plate_qc before running qc_galleries --> dependent
-
+        get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
+    #todo: add a check for get_plate_qc_data_map_and_run before running qc_galleries --> dependent
 
     # Put plate level plots into html galleries
     qc_galleries(out_dir, project_name, metadata_map)

@@ -5,7 +5,7 @@ path = os.path.join(os.getcwd(), "templates")
 templateLoader = jinja2.FileSystemLoader(searchpath=path)
 templateEnv = jinja2.Environment(loader=templateLoader)
 
-def mk_gal(images, outfolder):
+def mk_gal(images, outfile):
 
     TEMPLATE_FILE = "gallery_lazy.html"
     template = templateEnv.get_template(TEMPLATE_FILE)
@@ -14,7 +14,7 @@ def mk_gal(images, outfolder):
 
     #print(outputText)
 
-    with open(outfolder, "wb") as fh:
+    with open(outfile, "wb") as fh:
         fh.write(outputText)
 
 def mk_index(table_headers, table_tuples, outfolder, project_name):
