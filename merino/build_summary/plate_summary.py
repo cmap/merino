@@ -1,20 +1,17 @@
-import glob
 import os
-
-import prism_plots
-import invariant_analysis as inv
-
-import ssmd_analysis as ssmd
-import compound_strength as cp
+import sys
+import glob
 import logging
-
 import argparse
 
-import sys
+import merino.setup_logger as setup_logger
 
-import make_gallery as galleries
 import build_summary as build_summary
-import setup_logger as setup_logger
+import invariant_analysis as inv
+import ssmd_analysis as ssmd
+import compound_strength as cp
+import make_gallery as galleries
+import prism_plots
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 

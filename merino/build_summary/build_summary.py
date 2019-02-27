@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 import cmapPy.pandasGEXpress.parse as pe
 import cmapPy.pandasGEXpress.GCToo as GCToo
 
+import merino.setup_logger as setup_logger
+
 import prism_plots
 import invariant_analysis as inv
 import ssmd_analysis as ssmd
-import compound_strength as cp
 import comp_strength_overview as comp
-import setup_logger
 import make_gallery as galleries
 import plate_summary
 
