@@ -54,7 +54,7 @@ cd /cmap/merino/
 
 python setup.py develop
 
-python /cmap/merino/build_summary/plate_summary.py -project_folder ${PROJECT_DIR} -qc_folder ${QC_FOLDER} -plate_name ${PLATE}
+python /cmap/merino/merino/build_summary/plate_summary.py -project_folder ${PROJECT_DIR} -qc_folder ${QC_FOLDER} -plate_name ${PLATE}
 exit_code=$?
 
 source deactivate

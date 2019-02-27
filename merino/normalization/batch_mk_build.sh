@@ -44,7 +44,7 @@ cd /cmap/merino/
 
 python setup.py develop
 
-python /cmap/merino/normalization/mk_build_file.py -proj_dir ${PROJECT_DIR} -cohort_name ${COHORT_NAME} -build_folder ${BUILD_FOLDER} -aggregate_out
+python /cmap/merino/merino/normalization/mk_build_file.py -proj_dir ${PROJECT_DIR} -cohort_name ${COHORT_NAME} -build_folder ${BUILD_FOLDER} -aggregate_out
 exit_code=$?
 
 source deactivate

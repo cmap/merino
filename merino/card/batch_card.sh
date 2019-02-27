@@ -45,7 +45,7 @@ cd /cmap/merino/
 
 python setup.py develop
 
-python /cmap/merino/card/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME}
+python /cmap/merino/merino/card/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME}
 exit_code=$?
 
 source deactivate

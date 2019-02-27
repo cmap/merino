@@ -43,7 +43,7 @@ cd /cmap/merino/
 
 python setup.py develop
 
-python /cmap/merino/normalization/weave.py -proj_dir ${PROJECT_DIR} -replicate_set_name ${REPLICATE_SET_NAME} -all_inputs -aggregate_output
+python /cmap/merino/merino/normalization/weave.py -proj_dir ${PROJECT_DIR} -replicate_set_name ${REPLICATE_SET_NAME} -all_inputs -aggregate_output
 exit_code=$?
 
 source deactivate

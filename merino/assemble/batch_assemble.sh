@@ -59,7 +59,7 @@ then
     DAVEPOOL_ID_CSV_FILEPATH_PAIRS="DP7 ${DP7_CSV_PATH} DP8 ${DP8_CSV_PATH}"
     echo "DAVEPOOL_ID_CSV_FILEPATH_PAIRS ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS}"
 
-    python /cmap/merino/assemble/assemble.py -assay_type "DP78" -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS} -out ${OUTFILE}
+    python /cmap/merino/merino/assemble/assemble.py -assay_type "DP78" -pmp ${PLATE_MAP_PATH} -dp_csv ${DAVEPOOL_ID_CSV_FILEPATH_PAIRS} -out ${OUTFILE}
     exit_code=$?
 else
     CSV_FILEPATH="${CONFIG_ROOT}${PROJECT_CODE}/lxb/${PLATE}/${PLATE}.jcsv"
