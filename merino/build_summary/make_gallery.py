@@ -1,8 +1,16 @@
 import os
 import jinja2
 
-path = os.path.join(os.getcwd(), "templates")
-templateLoader = jinja2.FileSystemLoader(searchpath=path)
+
+
+
+def get_templates():
+    current_location = os.getcwd()
+    for root, dirs, files in os.walk(current_location):
+        if "templates" in dirs:
+            return os.path.join(root, "templates")
+
+templateLoader = jinja2.FileSystemLoader(searchpath=get_templates())
 templateEnv = jinja2.Environment(loader=templateLoader)
 
 def mk_gal(images, outfile):
