@@ -1,7 +1,7 @@
 import logging
-import merino.setup_logger as setup_logger
 import csv
 
+import merino.setup_logger as setup_logger
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 

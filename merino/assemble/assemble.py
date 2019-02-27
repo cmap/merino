@@ -18,11 +18,13 @@ import urllib2
 import merino
 import merino.setup_logger as setup_logger
 import merino.utils.path_utils as path_utils
-import merino.assemble.davepool_data as davepool_data
-import merino.assemble.prism_metadata as prism_metadata
-import merino.assemble.assemble_core as assemble_core
 import merino.utils.exceptions as merino_exception
 import merino.misc_tools.config_yaml as cyaml
+
+import davepool_data as davepool_data
+import prism_metadata as prism_metadata
+import assemble_core as assemble_core
+
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -297,6 +299,6 @@ if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
     setup_logger.setup(verbose=args.verbose)
 
-    logger.debug("args:  {}".format(args))
+    logger.info("args:  {}".format(args))
 
     main(args)
