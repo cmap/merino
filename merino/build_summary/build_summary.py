@@ -158,8 +158,8 @@ def get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, pr
         print plate_data_map['norm'].data_df.shape
         plate_summary.plate_qc(out_dir, plate, plate_data_map, invar=invar)
 
-def qc_galleries(proj_dir, proj_name, metadata_map=None):
-    local_paths = glob.glob(os.path.join(proj_dir, proj_name + '*', '*.html'))
+def qc_galleries(out_dir, proj_name, metadata_map=None):
+    local_paths = glob.glob(os.path.join(out_dir, proj_name + '*', '*.html'))
     dex = [os.path.basename(os.path.dirname(x)) for x in local_paths]
 
     ssmd_medians = metadata_map['ssmd'].median().loc[dex]
@@ -182,7 +182,7 @@ def qc_galleries(proj_dir, proj_name, metadata_map=None):
         unique_perts.append(len(temp_inst.loc[temp_inst['pert_type'] == 'trt_cp', 'pert_id'].unique()))
 
     def make_url(ref, name):
-        ref = os.path.relpath(ref, proj_dir)
+        ref = os.path.relpath(ref, out_dir)
         return '<a target="_blank" href="{}">{}</a>'.format(ref, name)
 
     premadelinks = [make_url(x, dex[i]) for i, x in enumerate(local_paths)]
@@ -195,7 +195,7 @@ def qc_galleries(proj_dir, proj_name, metadata_map=None):
                      well_dropouts, signal_strengths, correlations,
                      unique_perts)
     #print index_info
-    galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=proj_dir, project_name=proj_name)
+    galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=out_dir, project_name=proj_name)
 
 
 def main(args, proj_dir, out_dir, project_name,invar=True):

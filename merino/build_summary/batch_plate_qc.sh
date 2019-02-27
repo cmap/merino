@@ -42,7 +42,7 @@ IFS='_' read -r -a plate_token <<< "${PLATE}";
 PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${plate_token[0]}_${plate_token[1]}_${plate_token[2]}"
 echo PROJECT_DIR = "${PROJECT_DIR}"
 
-QC_FOLDER="${PROJECT_DIR}/qc"
+QC_FOLDER="${CONFIG_ROOT}${PROJECT_CODE}/qc"
 echo QC_FOLDER = "${QC_FOLDER}"
 
 mkdir -p "${QC_FOLDER}"
