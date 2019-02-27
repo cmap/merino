@@ -64,7 +64,7 @@ then
 else
     CSV_FILEPATH="${CONFIG_ROOT}${PROJECT_CODE}/lxb/${PLATE}/${PLATE}.jcsv"
     echo CSV_FILEPATH = "${CSV_FILEPATH}"
-    python /cmap/merino/assemble/assemble.py -pmp ${PLATE_MAP_PATH} -csv ${CSV_FILEPATH} -out ${OUTFILE}
+    python /cmap/merino/merino/assemble/assemble.py -pmp ${PLATE_MAP_PATH} -csv ${CSV_FILEPATH} -out ${OUTFILE}
     exit_code=$?
 fi
 
