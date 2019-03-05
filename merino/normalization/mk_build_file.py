@@ -57,7 +57,6 @@ def build(search_pattern, outfile, file_suffix, cut=True, check_size=False):
 
     if new_len == 0:
         return
-
     gcts = []
     failure_list = []
     for gct in gct_list:
@@ -83,6 +82,24 @@ def build(search_pattern, outfile, file_suffix, cut=True, check_size=False):
     wgx.write(concat_gct_wo_meta, outfile + 'n{}x{}'.format(concat_gct.data_df.shape[1], concat_gct.data_df.shape[0]) + file_suffix)
 
     return concat_gct, failure_list
+
+
+def mk_gct_list(search_pattern):
+    #cut = False
+    gct_list = glob.glob(search_pattern)
+    old_len = len(gct_list)
+
+    if cut == True:
+        gct_list = cut_to_l2.cut_l1(gct_list)
+
+    new_len = len(gct_list)
+
+    print 'Number of old lysate plates removed = {}'.format(old_len - new_len)
+
+    if new_len == 0:
+        return
+
+    return gct_list
 
 
 def mk_cell_metadata(args, failed_plates):

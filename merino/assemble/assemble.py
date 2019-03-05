@@ -231,7 +231,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
         plate_name = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
         (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
 
-        if bead is not None:
+        if bead is not None and args.assay_type is None:
             api_call = os.path.join('https://api.clue.io/api', 'beadset', bead)
             db_entry = requests.get(api_call)
             args.assay_type = json.loads(db_entry.text)['assay_variant']

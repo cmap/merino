@@ -1,10 +1,9 @@
 import assemble_core
 import unittest
-import setup_logger
+import merino.setup_logger as setup_logger
 import logging
 import prism_metadata
 import davepool_data
-import check_and_build_perts
 import numpy
 import os
 import glob
@@ -129,19 +128,19 @@ class TestAssembleWithObjects(unittest.TestCase):
 
         pert_list = []
         p = prism_metadata.Perturbagen()
-        p.well_id = "J01"
+        p.pert_well= "J01"
         p.pert_id = "BRD-K12345678"
         p.pert_dose = 11.0
         p.pert_dose_unit = "uM"
         pert_list.append(p)
         p = prism_metadata.Perturbagen()
-        p.well_id = "M03"
+        p.pert_well = "M03"
         p.pert_id = "BRD-K91011121"
         p.pert_dose = 13.0
         p.pert_dose_unit = "mg/mL"
         pert_list.append(p)
         p = prism_metadata.Perturbagen()
-        p.well_id = "B02"
+        p.pert_well = "B02"
         p.pert_id = "BRD-K31415171"
         p.pert_dose = 17.0
         p.pert_dose_unit = "nM"
@@ -149,13 +148,13 @@ class TestAssembleWithObjects(unittest.TestCase):
 
         cell_list = []
         c = prism_metadata.PrismCell(pool_id="fake pool", analyte_id="fake analyte",
-                                     davepool_id="fake davepool", id=3)
+                                     davepool_id="fake davepool", feature_id='c-3')
         cell_list.append(c)
         c = prism_metadata.PrismCell(pool_id="fake pool 2", analyte_id="fake analyte 2",
-                                     davepool_id="fake davepool 2", id=5)
+                                     davepool_id="fake davepool 2", feature_id='c-5')
         cell_list.append(c)
         c = prism_metadata.PrismCell(pool_id="fake pool 2", analyte_id="fake analyte 3",
-                                     davepool_id="fake davepool 2", id=7)
+                                     davepool_id="fake davepool 2", feature_id='c-7')
         cell_list.append(c)
 
         data_by_cell = assemble_core.DataByCell({cell_list[1]:[1, 2, 11], cell_list[2]:[13, 17, 19], cell_list[0]:[23, 29, 31]},

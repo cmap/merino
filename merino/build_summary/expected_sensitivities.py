@@ -51,7 +51,7 @@ def reformat_gmt(gmt):
     sense = {}
     for x in gmt:
 
-        sense[x['id']] = x['sig']
+        sense[x['desc']] = x['sig']
 
     return sense
 
@@ -61,6 +61,7 @@ def make_sqi_map(sensitivity_map, col_meta, data):
 
     for key in sensitivity_map:
         key = key.replace('_UP', '')
+
         if key in col_meta['pert_id'].tolist():
 
             for dose in col_meta[col_meta['pert_id'] == key]['pert_idose'].unique():
@@ -72,8 +73,6 @@ def make_sqi_map(sensitivity_map, col_meta, data):
                     s_value = s_value[~s_value.index.isin(invariants)]
 
                     if s_value.shape[1] != 1:
-                        import pdb
-                        pdb.set_trace()
                         raise Exception('S Value has more than one column, should correspond to a single well')
 
                     s_value = s_value.iloc[:,0]
@@ -119,9 +118,11 @@ def wtks(gct, metadata, outfolder, gmt_path='/Users/elemire/Workspace/merino/ful
 
         s_qi_map = make_sqi_map(sensitivity_map, data=data, col_meta=col_meta)
 
-
         for key in s_qi_map:
+            print key.split('_')[0]
             if key.split('_')[0] in col_meta['pert_id'].tolist():
+
+
                 if len(s_qi_map[key][0]) > 0 and len(s_qi_map[key][1]) > 0:
                     #calculate enrichment score
                     sensitivity_score, cumsum = compute_wtcs.compute_wtcs(pd.Series(s_qi_map[key][0]), pd.Series(s_qi_map[key][1]))

@@ -158,7 +158,8 @@ def get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, pr
         print plate_data_map['norm'].data_df.shape
         plate_summary.plate_qc(out_dir, plate, plate_data_map, invar=invar)
 
-def qc_galleries(out_dir, proj_name, metadata_map=None):
+
+def qc_galleries(proj_dir, proj_name, metadata_map):
     local_paths = glob.glob(os.path.join(out_dir, proj_name + '*', '*.html'))
     dex = [os.path.basename(os.path.dirname(x)) for x in local_paths]
 
@@ -244,9 +245,8 @@ def main(args, proj_dir, out_dir, project_name,invar=True):
     if args.plate_qc:
         get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
     #todo: add a check for get_plate_qc_data_map_and_run before running qc_galleries --> dependent
+        qc_galleries(out_dir, project_name, metadata_map)
 
-    # Put plate level plots into html galleries
-    qc_galleries(out_dir, project_name, metadata_map)
 
 
 

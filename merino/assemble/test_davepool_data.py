@@ -1,5 +1,5 @@
 import logging
-import setup_logger
+import merino.setup_logger as setup_logger
 import unittest
 import davepool_data
 
@@ -12,7 +12,7 @@ class TestDavepoolData(unittest.TestCase):
         assert hasattr(r, "median_headers")
 
     def test_read_data(self):
-        csv_filepath = "functional_tests/test_davepool_data/PDOG001_P1_X1.csv"
+        csv_filepath = "../functional_tests/test_data/PASG/lxb/PASG003_PR500.2_120H_X251_BX/PASG003_PR500.2_120H_X251_BX.csv"
         r = davepool_data.read_data(csv_filepath)
         assert r is not None
         assert r.csv_filepath == csv_filepath, r.csv_filepath
@@ -25,7 +25,7 @@ class TestDavepoolData(unittest.TestCase):
         logger.debug("r.csv_datetime:  {}".format(r.csv_datetime))
 
     def test_read_data_from_jcsv(self):
-        csv_filepath = "functional_tests/test_davepool_data/PMEL.A009_CS2_X3.csv"
+        csv_filepath = "../functional_tests/test_data/PGUM/lxb/PGUM001_KJ100_120H_X1_BX/PGUM001_KJ100_120H_X1_BX.jcsv"
         r = davepool_data.read_data(csv_filepath)
 
         assert len(r.count_data) == 384, len(r.count_data)
