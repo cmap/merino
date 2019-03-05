@@ -159,7 +159,7 @@ def get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, pr
         plate_summary.plate_qc(out_dir, plate, plate_data_map, invar=invar)
 
 
-def qc_galleries(proj_dir, proj_name, metadata_map):
+def qc_galleries(out_dir, proj_name, metadata_map):
     local_paths = glob.glob(os.path.join(out_dir, proj_name + '*', '*.html'))
     dex = [os.path.basename(os.path.dirname(x)) for x in local_paths]
 
@@ -181,6 +181,7 @@ def qc_galleries(proj_dir, proj_name, metadata_map):
         signal_strengths.append(temp_sig['ss_ltn2'].median())
         correlations.append(temp_sig['cc_q75'].median())
         unique_perts.append(len(temp_inst.loc[temp_inst['pert_type'] == 'trt_cp', 'pert_id'].unique()))
+
 
     def make_url(ref, name):
         ref = os.path.relpath(ref, out_dir)
