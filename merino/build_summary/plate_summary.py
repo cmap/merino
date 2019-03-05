@@ -52,8 +52,13 @@ def read_build_data(assemble_path, card_path):
 
     # Standard search patterns for a merino build
     assemble_data_pattern_list = ['*MEDIAN*.gct', '*COUNT*.gct']
-    card_data_pattern_list =  ['*NORM.gct', '*_ZSPC.gct', '*_ZSPC.COMBAT.gct',
-                    '*_ZSVC.gct', '*_LFCPC.gct', '*_LFCVC.gct']
+    if len(glob.glob(card_path + '/*_ZSPC.COMBAT.gct')) > 0:
+        card_data_pattern_list =  ['*NORM.gct', '*_ZSPC.gct',
+                        '*_ZSVC.gct', '*_LFCPC.gct', '*_LFCVC.gct', '*_ZSPC.COMBAT.gct']
+
+    else:
+        card_data_pattern_list = ['*NORM.gct', '*_ZSPC.gct',
+                                  '*_ZSVC.gct', '*_LFCPC.gct', '*_LFCVC.gct']
 
     # Link identifiers to path to build folder
     data_search_patterns = [os.path.join(assemble_path, x) for x in assemble_data_pattern_list] + [os.path.join(card_path, y) for y in card_data_pattern_list]
@@ -62,18 +67,30 @@ def read_build_data(assemble_path, card_path):
     gcts = [build_summary.globandparse(x) for x in data_search_patterns]
 
     # Make dictionary and link each GCToo object to a corresponding key
-    data_map = dict(zip(['mfi', 'count', 'norm', 'zspc', 'combat_zspc',
-                'zsvc', 'lfcpc', 'lfcvc'], gcts))
+    if '*_ZSPC.COMBAT.gct' in card_data_pattern_list:
+        data_map = dict(zip(['mfi', 'count', 'norm', 'zspc',
+                'zsvc', 'lfcpc', 'lfcvc', 'zspc.combat'], gcts))
+    else:
+        data_map = dict(zip(['mfi', 'count', 'norm', 'zspc',
+                             'zsvc', 'lfcpc', 'lfcvc'], gcts))
 
 
     return data_map
 
 def mk_distributions(data_map, project_name, out_dir):
 
-    plot_map = {data_map['mfi']: ['MFI', 0, 50000], data_map['count']: ['BEAD', 0, 300],
+    if 'zspc.combat' in  data_map.keys():
+        plot_map = {data_map['mfi']: ['MFI', 0, 50000], data_map['count']: ['BEAD', 0, 300],
               data_map['norm']: ['NORM', -10, 10],
               data_map['zspc']: ['ZSPC', -10, 10], data_map['zsvc']: ['ZSVC', -10, 10],
-              data_map['lfcpc']: ['LFCPC', -10, 10], data_map['lfcvc']: ['LFCVC', -10, 10]}
+              data_map['lfcpc']: ['LFCPC', -10, 10], data_map['lfcvc']: ['LFCVC', -10, 10],
+                    data_map['zspc.combat']: ['ZSPC.COMBAT', -10, 10]}
+
+    else:
+        plot_map = {data_map['mfi']: ['MFI', 0, 50000], data_map['count']: ['BEAD', 0, 300],
+                    data_map['norm']: ['NORM', -10, 10],
+                    data_map['zspc']: ['ZSPC', -10, 10], data_map['zsvc']: ['ZSVC', -10, 10],
+                    data_map['lfcpc']: ['LFCPC', -10, 10], data_map['lfcvc']: ['LFCVC', -10, 10]}
 
     for df in plot_map.keys():
 
