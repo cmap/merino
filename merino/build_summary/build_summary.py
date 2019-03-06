@@ -169,6 +169,7 @@ def qc_galleries(out_dir, proj_name, metadata_map):
     plate_shapes = []
     well_dropouts = []
     signal_strengths = []
+    sig_stength_75 = []
     correlations = []
     unique_perts = []
     for plate in dex:
@@ -179,8 +180,10 @@ def qc_galleries(out_dir, proj_name, metadata_map):
         plate_shapes.append(temp_inst.shape[0])
         well_dropouts.append(384 - temp_inst.shape[0])
         signal_strengths.append(temp_sig['ss_ltn2'].median())
+        sig_stength_75.append(temp_sig['ss_ltn2'].quantile(.75))
         correlations.append(temp_sig['cc_q75'].median())
         unique_perts.append(len(temp_inst.loc[temp_inst['pert_type'] == 'trt_cp', 'pert_id'].unique()))
+
 
     def make_url(ref, name):
         ref = os.path.relpath(ref, out_dir)
@@ -189,11 +192,11 @@ def qc_galleries(out_dir, proj_name, metadata_map):
     premadelinks = [make_url(x, dex[i]) for i, x in enumerate(local_paths)]
 
     headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'n wells',
-               'n dropouts', 'median signal strength', 'median ccQ75', 'n unique perts']
+               'n dropouts', 'median signal strength', 'q75 signal strength','median ccQ75', 'n unique perts']
 
     index_info = zip(premadelinks, ssmd_medians,
                      ssmd_failures, ssmd_pct_failure, plate_shapes,
-                     well_dropouts, signal_strengths, correlations,
+                     well_dropouts, signal_strengths, sig_stength_75, correlations,
                      unique_perts)
     #print index_info
     made_gallery = galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=out_dir, project_name=proj_name)
