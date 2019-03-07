@@ -15,6 +15,7 @@ import merino.card.normalize_with_prism_invariant as norm
 import merino.card.viability_normalization as viability
 import merino.card.shear as shear
 import merino.card.zscore as zscore
+import merino.build_summary.ssmd_analysis as ssmd_analysis
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -62,6 +63,15 @@ def reader_writer(input_file, output_file, function, check_size=False):
 
     return plate_failure
 
+def check_ssmds(norm_path, plate_failure):
+    norm_gct = pe.parse(norm_path)
+    ssmds = ssmd_analysis.get_ssmd(norm_gct, unlog=True)
+    ssmd_failures = ssmds[ssmds < 2].count()
+    if ssmd_failures > len(ssmds) / 3:
+        plate_failure = True
+    return plate_failure
+
+
 
 def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False):
 
@@ -93,6 +103,7 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
 
     # Remove low bead count wells and check GCT size, if too many wells have been stripped it will qualify as a failure
     plate_failure = reader_writer(norm_path, norm_path, functools.partial(norm.remove_low_bead_wells, count_gct=count_gctoo), check_size=True)
+    plate_failure = check_ssmds(norm_path, plate_failure)
 
     # Shear predetermined bad wells (if any exist)
     reader_writer(norm_path, norm_path, functools.partial(shear.shear, bad_wells=bad_wells))

@@ -159,28 +159,30 @@ def get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, pr
         plate_summary.plate_qc(out_dir, plate, plate_data_map, invar=invar)
 
 
-def qc_galleries(out_dir, proj_name, metadata_map):
+def qc_galleries(out_dir, proj_name, metadata_map, data_map):
     local_paths = glob.glob(os.path.join(out_dir, proj_name + '*', '*.html'))
     dex = [os.path.basename(os.path.dirname(x)) for x in local_paths]
 
     ssmd_medians = metadata_map['ssmd'].median().loc[dex]
     ssmd_failures = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex]
-    ssmd_pct_failure = metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex] / metadata_map['ssmd'].shape[0]
+    ssmd_pct_failure = (metadata_map['ssmd'][metadata_map['ssmd'] < 2].count().loc[dex] / metadata_map['ssmd'].shape[0]) * 100
     plate_shapes = []
     well_dropouts = []
     signal_strengths = []
     sig_stength_75 = []
     correlations = []
     unique_perts = []
+    n_kills = []
     for plate in dex:
         temp_sig = metadata_map['sig'].loc[
             [x for x in metadata_map['sig'].index if x.startswith(plate.rsplit('_', 2)[0])]]
         temp_inst = metadata_map['inst'].loc[[x for x in metadata_map['inst'].index if x.startswith(plate)]]
-
-        plate_shapes.append(temp_inst.shape[0])
-        well_dropouts.append(384 - temp_inst.shape[0])
+        temp_norm = data_map['norm'].data_df.loc[:,[x for x in data_map['norm'].data_df.columns if x.startswith(plate)]]
+        plate_shapes.append(temp_norm.shape[1])
+        well_dropouts.append(384 - temp_norm.shape[1])
         signal_strengths.append(temp_sig['ss_ltn2'].median())
         sig_stength_75.append(temp_sig['ss_ltn2'].quantile(.75))
+        n_kills.append(temp_sig['ss_ltn2'][temp_sig['ss_ltn2'] > (len(temp_sig['ss_ltn2']) / 20)].count())
         correlations.append(temp_sig['cc_q75'].median())
         unique_perts.append(len(temp_inst.loc[temp_inst['pert_type'] == 'trt_cp', 'pert_id'].unique()))
 
@@ -192,11 +194,11 @@ def qc_galleries(out_dir, proj_name, metadata_map):
     premadelinks = [make_url(x, dex[i]) for i, x in enumerate(local_paths)]
 
     headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'n wells',
-               'n dropouts', 'median signal strength', 'q75 signal strength','median ccQ75', 'n unique perts']
+               'n dropouts', 'median signal strength', 'q75 signal strength', 'n_active_wells','median ccQ75', 'n unique perts']
 
     index_info = zip(premadelinks, ssmd_medians,
                      ssmd_failures, ssmd_pct_failure, plate_shapes,
-                     well_dropouts, signal_strengths, sig_stength_75, correlations,
+                     well_dropouts, signal_strengths, sig_stength_75, n_kills, correlations,
                      unique_perts)
     #print index_info
     galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=out_dir, project_name=proj_name)
@@ -248,7 +250,7 @@ def main(args, proj_dir, out_dir, project_name,invar=True):
     if args.plate_qc:
         get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
     #todo: add a check for get_plate_qc_data_map_and_run before running qc_galleries --> dependent
-        qc_galleries(out_dir, project_name, metadata_map)
+        qc_galleries(out_dir, project_name, metadata_map, data_map)
 
 
 
