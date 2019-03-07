@@ -33,7 +33,7 @@ def parse_plate_name(plate_name):
 
 def build_paths(plate_entry):
     project_dir = os.path.join('/cmap/obelix/pod/custom/', plate_entry['project_code'])
-    jcsv_path = os.path.join(project_dir, 'lxb', plate_entry['det_plate'] + '.jcsv')
+    jcsv_path = os.path.join(project_dir, 'lxb', plate_entry['det_plate'], plate_entry['det_plate'] + '.jcsv')
     plate_map_path = os.path.join(project_dir, 'map_src', plate_entry['pert_plate'] + '.src')
     assemble_out_path = os.path.join(project_dir, 'assemble', plate_entry['det_plate'])
     qc_out_path = os.path.join(project_dir, 'qc')
