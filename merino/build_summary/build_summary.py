@@ -201,8 +201,9 @@ def qc_galleries(out_dir, proj_name, metadata_map, data_map):
                      well_dropouts, signal_strengths, sig_stength_75, n_kills, correlations,
                      unique_perts)
     #print index_info
-    galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=out_dir, project_name=proj_name)
-
+    made_gallery = galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=out_dir, project_name=proj_name)
+    if made_gallery:
+        logger.info("successfully made QC gallery")
 
 def main(args, proj_dir, out_dir, project_name,invar=True):
 
@@ -251,8 +252,6 @@ def main(args, proj_dir, out_dir, project_name,invar=True):
         get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar)
     #todo: add a check for get_plate_qc_data_map_and_run before running qc_galleries --> dependent
         qc_galleries(out_dir, project_name, metadata_map, data_map)
-
-
 
 
 if __name__ == "__main__":

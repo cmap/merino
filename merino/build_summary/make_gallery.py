@@ -1,9 +1,6 @@
 import os
 import jinja2
 
-
-
-
 def get_templates():
     current_location = os.getcwd()
     for root, dirs, files in os.walk(current_location):
@@ -34,3 +31,4 @@ def mk_index(table_headers, table_tuples, outfolder, project_name):
 
     with open(os.path.join(outfolder, "index.html"), "wb") as fh:
         fh.write(outputText)
+    return True
