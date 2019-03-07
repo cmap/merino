@@ -1,9 +1,8 @@
 import sys
 import os
 import argparse
+from string import digits
 
-import caldaia.utils.mysql_utils as mu
-import caldaia.utils.orm.lims_plate_orm as lpo
 
 import merino.assemble.assemble as assemble
 import merino.card.card as card
@@ -16,24 +15,27 @@ def build_parser():
     return parser
 
 def main(args):
-    db = mu.DB().db
-    cursor = db.cursor()
+    plate_entry = parse_plate_name(args.plate_name)
 
-    plate_entry = lpo.get_by_det_plate(cursor, args.plate_name)
     (project_dir, jcsv_path, plate_map_path, assemble_out_path, qc_out_path) = build_paths(plate_entry)
 
-    if plate_entry:
-        assemble_args = assemble.build_parser().parse_args(['-pmp', plate_map_path, '-csv', jcsv_path, '-out', assemble_out_path])
-        assemble.main(assemble_args)
-        card_args = card.build_parser().parse_args(['-proj_dir', project_dir, '-plate_name', args.plate_name])
-        card.main(card_args)
-        plate_qc.build_parser().parse_args(['-project_folder', project_dir, '-plate_name', args.plate_name, '-qc', qc_out_path])
+    assemble_args = assemble.build_parser().parse_args(['-pmp', plate_map_path, '-csv', jcsv_path, '-out', assemble_out_path])
+    assemble.main(assemble_args)
+    card_args = card.build_parser().parse_args(['-proj_dir', project_dir, '-plate_name', args.plate_name])
+    card.main(card_args)
+    plate_qc.build_parser().parse_args(['-project_folder', project_dir, '-plate_name', args.plate_name, '-qc', qc_out_path])
 
-def build_paths(plate_lpo):
-    project_dir = os.path.join('/cmap/obelix/pod/custom/', plate_lpo.project_code)
-    jcsv_path = os.path.join(project_dir, 'lxb', plate_lpo.det_plate + '.jcsv')
-    plate_map_path = os.path.join(project_dir, 'map_src', plate_lpo.pert_plate +'.src')
-    assemble_out_path = os.path.join(project_dir, 'assemble', plate_lpo.det_plate)
+def parse_plate_name(plate_name):
+    pieces = plate_name.split("_")
+    pert_plate = pieces[0]
+    project_code = pert_plate.translate(None, digits)
+    return {"pert_plate": pert_plate, "project_code": project_code, "det_plate": plate_name}
+
+def build_paths(plate_entry):
+    project_dir = os.path.join('/cmap/obelix/pod/custom/', plate_entry['project_code'])
+    jcsv_path = os.path.join(project_dir, 'lxb', plate_entry['det_plate'] + '.jcsv')
+    plate_map_path = os.path.join(project_dir, 'map_src', plate_entry['pert_plate'] + '.src')
+    assemble_out_path = os.path.join(project_dir, 'assemble', plate_entry['det_plate'])
     qc_out_path = os.path.join(project_dir, 'qc')
     return (project_dir, jcsv_path, plate_map_path, assemble_out_path, qc_out_path)
 
