@@ -2,6 +2,7 @@ import sys
 import os
 import argparse
 
+import caldaia.utils.mysql_utils as mu
 import caldaia.utils.orm.lims_plate_orm as lpo
 
 import merino.assemble.assemble as assemble
@@ -15,7 +16,10 @@ def build_parser():
     return parser
 
 def main(args):
-    plate_entry = lpo.get_by_det_plate(args.plate_name)
+    db = mu.DB().db
+    cursor = db.cursor()
+
+    plate_entry = lpo.get_by_det_plate(cursor, args.plate_name)
     (project_dir, jcsv_path, plate_map_path, assemble_out_path, qc_out_path) = build_paths(plate_entry)
 
     if plate_entry:
