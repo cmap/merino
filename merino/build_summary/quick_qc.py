@@ -48,6 +48,8 @@ def build_paths(plate_entry):
     plate_map_path = os.path.join(project_dir, 'map_src', plate_entry['pert_plate'] + '.src')
     assemble_out_path = project_dir
     qc_out_path = os.path.join(project_dir, 'qc')
+    if not os.path.exists(qc_out_path):
+        os.mkdir(qc_out_path)
     return (project_dir, jcsv_path, plate_map_path, assemble_out_path, qc_out_path)
 
 if __name__ == "__main__":
