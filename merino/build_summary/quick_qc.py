@@ -1,12 +1,16 @@
 import sys
 import os
 import argparse
+import logging
 from string import digits
 
-
+import merino.setup_logger as setup_logger
 import merino.assemble.assemble as assemble
 import merino.card.card as card
 import merino.build_summary.plate_summary as plate_qc
+
+logger = logging.getLogger(setup_logger.LOGGER_NAME)
+
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -20,10 +24,17 @@ def main(args):
     (project_dir, jcsv_path, plate_map_path, assemble_out_path, qc_out_path) = build_paths(plate_entry)
 
     assemble_args = assemble.build_parser().parse_args(['-pmp', plate_map_path, '-csv', jcsv_path, '-out', assemble_out_path])
+    logger.info("Running assemble with args: {}".format(assemble_args))
     assemble.main(assemble_args)
+
     card_args = card.build_parser().parse_args(['-proj_dir', project_dir, '-plate_name', args.plate_name])
+    logger.info("Running card with args: {}".format(card_args))
     card.main(card_args)
-    plate_qc.build_parser().parse_args(['-project_folder', project_dir, '-plate_name', args.plate_name, '-qc', qc_out_path])
+
+    plate_qc_args = plate_qc.build_parser().parse_args(['-project_folder', project_dir, '-plate_name', args.plate_name, '-qc', qc_out_path])
+    logger.info("Running PlateQC with args: {}".format(plate_qc_args))
+    plate_qc.main(plate_qc_args)
+
 
 def parse_plate_name(plate_name):
     pieces = plate_name.split("_")
