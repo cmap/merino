@@ -31,6 +31,8 @@ def main(args):
 
     headers = ['plate', 'pass/fail']
     table_tuples = zip(links, pass_or_fail)
+    logger.debug("info for table {}".format(table_tuples))
+
     made_gallery = galleries.mk_index(table_headers=headers, table_tuples=table_tuples, outfolder=index_path, project_name=extract_project_code(list_of_plates[0]))
     if made_gallery:
         logger.info("successfully made index")
@@ -38,8 +40,8 @@ def main(args):
 def get_list_of_plates_from_grp(grp_path):
     list_of_plates = []
     with open(grp_path) as grp:
-        line = grp.readline()
-        list_of_plates.append(line)
+        for line in grp:
+            list_of_plates.append(line.strip())
     return list_of_plates
 
 def extract_project_code(plate_name):
