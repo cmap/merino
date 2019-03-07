@@ -54,4 +54,7 @@ def build_paths(plate_entry):
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
+
+    setup_logger.setup(verbose=True)
+
     main(args)
