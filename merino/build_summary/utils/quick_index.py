@@ -32,8 +32,8 @@ def main(args):
     headers = ['plate', 'pass/fail']
 
     table_tuples = []
-    for i in list_of_plates:
-        table_tuples.append((links[list_of_plates[i]], pass_or_fail[list_of_plates[i]]))
+    for  plate in list_of_plates:
+        table_tuples.append((links[plate], pass_or_fail[plate]))
 
     logger.debug("info for table {}".format(table_tuples))
 
