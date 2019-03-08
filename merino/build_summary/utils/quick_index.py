@@ -64,7 +64,7 @@ def get_pass_or_fail(card_dir_paths):
         if os.path.exists(os.path.join(path, 'success.txt')):
             map[plate] = 1
         elif os.path.exists(os.path.join(path, 'failure.txt')):
-            map[plate] = 2
+            map[plate] = 0
     return map
 
 if __name__ == "__main__":
