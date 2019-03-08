@@ -27,13 +27,14 @@ def main(args):
         return '<a target="_blank" href="{}">{}</a>'.format(ref, name)
 
     links = {list_of_plates[i]:make_url(x, list_of_plates[i]) for i, x in enumerate(gallery_paths)}
-    pass_or_fail = get_pass_or_fail(card_dir_paths)
+    (pass_or_fail, success_count, failure_count) = get_pass_or_fail(card_dir_paths)
 
     headers = ['plate', 'pass/fail']
 
-    table_tuples = []
+    table_tuples = [('total Successes', success_count), ('total Failures', failure_count)]
     for  plate in list_of_plates:
         table_tuples.append((links[plate], pass_or_fail[plate]))
+
 
     logger.debug("info for table {}".format(table_tuples))
 
@@ -60,12 +61,17 @@ def set_up_paths(list_of_plates):
 
 def get_pass_or_fail(card_dir_paths):
     map = {}
+    success_count = 0
+    failure_count = 0
+
     for plate, path in card_dir_paths.items():
         if os.path.exists(os.path.join(path, 'success.txt')):
             map[plate] = 1
+            success_count += 1
         elif os.path.exists(os.path.join(path, 'failure.txt')):
             map[plate] = 0
-    return map
+            failure_count += 1
+    return (map, success_count, failure_count)
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
