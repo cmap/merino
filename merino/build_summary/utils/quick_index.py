@@ -26,11 +26,15 @@ def main(args):
         ref = os.path.relpath(ref, index_path)
         return '<a target="_blank" href="{}">{}</a>'.format(ref, name)
 
-    links = [make_url(x, list_of_plates[i]) for i, x in enumerate(gallery_paths)]
+    links = {list_of_plates[i]:make_url(x, list_of_plates[i]) for i, x in enumerate(gallery_paths)}
     pass_or_fail = get_pass_or_fail(card_dir_paths)
 
     headers = ['plate', 'pass/fail']
-    table_tuples = zip(links, pass_or_fail)
+
+    table_tuples = []
+    for i in list_of_plates:
+        table_tuples.append((links[list_of_plates[i]], pass_or_fail[list_of_plates[i]]))
+
     logger.debug("info for table {}".format(table_tuples))
 
     made_gallery = galleries.mk_index(table_headers=headers, table_tuples=table_tuples, outfolder=index_path, project_name=extract_project_code(list_of_plates[0]))
@@ -48,20 +52,20 @@ def extract_project_code(plate_name):
     return plate_name.split("_")[0].translate(None, digits)
 
 def set_up_paths(list_of_plates):
-    card_dir_paths = [os.path.join(base_path, extract_project_code(plate),'card', plate) for plate in list_of_plates]
+
+    card_dir_paths = { plate:os.path.join(base_path, extract_project_code(plate),'card', plate) for plate in list_of_plates}
     gallery_paths = [os.path.join(base_path, extract_project_code(plate), 'qc', plate, 'gallery.html') for plate in list_of_plates]
     index_path = os.path.join(base_path, extract_project_code(list_of_plates[0]), 'qc')
     return (card_dir_paths, gallery_paths, index_path)
 
 def get_pass_or_fail(card_dir_paths):
-    pass_or_fail = []
-    for path in card_dir_paths:
+    map = {}
+    for plate, path in card_dir_paths.items():
         if os.path.exists(os.path.join(path, 'success.txt')):
-            pass_or_fail.append(1)
+            map[plate] = 1
         elif os.path.exists(os.path.join(path, 'failure.txt')):
-            pass_or_fail.append(0)
-
-    return pass_or_fail
+            map[plate] = 2
+    return map
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
