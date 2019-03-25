@@ -33,7 +33,7 @@ def extract_invariants(gctoo):
 
     invs = gctoo.data_df.loc[invariants]
 
-    row_meta = gctoo.row_metadata_df.loc[invariants]
+    row_meta = gctoo.row_metadata_df.loc[[x for x in invariants if x in gctoo.row_metadata_df.index]]
 
     new_gctoo = GCToo.GCToo(data_df=invs, row_metadata_df=row_meta, col_metadata_df=gctoo.col_metadata_df)
 
@@ -184,7 +184,9 @@ def invariant_range_distributions(gctoo, col_metadata_df, outfile):
         high_dose_dex = high_dose_dex + pert_df[(pert_df['pert_dose'] == pert_df['pert_dose'].max())].index.tolist()
 
     trt_high_dose = treatment[high_dose_dex]
+
     all_high_trt_IQRs = trt_high_dose.quantile(0.9, axis=0) - trt_high_dose.quantile(0.1, axis=0)
+
     all_high_trt_q9_ratios = trt_high_dose.quantile(0.1, axis=0) / trt_high_dose.quantile(0.9,axis=0)
 
     ########################################################################################################

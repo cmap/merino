@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import merino.setup_logger as setup_logger
 import numpy as np
 import pandas as pd
-import pestle.cmap.io.gmt as gmt
+import pestle.io.gmt as gmt
 from statsmodels.distributions.empirical_distribution import ECDF
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)

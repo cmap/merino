@@ -6,13 +6,13 @@ import pandas as pd
 # TODO add to metadata
 invariant_rids = ['c-661', 'c-662', 'c-663', 'c-664', 'c-665', 'c-666', 'c-667', 'c-668', 'c-669', 'c-670']
 
-def normalize(mfi_gctoo, log=True, inv=True):
+def normalize(mfi_gctoo, log=True, inv=True, inv_threshold = 600):
 
     # Level 2-3 Normalization based on prism invariant
 
-    #mfi_gctoo = remove_low_bead_wells(mfi_gctoo, count_gctoo)
     if inv is True:
-        mfi_gctoo = remove_outlier_invariants(mfi_gctoo)
+        mfi_gctoo = remove_outlier_invariants(mfi_gctoo, inv_threshold)
+
 
     mfi_gctoo.data_df[mfi_gctoo.data_df < 1] = 1
     data_df = mfi_gctoo.data_df
@@ -57,14 +57,11 @@ def remove_low_bead_wells(mfi_gct, count_gct):
     return new_gctoo
 
 
-def remove_outlier_invariants(gctoo):
+def remove_outlier_invariants(gctoo, inv_threshold):
 
     invdata = gctoo.data_df.loc[invariant_rids]
 
-    #bad_wells = invdata.median()[invdata.median() < dmso_inv.median().quantile(0.005)].index
-
-
-    bad_wells = invdata.median()[invdata.median() < 600].index
+    bad_wells = invdata.median()[invdata.median() < inv_threshold].index
 
     data = gctoo.data_df.drop(bad_wells, axis=1).dropna(axis=1, how='all')
     col_data = gctoo.col_metadata_df.loc[data.columns]

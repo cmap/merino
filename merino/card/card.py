@@ -31,6 +31,7 @@ def build_parser():
                         help="Search for this string in the directory, only run plates which contain it. ",
                         type=str, default=None)
     plates_group.add_argument("-plate_name", "-pn", help="name of individual plate to run on", type=str, default=None)
+    parser.add_argument("-inv_threshold", "-thresh", help="threshold for median invariants, below which a well is excluded", type=int, default=600)
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
     parser.add_argument("-bad_wells", "-wells", help="List of wells to be excluded from processing", type=list,
                         default=[])
@@ -73,7 +74,7 @@ def check_ssmds(norm_path, plate_failure):
 
 
 
-def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False):
+def card(proj_dir, plate_name, inv_threshold, log_tf=True, inv_tf=True, bad_wells=[], dp=False):
 
     # Make Level 3 data folder
     if not os.path.exists(os.path.join(proj_dir, 'card')):
@@ -96,7 +97,7 @@ def card(proj_dir, plate_name, log_tf=True, inv_tf=True, bad_wells=[], dp=False)
     if dp == True:
         reader_writer(assemble_path, norm_path, norm.no_inv_norm)
     else:
-        reader_writer(assemble_path, norm_path, functools.partial(norm.normalize, log=log_tf, inv=inv_tf))
+        reader_writer(assemble_path, norm_path, functools.partial(norm.normalize, log=log_tf, inv=inv_tf, inv_threshold=inv_threshold))
 
         # Read in count file
     count_gctoo = pe.parse(count_path)
@@ -142,7 +143,8 @@ def main(args):
         for folder in glob.glob(os.path.join(args.proj_dir, 'assemble', args.search_pattern)):
             name = os.path.basename(folder)
             logger.info("Carding {}".format(name))
-            plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
+            plate_failure = card(args.proj_dir, name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells,
+                                 dp=args.no_invariants, inv_threshold=args.inv_threshold)
             if plate_failure == True:
                 logger.debug("Carding failed for {}".format(name))
                 failure_list.append(name)
@@ -155,7 +157,8 @@ def main(args):
             with open(os.path.join(args.proj_dir, "success.txt"), "w") as file: file.write("successfully processed all plates")
 
     else:
-        failure = card(args.proj_dir, args.plate_name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells, dp=args.no_invariants)
+        failure = card(args.proj_dir, args.plate_name, log_tf=args.log_tf, inv_tf=args.inv_tf, bad_wells=args.bad_wells,
+                       dp=args.no_invariants, inv_threshold=args.inv_threshold)
         if failure:
             plate_failure_path = os.path.join(args.proj_dir, "card", args.plate_name, "failure.txt")
             with open(plate_failure_path, "w") as file:
