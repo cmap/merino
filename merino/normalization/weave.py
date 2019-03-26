@@ -50,7 +50,7 @@ def build_parser():
                         action="store_false", default=True)
     parser.add_argument("-nprofile_drop", "-nd",
                         help="Drop sigs from MODZ with less than two profiles",
-                        action="store_false")
+                        action="store_true")
     parser.add_argument("-davepool_combat", "-dc",
                         help="Perform combat on the two detection plates - pertains to older data format",
                         action="store_true")
