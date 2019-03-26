@@ -18,9 +18,8 @@ import matplotlib
 
 
 def spearmanwrapper(sequence):
-    # TODO: Make sure sequence is of equal length to sequence passed?
     if len(sequence.dropna()) > 2:
-        mono_value = stats.spearmanr(sequence, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        mono_value = stats.spearmanr(sequence, range(1, len(sequence) + 1))
         return mono_value[0]
     else:
         return
@@ -31,7 +30,7 @@ def extract_invariants(gctoo):
     #invariants = [str(x) for x in range(661, 665)]
     #invariants = range(661,671)
 
-    invs = gctoo.data_df.loc[invariants]
+    invs = gctoo.data_df.loc[[x for x in invariants if x in gctoo.data_df.index]]
 
     row_meta = gctoo.row_metadata_df.loc[[x for x in invariants if x in gctoo.row_metadata_df.index]]
 
@@ -82,6 +81,7 @@ def invariant_monotonicity(mfi_gct, col_metadata, outfile):
     pos_invariant_df = x.data_df[pos_dex]
 
     # Calculate monotonicity of invariants for positive and negative controls
+
     pos_mono_values = pos_invariant_df.apply(spearmanwrapper, axis=0)
 
     neg_mono_values = neg_invariant_df.apply(spearmanwrapper, axis=0)
