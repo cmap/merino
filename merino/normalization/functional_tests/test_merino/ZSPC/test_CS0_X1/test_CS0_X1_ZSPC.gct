@@ -1,0 +1,10 @@
+#1.3
+3	4	0	4
+id	test_CS0_X1:A	test_CS0_X1:B	test_CS0_X1:D	test_CS0_X1:E
+pert_type	trt_cp	trt_cp	ctl_vehicle	ctl_vehicle
+pert_well	A	B	D	E
+provenance	assembled | log2 | median normalized | ZSPC	assembled | log2 | median normalized | ZSPC	assembled | log2 | median normalized | ZSPC	assembled | log2 | median normalized | ZSPC
+data_level	ZSPC	ZSPC	ZSPC	ZSPC
+1	-0.9030328092584897	-0.6554128163934195	0.6554125673324847	0.6935687025597709
+2	-0.5331021841097701	-0.95152117823122	0.8158793348434205	0.5331020924736213
+3	-0.5931397047441985	-0.7558418142089919	0.9646417921387734	0.5931397047441985

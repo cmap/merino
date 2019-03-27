@@ -1,0 +1,10 @@
+#1.3
+3	5	0	4
+id	test_CS0_X3:A	test_CS0_X3:B	test_CS0_X3:C	test_CS0_X3:D	test_CS0_X3:E
+pert_type	trt_cp	trt_cp	trt_cp	ctl_vehicle	ctl_vehicle
+pert_well	A	B	C	D	E
+provenance	assembled | log2 | median normalized	assembled | log2 | median normalized	assembled | log2 | median normalized	assembled | log2 | median normalized	assembled | log2 | median normalized
+data_level	normalized	normalized	normalized	normalized	normalized
+1	1.6745997132058328	1.734876245443479	0.6382316405808466	2.672667100671833	2.035798383563303
+2	2.253756592245783	1.0653099365628593	1.4455865626384508	3.5104055386145294	2.474484314102655
+3	1.1069152039165118	0.7938702924005272	0.22319414130200285	3.205496398411183	2.038122687337982

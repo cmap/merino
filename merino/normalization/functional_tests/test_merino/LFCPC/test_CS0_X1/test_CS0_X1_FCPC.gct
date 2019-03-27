@@ -1,0 +1,10 @@
+#1.3
+3	4	0	4
+id	test_CS0_X1:A	test_CS0_X1:B	test_CS0_X1:D	test_CS0_X1:E
+pert_type	trt_cp	trt_cp	ctl_vehicle	ctl_vehicle
+pert_well	A	B	D	E
+provenance	assembled | log2 | median normalized | viability	assembled | log2 | median normalized | viability	assembled | log2 | median normalized | viability	assembled | log2 | median normalized | viability
+data_level	viability	viability	viability	viability
+1	-0.8644462823867798	-0.6274070739746094	0.6274068355560303	0.6639325618743896
+2	-0.6935116052627563	-1.2378320693969727	1.0613758563995361	0.6935114860534668
+3	-0.8107441663742065	-1.0331366062164307	1.318538784980774	0.8107441663742065
