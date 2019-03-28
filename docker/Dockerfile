@@ -7,7 +7,7 @@ mkdir -p /cmap/merino/ && \
 cd /cmap/merino/ && \
 conda create -y --name merino -c bioconda python=2.7.11 numpy pandas=0.24 h5py=2.6.0 requests=2.13.0 cmapPy=3.2.0 scipy setuptools argparse=1.4.0 boto3 pathlib patsy matplotlib seaborn statsmodels yaml pyyaml jinja2 && \
 cd /cmap && \
-git clone -b automation https://github.com/cmap/merino.git && \
+git clone https://github.com/cmap/merino.git && \
 cp /cmap/merino/merino/assemble/batch_assemble.sh /cmap/bin/assemble && \
 cp /cmap/merino/merino/card/batch_card.sh /cmap/bin/card && \
 cp /cmap/merino/merino/normalization/batch_weave.sh /cmap/bin/weave && \
