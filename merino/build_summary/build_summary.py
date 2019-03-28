@@ -24,6 +24,11 @@ plt.rcParams['figure.figsize'] = (10.0,8.0)
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
+data_mapper = dict(zip(['mfi', 'count', 'norm', 'zspc', 'combat_zspc',
+                'zsvc', 'lfcpc', 'lfcvc', 'modz', 'combat_modz'], ['*MFI*.gctx', '*COUNT*.gctx', '*NORM*.gctx',
+                                                                   '*_ZSPC_*.gctx', '*_ZSPC.COMBAT_*.gctx',
+                    '*_ZSVC_*.gctx', '*4_LFCPC_*.gctx', '*4_LFCVC_*.gctx', '*MODZ.ZSPC_*.gctx', '*MODZ.ZSPC.COMBAT_*.gctx']))
+
 def build_parser():
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -42,7 +47,10 @@ def build_parser():
     parser.add_argument("-plate_qc", "-pq",
                         help="Perform QC at a plate level",
                         action="store_true")
-
+    parser.add_argument("-data_types", "-dt",
+                        help="Comma separated list of data types to use. Valid options are any combination of"
+                             ": mfi,count,norm,zspc,combat_zspc,zsvc,lfcpc,lfcvc,modz,combat_modz", type=str,
+                        default='mfi,count,norm,zspc,combat_zspc,zsvc,lfcpc,lfcvc,modz,combat_modz')
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
 
 
@@ -75,9 +83,11 @@ def read_build_data(proj_dir):
     """
     print "Reading Data"
 
+    keep_data_type = args.data_types.split(',')
+    data_mapper_subset = dict((k, data_mapper[k]) for k in keep_data_type)
+
     # Standard search patterns for a merino build
-    data_pattern_list = ['*MFI*.gctx', '*COUNT*.gctx', '*NORM*.gctx', '*_ZSPC_*.gctx', '*_ZSPC.COMBAT_*.gctx',
-                    '*_ZSVC_*.gctx', '*4_LFCPC_*.gctx', '*4_LFCVC_*.gctx', '*MODZ.ZSPC_*.gctx', '*MODZ.ZSPC.COMBAT_*.gctx']
+    data_pattern_list = [data_mapper_subset[x] for x in data_mapper_subset.keys()]
 
     # Link identifiers to path to build folder
     data_search_patterns = [os.path.join(proj_dir, x) for x in data_pattern_list]
@@ -86,8 +96,7 @@ def read_build_data(proj_dir):
     gcts = [globandparse(x) for x in data_search_patterns]
 
     # Make dictionary and link each GCToo object to a corresponding key
-    data_map = dict(zip(['mfi', 'count', 'norm', 'zspc', 'combat_zspc',
-                'zsvc', 'lfcpc', 'lfcvc', 'modz', 'combat_modz'], gcts))
+    data_map = dict(zip(data_mapper_subset.keys(), gcts))
 
     print "Reading Metadata"
     # Read in each metadata file
@@ -113,29 +122,31 @@ def mk_folders(out_dir, folders):
 
 def mk_distributions(data_map, metadata_map,project_name, out_dir):
 
-    plot_map = {data_map['mfi']: ['MFI', 0, 50000], data_map['count']: ['BEAD', 0, 300],
-              data_map['norm']: ['NORM', -10, 10],
-              data_map['zspc']: ['ZSPC', -10, 10], data_map['zsvc']: ['ZSVC', -10, 10],
-              data_map['lfcpc']: ['LFCPC', -10, 10], data_map['lfcvc']: ['LFCVC', -10, 10],
-              data_map['modz']: ['MODZ', -10, 10], data_map['combat_modz']: ['COMBAT MODZ', -10, 10],
-              data_map['combat_zspc']: ['COMBAT ZSPC', -10, 10]}
+    plot_map = {'mfi': ['MFI', 0, 50000], 'count': ['BEAD', 0, 300],
+              'norm': ['NORM', -10, 10],
+              'zspc': ['ZSPC', -10, 10], 'zsvc': ['ZSVC', -10, 10],
+              'lfcpc': ['LFCPC', -10, 10], 'lfcvc': ['LFCVC', -10, 10],
+              'modz': ['MODZ', -10, 10], 'combat_modz': ['COMBAT MODZ', -10, 10],
+              'combat_zspc': ['COMBAT ZSPC', -10, 10]}
 
-    for df in plot_map.keys():
+    plot_map_subset = dict((data_map[k], plot_map[k]) for k in data_map.keys())
 
-        if 'MODZ' in plot_map[df][0]:
+    for df in plot_map_subset.keys():
+
+        if 'MODZ' in plot_map_subset[df][0]:
             meta = metadata_map['sig']
         else:
             meta = metadata_map['inst']
 
-        prism_plots.data_distribution(data_df=df.data_df, xlabel=plot_map[df][0],
-                                      title='Distribution for {} {}'.format(project_name, plot_map[df][0]),
-                                      outfile=os.path.join(out_dir, 'distributions', 'histogram_{}.png'.format(plot_map[df][0])),
-                                      xlim=[plot_map[df][1], plot_map[df][2]])
+        prism_plots.data_distribution(data_df=df.data_df, xlabel=plot_map_subset[df][0],
+                                      title='Distribution for {} {}'.format(project_name, plot_map_subset[df][0]),
+                                      outfile=os.path.join(out_dir, 'distributions', 'histogram_{}.png'.format(plot_map_subset[df][0])),
+                                      xlim=[plot_map_subset[df][1], plot_map_subset[df][2]])
 
         prism_plots.stacked_heatmap(df=df.data_df, column_metadata=meta.loc[df.data_df.columns],
-                                    title='Median {} Across {}'.format(plot_map[df][0],project_name),
-                                    outfile=os.path.join(out_dir, 'heatmaps', 'heatmap_{}.png'.format(plot_map[df][0])),
-                                                         lims=[plot_map[df][1], plot_map[df][2]], reduce_upper_limit=True)
+                                    title='Median {} Across {}'.format(plot_map_subset[df][0],project_name),
+                                    outfile=os.path.join(out_dir, 'heatmaps', 'heatmap_{}.png'.format(plot_map_subset[df][0])),
+                                                         lims=[plot_map_subset[df][1], plot_map_subset[df][2]], reduce_upper_limit=True)
 
 
 def get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar):
@@ -227,11 +238,12 @@ def main(args, proj_dir, out_dir, project_name,invar=True):
     prism_plots.sc_plot(metadata_map['sig'], os.path.join(out_dir,'sc_modz.zspc.png'))
 
     # Make modz distribuions split by pert type
-    comp.modz_dist(data_map['combat_modz'], metadata_map['cb_sig'], [], os.path.join(out_dir, 'modz_dist.png'))
+    if 'combat_modz' in data_map.keys():
+        comp.modz_dist(data_map['combat_modz'], metadata_map['cb_sig'], [], os.path.join(out_dir, 'modz_dist.png'))
 
     # If running on data with control barcodes, plot monotonicity of curves
-    if invar is True:
-        inv.invariant_monotonicity(data_map['mfi'], metadata_map['inst'], out_dir)
+    #if invar is True:
+    #    inv.invariant_monotonicity(data_map['mfi'], metadata_map['inst'], out_dir)
 
     # Calculate median SSMD by pool and output in table
     ssmd.ssmd_by_pool(metadata_map['ssmd'], metadata_map['cell'], out_dir)
@@ -240,7 +252,8 @@ def main(args, proj_dir, out_dir, project_name,invar=True):
     norm_cell_metadata = metadata_map['cell'].loc[[x for x in metadata_map['cell'].index if x in data_map['norm'].row_metadata_df.index]]
 
     # ECDF of SSMD Scores in Norm Data and MFI Data
-    ssmd.ssmd_ecdf(GCToo.GCToo(data_df=data_map['norm'].data_df, col_metadata_df=metadata_map['inst'].loc[data_map['norm'].data_df.columns],
+    if 'norm' and 'mfi' in data_map.keys():
+        ssmd.ssmd_ecdf(GCToo.GCToo(data_df=data_map['norm'].data_df, col_metadata_df=metadata_map['inst'].loc[data_map['norm'].data_df.columns],
                                row_metadata_df=norm_cell_metadata),
                    GCToo.GCToo(data_df=data_map['mfi'].data_df,
                                col_metadata_df=metadata_map['inst'].loc[data_map['mfi'].data_df.columns],
