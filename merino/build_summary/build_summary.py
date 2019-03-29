@@ -24,10 +24,12 @@ plt.rcParams['figure.figsize'] = (10.0,8.0)
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
+
 data_mapper = dict(zip(['mfi', 'count', 'norm', 'zspc', 'combat_zspc',
                 'zsvc', 'lfcpc', 'lfcvc', 'modz', 'combat_modz'], ['*MFI*.gctx', '*COUNT*.gctx', '*NORM*.gctx',
                                                                    '*_ZSPC_*.gctx', '*_ZSPC.COMBAT_*.gctx',
                     '*_ZSVC_*.gctx', '*4_LFCPC_*.gctx', '*4_LFCVC_*.gctx', '*MODZ.ZSPC_*.gctx', '*MODZ.ZSPC.COMBAT_*.gctx']))
+
 
 def build_parser():
 
@@ -121,7 +123,6 @@ def mk_folders(out_dir, folders):
 
 
 def mk_distributions(data_map, metadata_map,project_name, out_dir):
-
     plot_map = {'mfi': ['MFI', 0, 50000], 'count': ['BEAD', 0, 300],
               'norm': ['NORM', -10, 10],
               'zspc': ['ZSPC', -10, 10], 'zsvc': ['ZSVC', -10, 10],
@@ -147,6 +148,7 @@ def mk_distributions(data_map, metadata_map,project_name, out_dir):
                                     title='Median {} Across {}'.format(plot_map_subset[df][0],project_name),
                                     outfile=os.path.join(out_dir, 'heatmaps', 'heatmap_{}.png'.format(plot_map_subset[df][0])),
                                                          lims=[plot_map_subset[df][1], plot_map_subset[df][2]], reduce_upper_limit=True)
+
 
 
 def get_plate_qc_data_map_and_run(data_map, metadata_map, norm_cell_metadata, project_name, out_dir, invar):
