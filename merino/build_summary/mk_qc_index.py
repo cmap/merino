@@ -34,8 +34,6 @@ def qc_galleries(out_dir, proj_name):
     index_info = pd.concat([pd.read_table(x) for x in glob.glob(os.path.join(out_dir, '*', 'report.txt'))])
     index_info.set_index('plate', inplace=True)
     index_info = index_info.loc[dex]
-    import pdb
-    pdb.set_trace()
 
     def make_url(ref, name):
         ref = os.path.relpath(ref, out_dir)
@@ -44,13 +42,21 @@ def qc_galleries(out_dir, proj_name):
     premadelinks = [make_url(x, dex[i]) for i, x in enumerate(local_paths)]
 
     headers = index_info.reset_index().columns
-    index_info = zip(premadelinks, index_info['median SSMD'].tolist(),
-                     index_info['n SSMD failures'].tolist(), index_info['pct SSMD failures'].tolist(), index_info['n wells'].tolist(),
-                     index_info['n dropouts'].tolist(), index_info['n active wells'].tolist(), index_info['n unique perts'].tolist())
+    table_info = zip(premadelinks, index_info['median SSMD'].tolist(),
+                     index_info['n SSMD failures'].tolist(), index_info['pct SSMD failures'].tolist(),
+                     index_info['median_invariant'].tolist(), index_info['median_sensitivity_rank'].tolist(),
+                     index_info['n sensitivities recovered'].tolist(), index_info['n wells'].tolist(),
+                     index_info['n dropouts'].tolist(), index_info['n active wells'].tolist(),
+                     index_info['n unique perts'].tolist(),index_info['qc_status'].tolist()
+                     )
     #print index_info
-    made_gallery = galleries.mk_index(table_headers=headers, table_tuples=index_info, outfolder=out_dir, project_name=proj_name)
+    made_gallery = galleries.mk_index(table_headers=headers, table_tuples=table_info, outfolder=out_dir, project_name=proj_name)
     if made_gallery:
         logger.info("successfully made QC gallery")
+
+    import pdb
+    pdb.set_trace()
+    index_info.to_csv(os.path.join(out_dir, 'qc_report.txt'), sep='\t')
 
 def main(args, out_dir, project_name):
 

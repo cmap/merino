@@ -13,6 +13,7 @@ import compound_strength as cp
 import make_gallery as galleries
 import prism_plots
 import pandas as pd
+import merino.build_summary.expected_sensitivities as sense
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -30,6 +31,8 @@ def build_parser():
     plates_group.add_argument("-plate_name", "-pn", help="name of individual plate to run on", type=str, default=None)
     parser.add_argument("-qc_folder", "-qc", help="string designating the prefix to each build file eg. PCAL075-126_T2B",
                         type=str, required=True)
+    parser.add_argument("-gmt_path", "-gmt", help="path to the pod directory you want to run card on",
+                        type=str, default='/cmap/data/vdb/merino/sensitivity_files/CORE_D1_48H_KJ100_DN_s25_n5127.gmt')
     parser.add_argument("-invar", "-inv",
                         help="Flag to turn off invariant QC",
                         action="store_false")
@@ -37,6 +40,64 @@ def build_parser():
 
 
     return parser
+
+def make_gallery(qc_dir, plate_name):
+    plate_qc_dir = os.path.join(qc_dir, plate_name)
+
+    images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
+              'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/histogram_BEAD.png',
+              'heatmaps/heatmap_BEAD.png', 'heatmaps/heatmap_MFI.png', 'heatmaps/heatmap_NORM.png',
+              'heatmaps/heatmap_ZSCORE.png']
+    outfile = os.path.join(plate_qc_dir, 'gallery.html')
+    galleries.mk_gal(images, outfile)
+
+def mk_report(qc_dir, plate_name, plate_data_map):
+
+    ssmds = ssmd.get_ssmd(plate_data_map['norm'])
+    ssmd_median = ssmds.median()
+    ssmd_failures = ssmds[ssmds < 2].count()
+    ssmd_pct_failure = (float(ssmds[ssmds < 2].count()) / len(ssmds)) * 100
+
+    plate_shapes = plate_data_map['norm'].data_df.shape[1]
+    well_dropouts = 384 - plate_data_map['norm'].data_df.shape[1]
+
+    ss_ltn2 = plate_data_map['zspc'].data_df[plate_data_map['zspc'].data_df < -2].count()
+    n_active = ss_ltn2[ss_ltn2 > (len(ss_ltn2) / 20)].count()
+    unique_perts = len(plate_data_map['norm'].col_metadata_df.loc[plate_data_map['norm'].col_metadata_df['pert_type'] == 'trt_cp', 'pert_id'].unique())
+
+    invariants = ['c-' + str(x) for x in range(661,671)]
+    median_invariant = plate_data_map['mfi'].data_df.loc[[x for x in invariants if x in plate_data_map['mfi'].data_df.index]].median(axis=1).median()
+
+    sensitivities = pd.read_table(os.path.join(qc_dir, 'sense', plate_name, '{}_expected_sensitivity_ranks.txt'.format(plate_name)), index_col='Unnamed: 0')
+    median_sensitivity_rank = sensitivities.median().tolist()[0]
+    sigs_recovered = sensitivities.dropna()[sensitivities.dropna() < 50].count().tolist()[0]
+
+    qc_status = 'pass'
+    if well_dropouts > 38:
+        qc_status = 'fail'
+    if ssmd_pct_failure > 33:
+        qc_status = 'fail'
+
+
+
+    headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'median_invariant', 'median_sensitivity_rank'
+                ,'n sensitivities recovered','n wells', 'n dropouts',  'n active wells','n unique perts', 'qc_status']
+    report = pd.DataFrame(
+        [plate_name, ssmd_median, ssmd_failures, ssmd_pct_failure, median_invariant, median_sensitivity_rank, sigs_recovered
+            ,plate_shapes, well_dropouts, n_active,unique_perts, qc_status]).T
+    report.columns = headers
+
+    report.to_csv(os.path.join(qc_dir, plate_name, 'report.txt'), sep='\t', index=False)
+
+
+def run_sensitivities(zspc_gct, gmt_path, out_folder):
+
+    if not os.path.exists(os.path.join(out_folder, 'sense')):
+        os.mkdir(os.path.join(out_folder, 'sense'))
+
+    sense.wtks(gct=zspc_gct, metadata=zspc_gct.col_metadata_df,
+               outfolder=os.path.join(out_folder, 'sense'), group_col='prism_replicate',
+               gmt_path=gmt_path)
 
 
 def read_build_data(assemble_path, card_path):
@@ -114,7 +175,7 @@ def get_plate_qc_data_map(proj_dir, plate_name):
     plate_data_map = read_build_data(assemble_path, card_path)
     return plate_data_map
 
-def plate_qc(out_dir, plate_name, plate_data_map, invar=True):
+def plate_qc(out_dir, plate_name, plate_data_map, gmt_path, invar=True):
 
     build_summary.mk_folders(out_dir, [plate_name])
     build_summary.mk_folders(os.path.join(out_dir, plate_name), ['invariants', 'distributions', 'heatmaps', 'ssmd', 'cp_strength'])
@@ -142,40 +203,12 @@ def plate_qc(out_dir, plate_name, plate_data_map, invar=True):
     cp.median_ZSPC_ecdf(plate_data_map['zspc'], plate_data_map['zspc'].col_metadata_df,
                         os.path.join(out_dir, plate_name, 'cp_strength'), det=plate_name)
 
+    #run_sensitivities(plate_data_map['zspc'], gmt_path, out_folder=out_dir)
+
     make_gallery(out_dir, plate_name)
 
     mk_report(out_dir, plate_name, plate_data_map)
 
-def make_gallery(qc_dir, plate_name):
-    plate_qc_dir = os.path.join(qc_dir, plate_name)
-
-    images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
-              'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/histogram_BEAD.png',
-              'heatmaps/heatmap_BEAD.png', 'heatmaps/heatmap_MFI.png', 'heatmaps/heatmap_NORM.png',
-              'heatmaps/heatmap_ZSCORE.png']
-    outfile = os.path.join(plate_qc_dir, 'gallery.html')
-    galleries.mk_gal(images, outfile)
-
-def mk_report(qc_dir, plate_name, plate_data_map):
-    ssmds = ssmd.get_ssmd(plate_data_map['norm'])
-    ssmd_median = ssmds.median()
-    ssmd_failures = ssmds[ssmds < 2].count()
-    ssmd_pct_failure = (float(ssmds[ssmds < 2].count()) / len(ssmds)) * 100
-    plate_shapes = plate_data_map['norm'].data_df.shape[1]
-    well_dropouts = 384 - plate_data_map['norm'].data_df.shape[1]
-    ss_ltn2 = plate_data_map['zspc'].data_df[plate_data_map['zspc'].data_df < -2].count()
-    n_active = ss_ltn2[ss_ltn2 > (len(ss_ltn2) / 20)].count()
-    unique_perts = len(plate_data_map['norm'].col_metadata_df.loc[plate_data_map['norm'].col_metadata_df['pert_type'] == 'trt_cp', 'pert_id'].unique())
-    invariants = ['c-' + str(x) for x in range(661,671)]
-    median_invariant = plate_data_map['mfi'].data_df.loc[[x for x in invariants if x in plate_data_map['mfi'].data_df.index]].median(axis=1).median()
-
-    headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'median_invariant','n wells', 'n dropouts',  'n active wells','n unique perts']
-    report = pd.DataFrame(
-        [plate_name, ssmd_median, ssmd_failures, ssmd_pct_failure, median_invariant,plate_shapes, well_dropouts, n_active,
-         unique_perts]).T
-    report.columns = headers
-
-    report.to_csv(os.path.join(qc_dir, plate_name, 'report.txt'), sep='\t', index=False)
 
 
 def main(args):
@@ -186,7 +219,7 @@ def main(args):
             name = os.path.basename(folder)
             logger.info("QCing {}".format(name))
             plate_data = get_plate_qc_data_map(args.project_folder, name)
-            plate_qc(args.qc_folder, name, plate_data, invar=args.invar)
+            plate_qc(args.qc_folder, name, plate_data, args.gmt_path,invar=args.invar)
     else:
         plate_data = get_plate_qc_data_map(args.project_folder, args.plate_name)
         plate_qc(args.qc_folder, args.plate_name, plate_data, invar=args.invar)
