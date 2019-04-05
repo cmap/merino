@@ -12,7 +12,7 @@ import make_gallery as galleries
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
-base_path = '/Volumes/cmap_obelix/pod/custom/'
+base_path = '/cmap/obelix/pod/custom/'
 
 def build_parser():
 
