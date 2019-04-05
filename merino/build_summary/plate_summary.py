@@ -222,7 +222,7 @@ def main(args):
             plate_qc(args.qc_folder, name, plate_data, args.gmt_path,invar=args.invar)
     else:
         plate_data = get_plate_qc_data_map(args.project_folder, args.plate_name)
-        plate_qc(args.qc_folder, args.plate_name, plate_data, invar=args.invar)
+        plate_qc(args.qc_folder, args.plate_name, plate_data, args.gmt_path,invar=args.invar)
 
 
 if __name__ == "__main__":
