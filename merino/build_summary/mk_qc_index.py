@@ -12,13 +12,13 @@ import make_gallery as galleries
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
+base_path = '/cmap/obelix/pod/custom/'
+
 def build_parser():
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # The following arguments are required. These are files that are necessary for assembly and which change
     # frequently between cohorts, replicates, etc.
-    parser.add_argument("-qc_folder", "-qc", help="string designating the prefix to each build file eg. PCAL075-126_T2B",
-                        type=str, required=True)
     parser.add_argument("-project_name", "-pn",
                         help="Code for project eg. PCAL",
                         type=str, required=False)
@@ -54,13 +54,13 @@ def qc_galleries(out_dir, proj_name):
     if made_gallery:
         logger.info("successfully made QC gallery")
 
-    import pdb
-    pdb.set_trace()
     index_info.to_csv(os.path.join(out_dir, 'qc_report.txt'), sep='\t')
 
-def main(args, out_dir, project_name):
+def main(args, project_name):
 
     # Read in the data
+
+    out_dir = os.path.join(base_path, project_name, 'qc')
 
     qc_galleries(out_dir, project_name)
 
