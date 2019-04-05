@@ -52,26 +52,16 @@ def get_ssmd(df, exclude_wells = [], unlog=False, pos_field = 'pert_type', pos_v
     pos_df.drop(pos_remove, axis=1, inplace=True)
 
     dmso_medians = neg_df[~neg_df.index.isin(invariants)].median(axis=1, skipna=True)
-    #print 'dmso median {}'.format(dmso_medians.values[0])
     poscon_medians = pos_df[~neg_df.index.isin(invariants)].median(axis=1, skipna=True)
-    #print 'pos median {}'.format(poscon_medians.values[0])
 
 
     pos_median_devs = abs(pos_df.subtract(poscon_medians, axis=0))
     poscon_mad = pos_median_devs.median(axis=1) * 1.4826
-    #print 'pos mad {}'.format(poscon_mad.values[0])
 
     dmso_median_devs = abs(neg_df.subtract(dmso_medians, axis=0))
     dmso_mad = dmso_median_devs.median(axis=1) * 1.4826
-    #print 'dmso mad {}'.format(dmso_mad.values[0])
-    #print 'diff {}'.format(dmso_medians.values[0] - poscon_medians.values[0])
-    #print 'mads {}'.format(dmso_mad.values[0] + poscon_mad.values[0])
-
-    #dmso_mad = neg_df[~neg_df.index.isin(invariants)].mad(axis=1, skipna=True)
-    #poscon_mad = pos_df[~neg_df.index.isin(invariants)].mad(axis=1, skipna=True)
 
     ssmds = (dmso_medians - poscon_medians) / np.sqrt((dmso_mad * dmso_mad) + (poscon_mad * poscon_mad))
-    #print 'ssmd {}'.format(ssmds.values[0])
 
 
     return ssmds

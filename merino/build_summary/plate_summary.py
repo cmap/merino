@@ -12,6 +12,7 @@ import ssmd_analysis as ssmd
 import compound_strength as cp
 import make_gallery as galleries
 import prism_plots
+import pandas as pd
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -118,16 +119,17 @@ def plate_qc(out_dir, plate_name, plate_data_map, invar=True):
     build_summary.mk_folders(out_dir, [plate_name])
     build_summary.mk_folders(os.path.join(out_dir, plate_name), ['invariants', 'distributions', 'heatmaps', 'ssmd', 'cp_strength'])
 
+    mk_distributions(data_map=plate_data_map, project_name=plate_name,
+                     out_dir=os.path.join(out_dir, plate_name))
+
     if invar is True:
-        for func in [inv.invariant_monotonicity, inv.invariant_curves_plot, inv.invariant_range_distributions]:
-            func(plate_data_map['mfi'], plate_data_map['mfi'].col_metadata_df,
-                 os.path.join(out_dir, plate_name, 'invariants'))
+        for func in [inv.invariant_monotonicity, inv.invariant_curves_plot]:
+            func(plate_data_map['mfi'], plate_data_map['mfi'].col_metadata_df,os.path.join(out_dir, plate_name, 'invariants'))
 
         inv.invariant_heatmap(plate_data_map['mfi'], os.path.join(out_dir, plate_name, 'invariants', 'inv_heatmap.png'),
                               lims=[0, 15000])
 
-    mk_distributions(data_map=plate_data_map, project_name=plate_name,
-                     out_dir=os.path.join(out_dir, plate_name))
+
 
     ssmd.norm_v_mfi_ssmd(plate_data_map['norm'], plate_data_map['mfi'], os.path.join(out_dir, plate_name, 'ssmd'))
 
@@ -142,6 +144,8 @@ def plate_qc(out_dir, plate_name, plate_data_map, invar=True):
 
     make_gallery(out_dir, plate_name)
 
+    mk_report(out_dir, plate_name, plate_data_map)
+
 def make_gallery(qc_dir, plate_name):
     plate_qc_dir = os.path.join(qc_dir, plate_name)
 
@@ -151,6 +155,27 @@ def make_gallery(qc_dir, plate_name):
               'heatmaps/heatmap_ZSCORE.png']
     outfile = os.path.join(plate_qc_dir, 'gallery.html')
     galleries.mk_gal(images, outfile)
+
+def mk_report(qc_dir, plate_name, plate_data_map):
+    ssmds = ssmd.get_ssmd(plate_data_map['norm'])
+    ssmd_median = ssmds.median()
+    ssmd_failures = ssmds[ssmds < 2].count()
+    ssmd_pct_failure = (float(ssmds[ssmds < 2].count()) / len(ssmds)) * 100
+    plate_shapes = plate_data_map['norm'].data_df.shape[1]
+    well_dropouts = 384 - plate_data_map['norm'].data_df.shape[1]
+    ss_ltn2 = plate_data_map['zspc'].data_df[plate_data_map['zspc'].data_df < -2].count()
+    n_active = ss_ltn2[ss_ltn2 > (len(ss_ltn2) / 20)].count()
+    unique_perts = len(plate_data_map['norm'].col_metadata_df.loc[plate_data_map['norm'].col_metadata_df['pert_type'] == 'trt_cp', 'pert_id'].unique())
+    median_invariant =
+
+    headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'n wells', 'n dropouts',  'n active wells','n unique perts']
+    report = pd.DataFrame(
+        [plate_name, ssmd_median, ssmd_failures, ssmd_pct_failure, plate_shapes, well_dropouts, n_active,
+         unique_perts]).T
+    report.columns = headers
+
+    report.to_csv(os.path.join(qc_dir, plate_name, 'report.txt'), sep='\t', index=False)
+
 
 def main(args):
     # NB: automation sets project_dir to project_dir/prism_replicate_set_name to set up fs for s3
