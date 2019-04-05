@@ -31,7 +31,10 @@ def main(args):
     logger.info("Running card with args: {}".format(card_args))
     card.main(card_args)
 
-    plate_qc_args = plate_qc.build_parser().parse_args(['-project_folder', project_dir, '-plate_name', args.plate_name, '-qc', qc_out_path])
+    gmt_path = '/cmap/data/vdb/merino/sensitivity_files/CORE_D1_48H_KJ100_DN_s25_n5127.gmt'
+
+    plate_qc_args = plate_qc.build_parser().parse_args(['-project_folder', project_dir, '-plate_name', args.plate_name,
+                                                        '-qc', qc_out_path, '-gmt', gmt_path])
     logger.info("Running PlateQC with args: {}".format(plate_qc_args))
     plate_qc.main(plate_qc_args)
 
