@@ -203,7 +203,7 @@ def plate_qc(out_dir, plate_name, plate_data_map, gmt_path, invar=True):
     cp.median_ZSPC_ecdf(plate_data_map['zspc'], plate_data_map['zspc'].col_metadata_df,
                         os.path.join(out_dir, plate_name, 'cp_strength'), det=plate_name)
 
-    #run_sensitivities(plate_data_map['zspc'], gmt_path, out_folder=out_dir)
+    run_sensitivities(plate_data_map['zspc'], gmt_path, out_folder=out_dir)
 
     make_gallery(out_dir, plate_name)
 
@@ -222,7 +222,7 @@ def main(args):
             plate_qc(args.qc_folder, name, plate_data, args.gmt_path,invar=args.invar)
     else:
         plate_data = get_plate_qc_data_map(args.project_folder, args.plate_name)
-        plate_qc(args.qc_folder, args.plate_name, plate_data, args.gmt_path,invar=args.invar)
+        plate_qc(args.qc_folder, args.plate_name, plate_data, args.gmt_path, invar=args.invar)
 
 
 if __name__ == "__main__":
