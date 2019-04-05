@@ -166,11 +166,12 @@ def mk_report(qc_dir, plate_name, plate_data_map):
     ss_ltn2 = plate_data_map['zspc'].data_df[plate_data_map['zspc'].data_df < -2].count()
     n_active = ss_ltn2[ss_ltn2 > (len(ss_ltn2) / 20)].count()
     unique_perts = len(plate_data_map['norm'].col_metadata_df.loc[plate_data_map['norm'].col_metadata_df['pert_type'] == 'trt_cp', 'pert_id'].unique())
-    median_invariant =
+    invariants = ['c-' + str(x) for x in range(661,671)]
+    median_invariant = plate_data_map['mfi'].data_df.loc[[x for x in invariants if x in plate_data_map['mfi'].data_df.index]].median(axis=1).median()
 
-    headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'n wells', 'n dropouts',  'n active wells','n unique perts']
+    headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'median_invariant','n wells', 'n dropouts',  'n active wells','n unique perts']
     report = pd.DataFrame(
-        [plate_name, ssmd_median, ssmd_failures, ssmd_pct_failure, plate_shapes, well_dropouts, n_active,
+        [plate_name, ssmd_median, ssmd_failures, ssmd_pct_failure, median_invariant,plate_shapes, well_dropouts, n_active,
          unique_perts]).T
     report.columns = headers
 
