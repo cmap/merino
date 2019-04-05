@@ -12,7 +12,7 @@ import make_gallery as galleries
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
-base_path = '/cmap/obelix/pod/custom/'
+base_path = '/Volumes/cmap_obelix/pod/custom/'
 
 def build_parser():
 
@@ -71,4 +71,4 @@ if __name__ == "__main__":
 
     logger.debug("args:  {}".format(args))
 
-    main(args, out_dir=args.qc_folder, project_name=args.project_name)
+    main(args, project_name=args.project_name)
