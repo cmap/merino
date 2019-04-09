@@ -189,7 +189,7 @@ def define_replicate_set_files_and_parse(proj_dir, input_type, replicate_set_nam
     logger.info("defining replicate set files for {}".format(replicate_set_name))
     plate_directories = glob.glob(os.path.join(proj_dir, "card", replicate_set_name + '*', '*'+input_type+".gct"))
     keep_files = cut.cut_l1(plate_directories)
-    if len(keep_files) <= 1:
+    if len(keep_files) < 1:
         msg = "Insufficient number of replicates for replicate set {} in {} input folder".format(replicate_set_name, input_type)
         print merino_exception.ReplicateSetSearchFailure(msg)
         return False
