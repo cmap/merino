@@ -15,7 +15,7 @@ case $key in
     shift # past argument
     ;;
     -group_by)
-    GROUP_BY="$3"
+    GROUP_BY="$2"
     shift # past argument
     ;;
     --default)
@@ -33,8 +33,6 @@ batch_index=${AWS_BATCH_JOB_ARRAY_INDEX}
 REPLICATE_SET_NAME="${replicate_sets[${batch_index}]}"
 
 PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${REPLICATE_SET_NAME}"
-
-GROUP_BY="${GROUP_BY}"
 
 echo CONFIG_ROOT = "${CONFIG_ROOT}"
 echo PROJECT_DIR = "${PROJECT_DIR}"
