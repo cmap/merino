@@ -159,9 +159,9 @@ def calculate_modz(gct_list, group_by=['pert_well'], skip=None):
         modz_values[modz_values > 10] = 10
         wells = ''.join(pd.Series([x[-4:] for x in mat.columns]).unique())
         replicate_set_id = replicate_set_id.replace('COP23', 'KJ100').replace('_X1', '').replace('_X2', '')
-        modZ_mat[replicate_set_id + wells] = modz_values
+        modZ_mat[replicate_set_id + ':' + gv_val] = modz_values
 
-        cc_q75_df.loc[replicate_set_id + wells] = [replicate_set_id,
+        cc_q75_df.loc[replicate_set_id + ':' + gv_val] = [replicate_set_id,
                                                    wells,
                                                    ','.join(weights.index.values.tolist()),
                                                    ','.join([str(x) for x in

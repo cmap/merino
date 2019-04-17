@@ -183,13 +183,20 @@ def main(args):
                            '*ZSPC.gct': ['card', '_LEVEL4_ZSPC_'],
                            '*ZSPC.COMBAT.gct': ['card', '_LEVEL4_ZSPC.COMBAT_'],
                            '*ZSVC.gct': ['card', '_LEVEL4_ZSVC_'],
+                           '*ZSVC.COMBAT.gct': ['card', '_LEVEL4_ZSVC.COMBAT_'],
                            '*LFCPC.gct': ['card', '_LEVEL4_LFCPC_'],
                            '*LFCPC.COMBAT.gct': ['card', '_LEVEL4_LFCPC.COMBAT_'],
                            '*LFCVC.gct': ['card', '_LEVEL4_LFCVC_'],
+                           '*LFCVC.COMBAT.gct': ['card', '_LEVEL4_LFCVC.COMBAT_'],
                            '*MODZ.ZSPC.gct':['weave', '_LEVEL5_MODZ.ZSPC_'],
                            '*MODZ.LFCPC.gct':['weave', '_LEVEL5_MODZ.LFCPC_'],
                            '*MODZ.ZSPC.COMBAT.gct': ['weave', '_LEVEL5_MODZ.ZSPC.COMBAT_'],
-                           '*MODZ.LFCPC.COMBAT.gct': ['weave', '_LEVEL5_MODZ.LFCPC.COMBAT_']}
+                           '*MODZ.LFCPC.COMBAT.gct': ['weave', '_LEVEL5_MODZ.LFCPC.COMBAT_'],
+                           '*MODZ.ZSVC.gct': ['weave', '_LEVEL5_MODZ.ZSVC_'],
+                           '*MODZ.LFCVC.gct': ['weave', '_LEVEL5_MODZ.LFCVC_'],
+                           '*MODZ.ZSVC.COMBAT.gct': ['weave', '_LEVEL5_MODZ.ZSVC.COMBAT_'],
+                           '*MODZ.LFCVC.COMBAT.gct': ['weave', '_LEVEL5_MODZ.LFCVC.COMBAT_']
+                           }
 
     data_dict = {}
 
