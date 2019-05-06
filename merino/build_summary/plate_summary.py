@@ -36,6 +36,9 @@ def build_parser():
     parser.add_argument("-invar", "-inv",
                         help="Flag to turn off invariant QC",
                         action="store_false")
+    parser.add_argument("-sense", "-s",
+                        help="Flag to turn off expected sensitities analysis",
+                        action="store_false")
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
 
 
@@ -53,7 +56,7 @@ def make_gallery(qc_dir, plate_name):
 
 def mk_report(qc_dir, plate_name, plate_data_map):
 
-    ssmds = ssmd.get_ssmd(plate_data_map['norm'])
+    ssmds = ssmd.get_ssmd(plate_data_map['norm'], unlog=True)
     ssmd_median = ssmds.median()
     ssmd_failures = ssmds[ssmds < 2].count()
     ssmd_pct_failure = (float(ssmds[ssmds < 2].count()) / len(ssmds)) * 100
@@ -175,7 +178,7 @@ def get_plate_qc_data_map(proj_dir, plate_name):
     plate_data_map = read_build_data(assemble_path, card_path)
     return plate_data_map
 
-def plate_qc(out_dir, plate_name, plate_data_map, gmt_path, invar=True):
+def plate_qc(out_dir, plate_name, plate_data_map, gmt_path, invar=True, sense=True):
 
     build_summary.mk_folders(out_dir, [plate_name])
     build_summary.mk_folders(os.path.join(out_dir, plate_name), ['invariants', 'distributions', 'heatmaps', 'ssmd', 'cp_strength'])
@@ -202,8 +205,8 @@ def plate_qc(out_dir, plate_name, plate_data_map, gmt_path, invar=True):
 
     cp.median_ZSPC_ecdf(plate_data_map['zspc'], plate_data_map['zspc'].col_metadata_df,
                         os.path.join(out_dir, plate_name, 'cp_strength'), det=plate_name)
-
-    run_sensitivities(plate_data_map['zspc'], gmt_path, out_folder=out_dir)
+    if sense is True:
+        run_sensitivities(plate_data_map['zspc'], gmt_path, out_folder=out_dir)
 
     make_gallery(out_dir, plate_name)
 
@@ -219,10 +222,10 @@ def main(args):
             name = os.path.basename(folder)
             logger.info("QCing {}".format(name))
             plate_data = get_plate_qc_data_map(args.project_folder, name)
-            plate_qc(args.qc_folder, name, plate_data, args.gmt_path,invar=args.invar)
+            plate_qc(args.qc_folder, name, plate_data, args.gmt_path,invar=args.invar, sense=args.sense)
     else:
         plate_data = get_plate_qc_data_map(args.project_folder, args.plate_name)
-        plate_qc(args.qc_folder, args.plate_name, plate_data, args.gmt_path, invar=args.invar)
+        plate_qc(args.qc_folder, args.plate_name, plate_data, args.gmt_path, invar=args.invar, sense=args.sense)
 
 
 if __name__ == "__main__":
