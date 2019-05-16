@@ -15,7 +15,8 @@ logger = logging.getLogger(setup_logger.LOGGER_NAME)
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-plate_name', '-p', help='name of plate to process up to card and run plate qc')
-    parser.add_argument('-rep_map', '-rep', action="store_true", help='name of plate to process up to card and run plate qc')
+    parser.add_argument("-rep_map", "-rm", help="Whether to use replicate level plate maps or not",
+                        type=str, required=False, default="FALSE",choices=["TRUE", "FALSE"])
 
     return parser
 
@@ -53,10 +54,10 @@ def build_paths(plate_entry, rep_map):
     project_dir = os.path.join('/cmap/obelix/pod/custom/', plate_entry['project_code'])
     jcsv_path = os.path.join(project_dir, 'lxb', plate_entry['det_plate'], plate_entry['det_plate'] + '.jcsv')
 
-    if rep_map == False:
+    if rep_map == "FALSE":
         plate_map_path = os.path.join(project_dir, 'map_src', plate_entry['pert_plate'] + '.src')
 
-    elif rep_map == True:
+    elif rep_map == "TRUE":
         plate_map_path = os.path.join(project_dir, 'map_src', plate_entry['pert_plate'] + '.' + plate_entry['rep_id'] + '.src')
 
     assemble_out_path = project_dir
