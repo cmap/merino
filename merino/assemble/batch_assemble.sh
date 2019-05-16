@@ -14,6 +14,10 @@ case $key in
     PROJECT_CODE="$2"
     shift # past argument
     ;;
+    -replicate_map)
+    REPLICATE_MAP="$2"
+    shift # past argument
+    ;;
     --default)
     DEFAULT=YES
     ;;
@@ -35,7 +39,12 @@ echo "PLATE IS: ${PLATE}"
 
 IFS='_' read -r -a plate_token <<< "${PLATE}";
 
-PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.src"
+if [ "${REPLICATE_MAP}" = "TRUE" ];
+then
+    PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.src"
+else
+    PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.${plate_token[3]}.src"
+fi
 
 echo PLATE_MAP_PATH = "${PLATE_MAP_PATH}"
 OUTFILE="${CONFIG_ROOT}${PROJECT_CODE}/${plate_token[0]}_${plate_token[1]}_${plate_token[2]}"
