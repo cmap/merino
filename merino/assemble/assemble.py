@@ -179,6 +179,7 @@ def truncate_data_objects_to_plate_map(davepool_data_objects, all_perturbagens, 
             for c in davepool_data_objects[0].count_data.keys():
                 if c not in platemap_well_list:
                     del davepool_data_objects[0].count_data[c]
+
         else:
             msg = "Assemble truncate data objects to plate map: Well lists of platemap and csv do not match"
             raise merino_exception.DataMappingMismatch(msg)
@@ -215,7 +216,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
         davepool_id_csv_list = build_davepool_id_csv_list(args.davepool_id_csv_filepath_pairs)
         davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
-        pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
+        pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0].split('.')[0]
         plate_name = os.path.basename(davepool_id_csv_list[0][1]).rsplit(".", 1)[0]
         (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
 
@@ -227,7 +228,7 @@ def main(args, all_perturbagens=None, assay_plates=None):
 
     elif args.csv_filepath is not None:
 
-        pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0]
+        pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0].split('.')[0]
         plate_name = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
         (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
 
