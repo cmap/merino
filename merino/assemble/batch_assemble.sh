@@ -30,6 +30,7 @@ done
 
 echo CONFIG_ROOT = "${CONFIG_ROOT}"
 echo PROJECT_CODE = "${PROJECT_CODE}"
+echo REPLICATE_MAP = "${REPLICATE_MAP}"
 
 IFS=',' read -r -a plates <<< "${PLATES}"
 
@@ -41,9 +42,9 @@ IFS='_' read -r -a plate_token <<< "${PLATE}";
 
 if [ "${REPLICATE_MAP}" = "TRUE" ];
 then
-    PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.src"
-else
     PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.${plate_token[3]}.src"
+else
+    PLATE_MAP_PATH="${CONFIG_ROOT}${PROJECT_CODE}/map_src/${plate_token[0]}.src"
 fi
 
 echo PLATE_MAP_PATH = "${PLATE_MAP_PATH}"
