@@ -91,6 +91,9 @@ def mk_report(qc_dir, plate_name, plate_data_map):
     report.columns = headers
 
     report.to_csv(os.path.join(qc_dir, plate_name, 'report.txt'), sep='\t', index=False)
+    ssmds.to_csv(os.path.join(qc_dir, plate_name, 'ssmd.txt'), sep='\t', index=False)
+
+    ssmd.ssmd_by_pool(ssmds, plate_data_map['norm'].row_metadata_df, os.path.join(qc_dir, plate_name))
 
 
 def run_sensitivities(zspc_gct, gmt_path, out_folder):
@@ -192,8 +195,6 @@ def plate_qc(out_dir, plate_name, plate_data_map, gmt_path, invar=True, sense=Tr
 
         inv.invariant_heatmap(plate_data_map['mfi'], os.path.join(out_dir, plate_name, 'invariants', 'inv_heatmap.png'),
                               lims=[0, 15000])
-
-
 
     ssmd.norm_v_mfi_ssmd(plate_data_map['norm'], plate_data_map['mfi'], os.path.join(out_dir, plate_name, 'ssmd'))
 

@@ -14,14 +14,14 @@ from statsmodels.distributions.empirical_distribution import ECDF
 
 invariants = ['661', '662', '663', '664', '665', '666', '667', '668', '669', '670', '671', '672', '673', '674', '675', '676', '677', '678', '679', '680']
 
-def ssmd_matrix(norm_paths, exclude_wells=[], outpath = ''):
+def ssmd_matrix(norm_paths, exclude_wells=[], outpath = '', unlog=True):
 
     ssmd_report = pd.DataFrame()
 
     for path in norm_paths:
         print path
         x = pe.parse(path)
-        scores = get_ssmd(x, exclude_wells=exclude_wells, unlog=True)
+        scores = get_ssmd(x, exclude_wells=exclude_wells, unlog=unlog)
         ssmd_report[os.path.basename(os.path.dirname(path))] = scores
     if len(outpath) > 0:
         ssmd_report.to_csv(outpath, sep='\t')
@@ -275,8 +275,8 @@ def failures_ecdf(filepaths, outfile, exclude_wells = []):
     plt.clf()
 
 def ssmd_by_pool(ssmd, cell_info, outfile):
-    ssmd_count = pd.DataFrame()
-    ssmd_median = pd.DataFrame()
+    ssmd_count = {}
+    ssmd_median= {}
     cell_info.index = [str(x) for x in cell_info.index]
     cell_info = cell_info.loc[ssmd.index.values]
     for pool in cell_info['pool_id'].unique():
@@ -290,6 +290,13 @@ def ssmd_by_pool(ssmd, cell_info, outfile):
         pool_dex = cell_info[cell_info['pool_id'] == pool].index
         pool_ssmd = ssmd.loc[pool_dex]
         ssmd_median[pool] = pool_ssmd.median()
+
+    if len(ssmd.shape) == 1:
+        ssmd_count = pd.Series(ssmd_count)
+        ssmd_median = pd.Series(ssmd_median)
+    else:
+        ssmd_count = pd.DataFrame(ssmd_count)
+        ssmd_median = pd.DataFrame(ssmd_median)
 
     ssmd_count.to_csv(os.path.join(outfile, 'ssmd_failure%_by_pool.txt'), sep='\t')
     ssmd_median.to_csv(os.path.join(outfile, 'ssmd_median_by_pool.txt'), sep='\t')
