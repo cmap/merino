@@ -30,7 +30,7 @@ def cut_l1(list_of_plate_paths, rep_location=-3):
 
 
             else:
-                replicateLXs = [replicate for replicate in all_possible_replicates if ".L" in replicate]
+                replicateLXs = [replicate for replicate in all_possible_replicates if ".L"  or ".A" in replicate]
 
                 if len(replicateLXs) == 0:
                     msg = "Unable to differentiate between replicates for replicate set {} replicate number {}".format(
