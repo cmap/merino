@@ -38,6 +38,7 @@ def data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch):
     LOGGER.info('Batch field %s has %d levels' % (batch_field, nbatch))
     
     for _, key in enumerate(sorted(col_groups)):
+        LOGGER.info('key_{}'.format(key))
         this_gp = all_ds.data_df[col_groups[key]].copy()
         this_gp[batch_field] = batches
         # save the row-ids
@@ -104,6 +105,7 @@ def combat_by_group(gct_list, col_group='pert_well', batch_field='pool_id',
     pool = mp.Pool(processes=mp.cpu_count())
 
     chunks = data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch)
+    print 'Here 1'
 
     adjusted_data = pool.map(combat_worker, chunks)
 
