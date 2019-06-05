@@ -153,6 +153,8 @@ def weave(proj_dir, replicate_set_name, args, input_type='ZSPC', nprofile_drop=T
 
     else:
         all_ds, combat_adjusted_gct_list = batch_adjust.combat_by_group(gct_list, col_group=group_by_list, batch_field='pool_id')
+        print 'here'
+        logger.info('here')
         logger.debug("sample combat adjusted gct shape {}".format(combat_adjusted_gct_list[0].data_df.shape))
 
     # Write out ComBat adjusted GCTs
