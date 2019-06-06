@@ -53,6 +53,7 @@ def data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch):
         else:
             df_long['batch'] = df_long[batch_field]
         yield df_long.transpose()
+    LOGGER.info('Looping done')
 
 def combat_worker(df_long):
     """ Apply ComBat to a chunk of data and return a reshaped
