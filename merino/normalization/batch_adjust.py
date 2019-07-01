@@ -53,6 +53,7 @@ def data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch):
         else:
             df_long['batch'] = df_long[batch_field]
         yield df_long.transpose()
+    LOGGER.info('Looping done')
 
 def combat_worker(df_long):
     """ Apply ComBat to a chunk of data and return a reshaped
@@ -106,14 +107,14 @@ def combat_by_group(gct_list, col_group='pert_well', batch_field='pool_id',
     pool = mp.Pool(processes=mp.cpu_count())
 
     chunks = data_splitter(all_ds, col_group, batch_field, use_col_group_as_batch)
-    logger.info('Here 1')
+    LOGGER.info('Here 1')
 
     adjusted_data = pool.map(combat_worker, chunks)
-    logger.info('Here 2')
+    LOGGER.info('Here 2')
 
     for res in adjusted_data:
         all_ds.data_df[res.columns] = res
-    logger.info('Here 3')
+    LOGGER.info('Here 3')
 
     combat_adjusted_gcts = []
     for _, input_ds in enumerate(gct_list):
@@ -121,7 +122,7 @@ def combat_by_group(gct_list, col_group='pert_well', batch_field='pool_id',
         this_ds.src = input_ds.src
         this_ds.data_df = this_ds.data_df.astype(float)
         combat_adjusted_gcts.append(this_ds)
-    logger.info('Here 4')
+    LOGGER.info('Here 4')
 
     return all_ds, combat_adjusted_gcts
 

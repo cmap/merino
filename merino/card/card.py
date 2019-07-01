@@ -77,8 +77,13 @@ def check_ssmds(norm_path, plate_failure):
 def card(proj_dir, plate_name, inv_threshold, log_tf=True, inv_tf=True, bad_wells=[], dp=False):
 
     # Make Level 3 data folder
-    if not os.path.exists(os.path.join(proj_dir, 'card')):
+    # If the directory already exist pass, to avoid a race condition
+    try:
         os.mkdir(os.path.join(proj_dir, 'card'))
+    except OSError:
+        pass
+    #if not os.path.exists(os.path.join(proj_dir, 'card')):
+    #    os.mkdir(os.path.join(proj_dir, 'card'))
 
     # Get path to raw mfi
     assemble_path = os.path.join(proj_dir, 'assemble', plate_name, plate_name + '_MEDIAN.gct')
@@ -91,7 +96,10 @@ def card(proj_dir, plate_name, inv_threshold, log_tf=True, inv_tf=True, bad_well
 
     if not os.path.exists(os.path.join(proj_dir, 'card', plate_name)):
         # Create norm folder for plate if it doesn't exist already
-        os.mkdir(os.path.join(proj_dir, 'card', plate_name))
+        try:
+            os.mkdir(os.path.join(proj_dir, 'card', plate_name))
+        except OSError:
+            pass
 
         # Create norm file
     if dp == True:

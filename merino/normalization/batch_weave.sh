@@ -29,8 +29,13 @@ shift # past argument or value
 done
 IFS=',' read -r -a replicate_sets <<< "${REPLICATE_SETS}"
 
-batch_index=${AWS_BATCH_JOB_ARRAY_INDEX}
-REPLICATE_SET_NAME="${replicate_sets[${batch_index}]}"
+
+REPLICATE_SET_NAME="${REPLICATE_SETS}"
+if [[ -z "${AWS_BATCH_JOB_ARRAY_INDEX}" ]]; then
+  batch_index=${AWS_BATCH_JOB_ARRAY_INDEX}
+  REPLICATE_SET_NAME="${replicate_sets[${batch_index}]}"
+fi
+
 
 PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${REPLICATE_SET_NAME}"
 
