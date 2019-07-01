@@ -46,7 +46,7 @@ def parse_plate_name(plate_name):
     pieces = plate_name.split("_")
     pert_plate = pieces[0]
     rep_id = pieces[3]
-    project_code = pert_plate.translate(None, digits)
+    project_code = pert_plate.split('.')[0].translate(None, digits)
 
     return {"pert_plate": pert_plate, "project_code": project_code, "det_plate": plate_name, "rep_id": rep_id}
 
