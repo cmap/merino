@@ -28,7 +28,7 @@ def main(args):
     assemble_args = assemble.build_parser().parse_args(['-pmp', plate_map_path, '-csv', jcsv_path, '-out', assemble_out_path])
     logger.info("Running assemble with args: {}".format(assemble_args))
     assemble.main(assemble_args)
-
+    logger.info("Running card with args: {}".format(args))
     card_args = card.build_parser().parse_args(['-proj_dir', project_dir, '-plate_name', args.plate_name, '-inv_threshold', args.inv_threshold])
     logger.info("Running card with args: {}".format(card_args))
     card.main(card_args)
