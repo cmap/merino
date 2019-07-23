@@ -68,8 +68,8 @@ def main(args):
 
     # NB required choose one of input_folder options: all_inputs, input_folder
     if args.all_inputs:
-        logger.info(glob_value)
-        logger.info(args.proj_dir)
+        logger.info("Glob value {} ".format(glob_value))
+        logger.info("Args Project dir {}".format(args.proj_dir))
         for input in ["ZSPC", "LFCPC", "ZSVC", "LFCVC"]:
 
             replicate_sets_search_results = glob.glob(os.path.join(args.proj_dir, "card", glob_value, "*"+input+"*"))
