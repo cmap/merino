@@ -16,7 +16,7 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-plate_name', '-p', help='name of plate to process up to card and run plate qc')
     parser.add_argument("-rep_map", "-rm", help="Whether to use replicate level plate maps or not", type=str, required=False, default="FALSE",choices=["TRUE", "FALSE"])
-    parser.add_argument("-inv_threshold", "-it", help="MFI threshold for dropout wells", default=600, required=False)
+    parser.add_argument("-inv_threshold", "-it", help="MFI threshold for dropout wells", default=600, required=False, type=str)
 
     return parser
 
