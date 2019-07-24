@@ -60,7 +60,7 @@ def main(args, project_name):
 
     # Read in the data
 
-    out_dir = os.path.join(base_path, project_name, 'qc')
+    out_dir = os.path.join(base_path, project_name, 'qc/merino')
 
     qc_galleries(out_dir, project_name)
 
