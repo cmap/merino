@@ -43,6 +43,8 @@ echo CONFIG_ROOT = "${CONFIG_ROOT}"
 echo PROJECT_DIR = "${PROJECT_DIR}"
 echo REPLICATE_SET_NAME = "${REPLICATE_SET_NAME}"
 echo GROUP_BY = "${GROUP_BY}"
+echo AWS_BATCH_JOB_ARRAY_INDEX = "${AWS_BATCH_JOB_ARRAY_INDEX}"
+echo BATCH_INDEX = "${batch_index}"
 
 
 # Activate conda environment
