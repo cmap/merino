@@ -61,7 +61,7 @@ def build_paths(plate_entry, rep_map):
         plate_map_path = os.path.join(project_dir, 'map_src', plate_entry['pert_plate'] + '.' + plate_entry['rep_id'] + '.src')
 
     assemble_out_path = project_dir
-    qc_out_path = os.path.join(project_dir, 'qc')
+    qc_out_path = os.path.join(project_dir, 'qc/merino')
     if not os.path.exists(qc_out_path):
         os.mkdir(qc_out_path)
     return (project_dir, jcsv_path, plate_map_path, assemble_out_path, qc_out_path)
