@@ -30,11 +30,13 @@ done
 IFS=',' read -r -a replicate_sets <<< "${REPLICATE_SETS}"
 
 
-REPLICATE_SET_NAME="${REPLICATE_SETS}"
-if [[ -z "${AWS_BATCH_JOB_ARRAY_INDEX}" ]]; then
+if [ "${#replicate_sets[@]}" -eq "1" ]; then
+   REPLICATE_SET_NAME=${replicate_sets[0]}
+else
   batch_index=${AWS_BATCH_JOB_ARRAY_INDEX}
   REPLICATE_SET_NAME="${replicate_sets[${batch_index}]}"
 fi
+
 
 
 PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${REPLICATE_SET_NAME}"
@@ -44,7 +46,6 @@ echo PROJECT_DIR = "${PROJECT_DIR}"
 echo REPLICATE_SET_NAME = "${REPLICATE_SET_NAME}"
 echo GROUP_BY = "${GROUP_BY}"
 echo AWS_BATCH_JOB_ARRAY_INDEX = "${AWS_BATCH_JOB_ARRAY_INDEX}"
-echo BATCH_INDEX = "${batch_index}"
 
 
 # Activate conda environment
