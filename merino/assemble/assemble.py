@@ -40,7 +40,7 @@ def build_parser():
     parser.add_argument("-config_filepath", "-cfg", help="path to the location of the configuration file", type=str,
                         default=merino.default_config_filepath)
     parser.add_argument("-assay_type", "-at", help="assay data was profiled in",
-                        type=str, required=False, choices=["DP78", "PR500", "PR300", "KJ100", "COP23", "COP22"])
+                        type=str, required=False, choices=["DP78", "PR500", "PR300", "KJ100", "COP23", "COP22", "PR300M934"])
     parser.add_argument("-plate_map_path", "-pmp",
                         help="path to file containing plate map describing perturbagens used", type=str, required=True)
 
