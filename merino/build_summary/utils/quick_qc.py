@@ -16,7 +16,7 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-plate_name', '-p', help='name of plate to process up to card and run plate qc')
     parser.add_argument('-assay_type', '-p', help='custom assay type', default= None)
-    parser.add_argument('-inv_threshold', '-p', help='mfi threshold under which to remove wells', default=600)
+    parser.add_argument('-inv_threshold', '-it', help='mfi threshold under which to remove wells', default=600)
     parser.add_argument("-rep_map", "-rm", help="Whether to use replicate level plate maps or not",
                         type=str, required=False, default="FALSE",choices=["TRUE", "FALSE"])
 
@@ -36,8 +36,9 @@ def main(args):
     logger.info("Running assemble with args: {}".format(assemble_args))
     assemble.main(assemble_args)
 
-    card_args = card.build_parser().parse_args(['-proj_dir', project_dir, '-plate_name', args.plate_name,
-                                                '-inv_threshold', args.inv_threshold])
+    logger.info("Running card with args: {}".format(args))
+    card_args = card.build_parser().parse_args(['-proj_dir', project_dir, '-plate_name', args.plate_name, '-inv_threshold', args.inv_threshold])
+
     logger.info("Running card with args: {}".format(card_args))
     card.main(card_args)
 
@@ -69,7 +70,7 @@ def build_paths(plate_entry, rep_map):
         plate_map_path = os.path.join(project_dir, 'map_src', plate_entry['pert_plate'] + '.' + plate_entry['rep_id'] + '.src')
 
     assemble_out_path = project_dir
-    qc_out_path = os.path.join(project_dir, 'qc')
+    qc_out_path = os.path.join(project_dir, 'qc/merino')
     if not os.path.exists(qc_out_path):
         os.mkdir(qc_out_path)
     return (project_dir, jcsv_path, plate_map_path, assemble_out_path, qc_out_path)
