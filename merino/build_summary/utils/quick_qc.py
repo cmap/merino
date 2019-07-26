@@ -15,6 +15,8 @@ logger = logging.getLogger(setup_logger.LOGGER_NAME)
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-plate_name', '-p', help='name of plate to process up to card and run plate qc')
+    parser.add_argument('-assay_type', '-p', help='custom assay type', default= None)
+    parser.add_argument('-inv_threshold', '-p', help='mfi threshold under which to remove wells', default=600)
     parser.add_argument("-rep_map", "-rm", help="Whether to use replicate level plate maps or not",
                         type=str, required=False, default="FALSE",choices=["TRUE", "FALSE"])
 
@@ -25,11 +27,17 @@ def main(args):
 
     (project_dir, jcsv_path, plate_map_path, assemble_out_path, qc_out_path) = build_paths(plate_entry, args.rep_map)
 
-    assemble_args = assemble.build_parser().parse_args(['-pmp', plate_map_path, '-csv', jcsv_path, '-out', assemble_out_path])
+    if args.assay_type is not None:
+        assemble_args = assemble.build_parser().parse_args(['-pmp', plate_map_path, '-csv', jcsv_path, '-out', assemble_out_path,
+                                                            '-assay_type', args.assay_type])
+    else:
+        assemble_args = assemble.build_parser().parse_args(['-pmp', plate_map_path, '-csv', jcsv_path, '-out', assemble_out_path])
+
     logger.info("Running assemble with args: {}".format(assemble_args))
     assemble.main(assemble_args)
 
-    card_args = card.build_parser().parse_args(['-proj_dir', project_dir, '-plate_name', args.plate_name])
+    card_args = card.build_parser().parse_args(['-proj_dir', project_dir, '-plate_name', args.plate_name,
+                                                '-inv_threshold', args.inv_threshold])
     logger.info("Running card with args: {}".format(card_args))
     card.main(card_args)
 
