@@ -18,6 +18,10 @@ case $key in
     REPLICATE_MAP="$2"
     shift # past argument
     ;;
+    -assay_type)
+    ASSAY_TYPE="$2"
+    shift # past argument
+    ;;
     --default)
     DEFAULT=YES
     ;;
@@ -31,6 +35,7 @@ done
 echo CONFIG_ROOT = "${CONFIG_ROOT}"
 echo PROJECT_CODE = "${PROJECT_CODE}"
 echo REPLICATE_MAP = "${REPLICATE_MAP}"
+echo ASSAY_TYPE = "${ASSAY_TYPE}"
 
 IFS=',' read -r -a plates <<< "${PLATES}"
 
@@ -74,7 +79,7 @@ then
 else
     CSV_FILEPATH="${CONFIG_ROOT}${PROJECT_CODE}/lxb/${PLATE}/${PLATE}.jcsv"
     echo CSV_FILEPATH = "${CSV_FILEPATH}"
-    python /cmap/merino/merino/assemble/assemble.py -pmp ${PLATE_MAP_PATH} -csv ${CSV_FILEPATH} -out ${OUTFILE}
+    python /cmap/merino/merino/assemble/assemble.py -pmp ${PLATE_MAP_PATH} -csv ${CSV_FILEPATH} -out ${OUTFILE} -assay_type ${ASSAY_TYPE}
     exit_code=$?
 fi
 
