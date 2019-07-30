@@ -217,20 +217,18 @@ def main(args, all_perturbagens=None, assay_plates=None):
         davepool_data_objects = read_davepool_data_objects(davepool_id_csv_list)
 
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0].split('.')[0]
-        plate_name = os.path.basename(davepool_id_csv_list[0][1]).rsplit(".", 1)[0]
-        (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
+        prism_replicate_name = os.path.basename(davepool_id_csv_list[0][1]).rsplit(".", 1)[0]
+        (_, assay, tp, replicate_number, bead) = prism_replicate_name.rsplit("_")
 
         if args.assay_type == None:
             msg = "No assay type found from beadset - must be specified in arg -assay_type"
             raise merino_exception.NoAssayTypeFound(msg)
 
-        prism_replicate_name = "_".join([pert_plate, args.assay_type, tp,replicate_number, bead])
-
     elif args.csv_filepath is not None:
 
         pert_plate = os.path.basename(args.plate_map_path).rsplit(".", 1)[0].split('.')[0]
-        plate_name = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
-        (_, assay, tp, replicate_number, bead) = plate_name.rsplit("_")
+        prism_replicate_name = os.path.basename(args.csv_filepath).rsplit(".", 1)[0]
+        (_, assay, tp, replicate_number, bead) = prism_replicate_name.rsplit("_")
 
         if bead is not None and args.assay_type is None:
             api_call = os.path.join('https://api.clue.io/api', 'beadset', bead)
@@ -240,8 +238,6 @@ def main(args, all_perturbagens=None, assay_plates=None):
         if args.assay_type == None:
             msg = "No assay type found from beadset - must be specified in arg -assay_type"
             raise merino_exception.NoAssayTypeFound(msg)
-
-        prism_replicate_name = "_".join([pert_plate, assay, tp, replicate_number, bead])
 
 
         davepool_id_csv_list = args.csv_filepath
@@ -283,8 +279,11 @@ def main(args, all_perturbagens=None, assay_plates=None):
 
     # Pass python objects to the core assembly module (this is where command line and automated assembly intersect)
     # here the outfile for automation is defined as project_dir/prism_replicate_set_name
+
     try:
         assemble_core.main(prism_replicate_name, args.outfile, all_perturbagens, davepool_data_objects, prism_cell_list)
+
+
 
     except Exception as e:
         failure_path = os.path.join(args.outfile, "assemble", prism_replicate_name,  "failure.txt")
