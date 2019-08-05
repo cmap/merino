@@ -14,6 +14,10 @@ case $key in
     PROJECT_CODE="$2"
     shift # past argument
     ;;
+    -inv_threshold)
+    INV_THRESHOLD="$2"
+    shift # past argument
+    ;;
     --default)
     DEFAULT=YES
     ;;
@@ -36,6 +40,8 @@ PROJECT_DIR="${CONFIG_ROOT}${PROJECT_CODE}/${plate_token[0]}_${plate_token[1]}_$
 echo CONFIG_ROOT = "${CONFIG_ROOT}"
 echo PROJECT_DIR = "${PROJECT_DIR}"
 echo PLATE_NAME = "${PLATE_NAME}"
+echo INV_THRESHOLD = "${INV_THRESHOLD}"
+    shift # past argument
 
 # Activate conda environment
 
@@ -45,7 +51,7 @@ cd /cmap/merino/
 
 python setup.py develop
 
-python /cmap/merino/merino/card/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME}
+python /cmap/merino/merino/card/card.py -proj_dir ${PROJECT_DIR} -plate_name ${PLATE_NAME} -inv_threshold ${INV_THRESHOLD}
 exit_code=$?
 
 source deactivate

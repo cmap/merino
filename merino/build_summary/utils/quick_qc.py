@@ -19,6 +19,7 @@ def build_parser():
     parser.add_argument('-inv_threshold', '-it', help='mfi threshold under which to remove wells', default=600)
     parser.add_argument("-rep_map", "-rm", help="Whether to use replicate level plate maps or not",
                         type=str, required=False, default="FALSE",choices=["TRUE", "FALSE"])
+    parser.add_argument("-sense", "-s", help="Expected sensitivity file to use")
 
     return parser
 
