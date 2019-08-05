@@ -190,11 +190,11 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
 
     # Build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
 
+
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
     # Put all the data in gct-able form
-    (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects,
-                                                                     davepool_id_to_cells_map)
+    (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects,davepool_id_to_cells_map)
 
     # Create full outfile, build the gct, and write it out!
     median_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")

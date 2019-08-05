@@ -91,7 +91,10 @@ def mk_report(qc_dir, plate_name, plate_data_map):
     report.columns = headers
 
     report.to_csv(os.path.join(qc_dir, plate_name, 'report.txt'), sep='\t', index=False)
-    ssmds.to_csv(os.path.join(qc_dir, plate_name, 'ssmd.txt'), sep='\t', index=False)
+
+    ssmds = pd.DataFrame(ssmds)
+    ssmds.columns = [plate_name]
+    ssmds.to_csv(os.path.join(qc_dir, plate_name, 'ssmd.txt'), sep='\t')
 
     ssmd.ssmd_by_pool(ssmds, plate_data_map['norm'].row_metadata_df, os.path.join(qc_dir, plate_name))
 
