@@ -120,6 +120,7 @@ def build_prism_cell_list(config_parser, cell_set_definition_file, analyte_mappi
 
     #read headers to pull from config and convert to tuple format expected by data parser
     prism_cell_list_items = config_parser.get("headers_to_pull", "cell_set_definition_headers")
+
     prism_cell_list_items = [(x,x) for x in ast.literal_eval(prism_cell_list_items)]
     prism_cell_list = prism_metadata.read_prism_cell_from_file(cell_set_definition_file, prism_cell_list_items)
 
@@ -141,11 +142,7 @@ def build_prism_cell_list(config_parser, cell_set_definition_file, analyte_mappi
         if pc.feature_id in cell_id_davepool_map.keys():
             cell_davepool = cell_id_davepool_map[pc.feature_id]
             pc.analyte_id = cell_davepool.analyte_id
-            pc.davepool_id = cell_davepool.davepool_id
-            pc.barcode_id = cell_davepool.barcode_id
-            if pc.pool_id != cell_davepool.pool_id:
-                msg = "Cell set pool id does not match davepool mapping pool id at cell id {}".format(pc.feature_id)
-                raise merino_exception.DataMappingMismatch(msg)
+
         else:
             cell_list_id_not_in_davepool_mapping.add(pc.feature_id)
 
