@@ -9,6 +9,7 @@ import pandas as pd
 
 import cmapPy.pandasGEXpress.parse as pe
 import cmapPy.pandasGEXpress.write_gct as wgx
+import cmapPy.pandasGEXpress.subset_gctoo as sub
 
 import merino.setup_logger as setup_logger
 import merino.card.normalize_with_prism_invariant as norm
@@ -44,6 +45,17 @@ def build_parser():
 
     return parser
 
+def drop_nans(gctoo):
+    nan_cols = gctoo.data_df.isnull().all()[gctoo.data_df.isnull().all() == True].index
+    nan_rows = gctoo.data_df.isnull().all(axis=1)[gctoo.data_df.isnull().all(axis=1) == True].index
+
+    if len(nan_cols) == gctoo.data_df.shape[1]:
+        return 'empty_plate'
+
+    new_gctoo = sub.subset_gctoo(gctoo, exclude_cid=nan_cols, exclude_rid=nan_rows)
+    return new_gctoo
+
+
 
 def reader_writer(input_file, output_file, function, check_size=False):
     plate_failure = False
@@ -51,6 +63,12 @@ def reader_writer(input_file, output_file, function, check_size=False):
     gctoo = pe.parse(input_file)
     # Call normalizing function on gctoo
     new_gctoo = function(gctoo)
+
+    new_gctoo = drop_nans(new_gctoo)
+    if new_gctoo == 'empty_plate':
+        logger.debug("{} has no usable data and has not been written.".format(os.path.basename(output_file)))
+        plate_failure = True
+        return plate_failure
 
     # If told to, check size of new_gctoo and flag if too small
     if new_gctoo.data_df.shape[1] <= 349 and check_size==True:
