@@ -111,12 +111,12 @@ def main(args):
 
         if len(all_replicate_sets) > 1:
             for replicate_set_name in all_replicate_sets:
-                logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_folder))
-                weave(args.proj_dir, replicate_set_name, input_type=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+                logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_type))
+                weave(args.proj_dir, replicate_set_name, input_type=args.input_type, nprofile_drop=args.nprofile_drop, args=args)
         else:
             replicate_set_name = all_replicate_sets.pop()
-            logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_folder))
-            weave(args.proj_dir, replicate_set_name, input_type=args.input_folder, nprofile_drop=args.nprofile_drop, args=args)
+            logger.info("Weaving together {} {} files".format(replicate_set_name, args.input_type))
+            weave(args.proj_dir, replicate_set_name, input_type=args.input_type, nprofile_drop=args.nprofile_drop, args=args)
 
 
 def setup_directories(project_dir, aggregate_out=False, replicate_set_list=None):
@@ -150,6 +150,7 @@ def weave(proj_dir, replicate_set_name, args, input_type='ZSPC', nprofile_drop=T
 
     #Perform ComBat adjustment
     if args.davepool_combat == True:
+
         all_ds, pre_list = batch_adjust.combat_by_group(gct_list, col_group=group_by_list, batch_field='davepool_id')
         all_ds, combat_adjusted_gct_list = batch_adjust.combat_by_group(pre_list, col_group=group_by_list, batch_field='pool_id')
 
