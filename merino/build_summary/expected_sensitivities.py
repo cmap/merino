@@ -51,7 +51,7 @@ def reformat_gmt(gmt):
     sense = {}
     for x in gmt:
 
-        sense[x['desc']] = x['sig']
+        sense[x['desc']] = x['entry']
 
     return sense
 
@@ -118,10 +118,10 @@ def wtks(gct, metadata, outfolder, gmt_path='/Users/elemire/Workspace/merino/ful
 
         s_qi_map = make_sqi_map(sensitivity_map, data=data, col_meta=col_meta)
 
-        for key in s_qi_map:
-            print key.split('_')[0]
-            if key.split('_')[0] in col_meta['pert_id'].tolist():
 
+        for key in s_qi_map:
+            #print key.split('_')[0]
+            if key.split('_')[0] in col_meta['pert_id'].tolist():
 
                 if len(s_qi_map[key][0]) > 0 and len(s_qi_map[key][1]) > 0:
                     #calculate enrichment score
