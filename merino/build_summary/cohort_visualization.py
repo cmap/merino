@@ -10,6 +10,7 @@ logging.basicConfig(filename='/dev/null', level=logging.ERROR, format='%(asctime
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 import seaborn as sns
 import cmapPy.pandasGEXpress.parse as pe
 import cmapPy.pandasGEXpress.subset_gctoo as sub
