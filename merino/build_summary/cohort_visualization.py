@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import glob
+import string
 logger = logging.getLogger()
 logging.basicConfig(filename='/dev/null', level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -15,6 +16,7 @@ import cmapPy.pandasGEXpress.subset_gctoo as sub
 from cmapPy.visualization import stratogram, scattergram, cohort_view
 import metrics as new_metrics
 import merino.setup_logger as setup_logger
+import make_gallery as galleries
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 
@@ -24,8 +26,6 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # The following arguments are required. These are files that are necessary for assembly and which change
     # frequently between cohorts, replicates, etc.
-    parser.add_argument("-sig_metrics_path", '-sig', help="path to data file",
-                        type=str, required=False)
     parser.add_argument("-build_folder_path", '-build', help="path to folder containing necessary build files with appropriate naming conventions",
                         type=str, required=True)
     parser.add_argument("-out", "-o",
@@ -58,6 +58,7 @@ def globandparse(search_pattern):
 
     """
     logger.info("globbing for : {}".format(search_pattern))
+    #TODO check length of glob list
     path = glob.glob(search_pattern)[0]
     gct = pe.parse(path)
     return gct
@@ -121,6 +122,49 @@ def split_cop_data(data_map):
         new_data_map[key + '_gex'] = gex_gct
 
     return new_data_map
+
+
+def mk_heatmap(df, title, outfile, colormap='coolwarm', lims=[]):
+    #values = df.median(axis=0)
+    values = df
+    heatmap_df = pd.DataFrame(index=list(string.ascii_uppercase)[0:16])
+    columns = [str.zfill(str(x), 2) for x in range(1, 25)]
+
+    for col in columns:
+        curr_column = values[[x[-2:] == col for x in values.index]]
+        curr_column.index = [y[-3] for y in curr_column.index]
+        try:
+            heatmap_df[col] = curr_column
+        except:
+            print 'skipping {}'.format(title)
+            return
+    if len(lims) == 0:
+        fig, ax = plt.subplots(figsize=(15,10))
+        sns.heatmap(heatmap_df, linewidths=.1, cmap=colormap, ax=ax)
+    elif len(lims) == 2:
+        sns.heatmap(heatmap_df, linewidths=.1, cmap=colormap, vmin=lims[0], vmax=lims[1])
+    else:
+        raise Exception('Must pass exactly 2 color scale limits or none at all')
+    plt.yticks(rotation=1)
+    plt.title(title)
+    plt.savefig(outfile)
+
+def make_gallery(qc_dir):
+
+    images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
+              'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/histogram_BEAD.png',
+              'heatmaps/heatmap_BEAD.png', 'heatmaps/heatmap_MFI.png', 'heatmaps/heatmap_NORM.png',
+              'heatmaps/heatmap_ZSCORE.png']
+
+    section_list = [{'name': "Cohort Distributions of Level 5 Data", "images": ['ZSPC_modz_hist.png', 'ZSVC_modz_hist.png']},
+                    {"name" : "Cohort Overview of Killing Metrics", "images" : ['ZSPC_scattergram.png','ZSVC_scattergram.png',
+                                                                                          'ZSPC_stratogram.png', 'ZSVC_stratogram.png']},
+                    {"name" : "Quality Control", "images" : ['vc_pc_scatter.png']}]
+
+    outfile = os.path.join(qc_dir, 'gallery.html')
+    print 'here'
+
+    galleries.mk_cohort_gal(section_list, outfile)
 
 
 
@@ -283,11 +327,17 @@ def main(args):
 
         plot_scattergram(sig_map[key][0], os.path.join(args.out, '{}_scattergram.png'.format(key)))
 
+        mk_heatmap(sig_map[key][0][sig_map[key][0]['ss_ltn2'] > 5]['pert_well'].value_counts(),
+                   'Distribution of Active Signatures Across Plate', '{}_hit_map.png'.format(key))
+
 
     if args.dict_key == 'COP':
         data_map = split_cop_data(data_map)
+
         [plot_cis_tas_scatter(sig_map[x][0], os.path.join(args.out, '{}_cis_tas_scatter'.format(x))) for x in sig_map.keys()]
+
         plot_pc_vc_scatter(data_map['ZSPC_vi'], data_map['ZSVC_vi'], outfile=os.path.join(args.out, 'viability_vc_pc_scatter.png'))
+
         plot_pc_vc_scatter(data_map['ZSPC_gex'], data_map['ZSVC_gex'],
                            outfile=os.path.join(args.out, 'gex_vc_pc_scatter.png'))
 

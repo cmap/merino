@@ -22,6 +22,19 @@ def mk_gal(images, outfile):
     with open(outfile, "wb") as fh:
         fh.write(outputText)
 
+def mk_cohort_gal(section_list, outfile):
+
+    TEMPLATE_FILE = "cohort_viz_gallery_lazy.html"
+    template = templateEnv.get_template(TEMPLATE_FILE)
+    opt = {'ncol':4, 'width': 230, 'height': 225}
+
+    outputText = template.render(sclist=section_list, opt=opt)  # this is where to put args to the template renderer
+
+    #print(outputText)
+
+    with open(outfile, "wb") as fh:
+        fh.write(outputText)
+
 def mk_index(table_headers, table_tuples, outfolder, project_name):
 
     TEMPLATE_FILE = "index.html"
@@ -32,3 +45,4 @@ def mk_index(table_headers, table_tuples, outfolder, project_name):
     with open(os.path.join(outfolder, "index.html"), "wb") as fh:
         fh.write(outputText)
     return True
+

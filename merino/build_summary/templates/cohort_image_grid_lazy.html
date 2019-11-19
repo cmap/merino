@@ -1,0 +1,53 @@
+<div><p style="text-align:center">
+   <h2>{{name}}</h2></p></div>
+<div class="grid">
+{% if opt.ncol is not defined %}
+    {% set opt.ncol = 4 %}
+{% endif %} 
+{% set nitem = imlist|length %}
+{% set nrow = nitem / opt.ncol %}
+{% if (nitem % opt.ncol) > 0 %}
+  	{% set nrow = nrow + 1 %}
+{% endif %}
+{% set rctr=1 %}
+{% if caption is defined %}
+    {% set caption = caption %}
+{% else %}
+    {% set caption = imlist %}
+{% endif %}
+{% set last = nitem %}
+{% for imctr in range(last) %}
+	{% set cctr =  ((loop.index|int / opt.ncol|int) - 0.25)|int + 1 %}
+	{% if (loop.index - 1) % opt.ncol == 0 %}
+ <div class="row">   <!-- begin row {{rctr}} -->
+ 	{% endif %}
+  <div class="cell"> <!-- begin cell ({{rctr}}, {{cctr}}) -->
+  <a rel="gallery" href="{{ imlist[imctr] }}" title="{{ caption[imctr] }}">
+	{% if thumbdir is defined %}	
+  <img class="lazy"
+  src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+  data-original="{{ imlist[imctr] }}" />
+  <noscript>
+  <img src="{{ imlist[imctr] }}" />
+  </noscript>	
+	{% else %}
+  <img class="lazy" 
+  src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif" 
+  data-original="{{ imlist[imctr] }}" />
+  <noscript>
+  <img src="{{ imlist[imctr] }}" />
+  </noscript>
+	{% endif %}
+  </a>
+  <div class="desc">{{caption[imctr] }}</div>
+  </div> <!-- end cell ({{rctr}}, {{cctr}}) -->
+  	{% if loop.index % opt.ncol == 0 or imctr == nitem-1 %}
+  		{# Close current row and start a new one #}
+  </div> <!-- end row {{rctr}} -->
+  <br class="blank" />
+  		{% set cctr = 0 %}
+  		{% set rctr = rctr + 1 %}
+  	{% endif %}
+{% set cctr = cctr + 1 %}
+{% endfor %}
+</div>

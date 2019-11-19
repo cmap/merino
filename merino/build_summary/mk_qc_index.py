@@ -23,6 +23,7 @@ def build_parser():
                         help="Code for project eg. PCAL",
                         type=str, required=False)
     parser.add_argument("-verbose", '-v', help="Whether to print a bunch of output", action="store_true", default=False)
+    parser.add_argument("-custom_path", '-path', help="custom path to project folder",default=None)
 
 
     return parser
@@ -60,7 +61,11 @@ def main(args, project_name):
 
     # Read in the data
 
-    out_dir = os.path.join(base_path, project_name, 'qc/merino')
+    if args.custom_path is not None:
+        out_dir = args.custom_path
+
+    else:
+        out_dir = os.path.join(base_path, project_name, 'qc/merino')
 
     qc_galleries(out_dir, project_name)
 
