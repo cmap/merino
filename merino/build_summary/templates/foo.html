@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+​
+​
+    <link rel="stylesheet" type="text/css" href="https://analysis.clue.io/assets/js/fancybox/1.3.4/jquery.fancybox.css"
+          media="screen"/>
+    <style type="text/css">
+        .grid {
+            display: table;
+            border-spacing: 4px;
+        }
+​
+        .row {
+            display: table-row;
+        }
+​
+        img {
+            width: 230px;
+            height: 225px;
+        }
+​
+        .cell {
+            display: table-cell;
+            background-color: white;
+            border: 1px solid #000;
+            vertical-align: top;
+            text-align: center;
+        }
+​
+        .desc {
+            color: red;
+            font-size: 85%;
+            font-weight: bold;
+            text-align: center;
+            padding-top: 8px;
+        }
+​
+        .summary {
+            color: #1f77b4;
+            font-size: 100%;
+            font-weight: bold;
+            text-align: center;
+            padding-top: 8px;
+        }
+​
+        .lazy {
+            display: none;
+        }
+    </style>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+    <script type="text/javascript"
+            src="https://analysis.clue.io/assets/js/fancybox/1.3.4/jquery.fancybox.min.js"></script>
+    <script type="text/javascript"
+            src="https://analysis.clue.io/assets/js/lazyload/1.8.4/jquery.lazyload.min.js"></script>
+    <script type="text/javascript"
+            src="https://analysis.clue.io/assets/js/lazyload/1.8.4/jquery.scrollstop.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("img.lazy").show().lazyload({
+                event: "scrollstop",
+            });
+            $("a[rel=gallery]").fancybox({
+                'transitionIn': 'none',
+                'transitionOut': 'none',
+                'titlePosition': 'outside',
+                'overlayColor': 'black',
+                'overlayOpacity': 0.8,
+                'titleFormat': function (title, currentArray, currentIndex, currentOpts) {
+                    return "<span id=fancybox-title-outside>Image " + (currentIndex + 1) + "/" + currentArray.length + (title.length ? " &nbsp; " + title : "") + "</span>";
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div class="summary"></div>
+<div><p style="text-align:center">
+    <h3>Center this text! dhhdgh dghdghg dghdghgdhgdd dghdghdghgd dgfdfdffd</h3></p></div>
+<div class="grid">
+​
+    <div class="row">   <!-- begin row 1 -->
+​
+        <div class="cell"> <!-- begin cell (1, 1) -->
+            <a rel="gallery" href="invariants/inv_heatmap.png" title="invariants/inv_heatmap.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="invariants/inv_heatmap.png"/>
+                <noscript>
+                    <img src="invariants/inv_heatmap.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">invariants/inv_heatmap.png</div>
+        </div> <!-- end cell (1, 1) -->
+​
+​
+        <div class="cell"> <!-- begin cell (1, 1) -->
+            <a rel="gallery" href="invariants/invariant_curves.png" title="invariants/invariant_curves.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="invariants/invariant_curves.png"/>
+                <noscript>
+                    <img src="invariants/invariant_curves.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">invariants/invariant_curves.png</div>
+        </div> <!-- end cell (1, 1) -->
+​
+​
+        <div class="cell"> <!-- begin cell (1, 1) -->
+            <a rel="gallery" href="invariants/invariant_mono.png" title="invariants/invariant_mono.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="invariants/invariant_mono.png"/>
+                <noscript>
+                    <img src="invariants/invariant_mono.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">invariants/invariant_mono.png</div>
+        </div> <!-- end cell (1, 1) -->
+​
+​
+        <div class="cell"> <!-- begin cell (1, 1) -->
+            <a rel="gallery" href="ssmd/SSMD_ECDF.png" title="ssmd/SSMD_ECDF.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="ssmd/SSMD_ECDF.png"/>
+                <noscript>
+                    <img src="ssmd/SSMD_ECDF.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">ssmd/SSMD_ECDF.png</div>
+        </div> <!-- end cell (1, 1) -->
+​
+​
+    </div> <!-- end row 1 -->
+    <br class="blank"/>
+​
+    <div class="row">   <!-- begin row 1 -->
+​
+        <div class="cell"> <!-- begin cell (1, 2) -->
+            <a rel="gallery" href="ssmd/NORMvMFI_SSMD_Boxplot.png" title="ssmd/NORMvMFI_SSMD_Boxplot.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="ssmd/NORMvMFI_SSMD_Boxplot.png"/>
+                <noscript>
+                    <img src="ssmd/NORMvMFI_SSMD_Boxplot.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">ssmd/NORMvMFI_SSMD_Boxplot.png</div>
+        </div> <!-- end cell (1, 2) -->
+​
+​
+        <div class="cell"> <!-- begin cell (1, 2) -->
+            <a rel="gallery" href="distributions/histogram_BEAD.png" title="distributions/histogram_BEAD.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="distributions/histogram_BEAD.png"/>
+                <noscript>
+                    <img src="distributions/histogram_BEAD.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">distributions/histogram_BEAD.png</div>
+        </div> <!-- end cell (1, 2) -->
+​
+​
+        <div class="cell"> <!-- begin cell (1, 2) -->
+            <a rel="gallery" href="heatmaps/heatmap_BEAD.png" title="heatmaps/heatmap_BEAD.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="heatmaps/heatmap_BEAD.png"/>
+                <noscript>
+                    <img src="heatmaps/heatmap_BEAD.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">heatmaps/heatmap_BEAD.png</div>
+        </div> <!-- end cell (1, 2) -->
+​
+​
+        <div class="cell"> <!-- begin cell (1, 2) -->
+            <a rel="gallery" href="heatmaps/heatmap_MFI.png" title="heatmaps/heatmap_MFI.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="heatmaps/heatmap_MFI.png"/>
+                <noscript>
+                    <img src="heatmaps/heatmap_MFI.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">heatmaps/heatmap_MFI.png</div>
+        </div> <!-- end cell (1, 2) -->
+​
+​
+    </div> <!-- end row 1 -->
+    <br class="blank"/>
+​
+​
+    <div class="row">   <!-- begin row 1 -->
+​
+        <div class="cell"> <!-- begin cell (1, 3) -->
+            <a rel="gallery" href="heatmaps/heatmap_NORM.png" title="heatmaps/heatmap_NORM.png">
+​
+                <img class="lazy"
+                     src="https://analysis.clue.io/assets/js/lazyload/1.8.4/img/grey.gif"
+                     data-original="heatmaps/heatmap_NORM.png"/>
+                <noscript>
+                    <img src="heatmaps/heatmap_NORM.png"/>
+                </noscript>
+​
+            </a>
+            <div class="desc">heatmaps/heatmap_NORM.png</div>
+        </div> <!-- end cell (1, 3) -->
+​
+​
+    </div>
+</div>
+</body>

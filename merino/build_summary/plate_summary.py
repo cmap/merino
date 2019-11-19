@@ -29,10 +29,10 @@ def build_parser():
                               help="Search for this string in the directory, only run plates which contain it. ",
                               type=str, default=None)
     plates_group.add_argument("-plate_name", "-pn", help="name of individual plate to run on", type=str, default=None)
-    parser.add_argument("-qc_folder", "-qc", help="string designating the prefix to each build file eg. PCAL075-126_T2B",
+    parser.add_argument("-qc_folder", "-qc", help="string designating the path to the qc folder",
                         type=str, required=True)
-    parser.add_argument("-gmt_path", "-gmt", help="path to the pod directory you want to run card on",
-                        type=str, default='/cmap/data/vdb/merino/sensitivity_files/CORE_D1_48H_KJ100_DN_s25_n5127.gmt')
+    parser.add_argument("-gmt_path", "-gmt", help="path to the gmt file containing cell sets for running expected sensitivities",
+                        type=str, default='/Volumes/cmap/data/vdb/merino/sensitivity_files/CORE_D1_48H_KJ100_DN_s25_n5127.gmt')
     parser.add_argument("-invar", "-inv",
                         help="Flag to turn off invariant QC",
                         action="store_false")
@@ -54,7 +54,7 @@ def make_gallery(qc_dir, plate_name):
     outfile = os.path.join(plate_qc_dir, 'gallery.html')
     galleries.mk_gal(images, outfile)
 
-def mk_report(qc_dir, plate_name, plate_data_map):
+def mk_report(qc_dir, plate_name, plate_data_map, sense):
 
     ssmds = ssmd.get_ssmd(plate_data_map['norm'], unlog=True)
     ssmd_median = ssmds.median()
@@ -71,9 +71,10 @@ def mk_report(qc_dir, plate_name, plate_data_map):
     invariants = ['c-' + str(x) for x in range(661,671)]
     median_invariant = plate_data_map['mfi'].data_df.loc[[x for x in invariants if x in plate_data_map['mfi'].data_df.index]].median(axis=1).median()
 
-    sensitivities = pd.read_table(os.path.join(qc_dir, 'sense', plate_name, '{}_expected_sensitivity_ranks.txt'.format(plate_name)), index_col='Unnamed: 0')
-    median_sensitivity_rank = sensitivities.median().tolist()[0]
-    sigs_recovered = sensitivities.dropna()[sensitivities.dropna() < 50].count().tolist()[0]
+    if sense == True:
+        sensitivities = pd.read_table(os.path.join(qc_dir, 'sense', plate_name, '{}_expected_sensitivity_ranks.txt'.format(plate_name)), index_col='Unnamed: 0')
+        median_sensitivity_rank = sensitivities.median().tolist()[0]
+        sigs_recovered = sensitivities.dropna()[sensitivities.dropna() < 50].count().tolist()[0]
 
     qc_status = 'pass'
     if well_dropouts > 38:
@@ -81,14 +82,22 @@ def mk_report(qc_dir, plate_name, plate_data_map):
     if ssmd_pct_failure > 33:
         qc_status = 'fail'
 
+    if sense == True:
 
-
-    headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'median_invariant', 'median_sensitivity_rank'
+        headers = ['plate','median SSMD', 'n SSMD failures', 'pct SSMD failures', 'median_invariant', 'median_sensitivity_rank'
                 ,'n sensitivities recovered','n wells', 'n dropouts',  'n active wells','n unique perts', 'qc_status']
-    report = pd.DataFrame(
+        report = pd.DataFrame(
         [plate_name, ssmd_median, ssmd_failures, ssmd_pct_failure, median_invariant, median_sensitivity_rank, sigs_recovered
             ,plate_shapes, well_dropouts, n_active,unique_perts, qc_status]).T
-    report.columns = headers
+        report.columns = headers
+
+    else:
+        headers = ['plate', 'median SSMD', 'n SSMD failures', 'pct SSMD failures', 'median_invariant', 'n wells',
+                   'n dropouts', 'n active wells', 'n unique perts', 'qc_status']
+        report = pd.DataFrame(
+            [plate_name, ssmd_median, ssmd_failures, ssmd_pct_failure, median_invariant
+                , plate_shapes, well_dropouts, n_active, unique_perts, qc_status]).T
+        report.columns = headers
 
     report.to_csv(os.path.join(qc_dir, plate_name, 'report.txt'), sep='\t', index=False)
 
@@ -214,7 +223,7 @@ def plate_qc(out_dir, plate_name, plate_data_map, gmt_path, invar=True, sense=Tr
 
     make_gallery(out_dir, plate_name)
 
-    mk_report(out_dir, plate_name, plate_data_map)
+    mk_report(out_dir, plate_name, plate_data_map, sense)
 
 
 
