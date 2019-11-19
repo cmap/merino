@@ -2,7 +2,7 @@ import os
 import jinja2
 
 def get_templates():
-    current_location = os.getcwd()
+    current_location = os.path.dirname(os.path.abspath(__file__))
     for root, dirs, files in os.walk(current_location):
         if "templates" in dirs:
             return os.path.join(root, "templates")

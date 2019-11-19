@@ -42,9 +42,21 @@ def build_parser():
     return parser
 
 
-data_mapper = dict(zip(['ZSPC', 'ZSVC'], ['*MODZ.ZSPC.COMBAT_*.gctx', '*MODZ.ZSVC.COMBAT_*.gctx']))
+data_mapper = dict(zip(['ZSPC', 'ZSVC'], ['*MODZ.ZSPC.COMBAT*.gctx', '*MODZ.ZSVC.COMBAT*.gctx']))
 metadata_mapper = dict(zip(['ZSPC', 'ZSVC'], ['*MODZ.ZSPC.COMBAT*.txt', '*MODZ.ZSVC.COMBAT*.txt']))
 
+pr500_section_list = [{'name': "Cohort Distributions of Level 5 Data", "images": ['ZSPC_modz_hist.png', 'ZSVC_modz_hist.png']},
+                    {"name" : "Cohort Overview of Killing Metrics", "images" : ['ZSPC_scattergram.png','ZSVC_scattergram.png',
+                                                                                          'ZSPC_stratogram.png', 'ZSVC_stratogram.png']},
+                    {"name" : "Quality Control", "images" : ['vc_pc_scatter.png']}]
+
+cop_section_list = [
+        {'name': "Cohort Distributions of Level 5 Data", "images": ['ZSPC_vi_modz_hist.png', 'ZSVC_vi_modz_hist.png',
+                                                                    'ZSPC_gex_modz_hist.png', 'ZSVC_gex_modz_hist.png']},
+        {"name": "Cohort Overview of Killing Metrics", "images": ['ZSPC_scattergram.png', 'ZSVC_scattergram.png',
+                                                                  'ZSPC_stratogram.png', 'ZSVC_stratogram.png',
+                                                                  'ZSPC_cis_tas_scatter.png', 'ZSVC_cis_tas_scatter.png']},
+        {"name": "Quality Control", "images": ['viability_vc_pc_scatter.png', 'gex_vc_pc_scatter.png']}]
 
 
 
@@ -104,7 +116,7 @@ def read_build_data(proj_dir):
     inst_info = pd.read_table(glob.glob(os.path.join(proj_dir, '*inst_info*.txt'))[0], index_col='profile_id')
 
 
-    ssmd_info = pe.parse(glob.glob(os.path.join(proj_dir, '*ssmd*.gct'))[0]).data_df
+    ssmd_info = pe.parse(glob.glob(os.path.join(proj_dir, '*ssmd*.gctx'))[0]).data_df
 
     other_metadata_map['inst'] = inst_info
     other_metadata_map['ssmd'] = ssmd_info
@@ -149,17 +161,9 @@ def mk_heatmap(df, title, outfile, colormap='coolwarm', lims=[]):
     plt.title(title)
     plt.savefig(outfile)
 
-def make_gallery(qc_dir):
+def make_gallery(qc_dir, section_list):
 
-    images = ['invariants/inv_heatmap.png', 'invariants/invariant_curves.png', 'invariants/invariant_mono.png',
-              'ssmd/SSMD_ECDF.png', 'ssmd/NORMvMFI_SSMD_Boxplot.png', 'distributions/histogram_BEAD.png',
-              'heatmaps/heatmap_BEAD.png', 'heatmaps/heatmap_MFI.png', 'heatmaps/heatmap_NORM.png',
-              'heatmaps/heatmap_ZSCORE.png']
 
-    section_list = [{'name': "Cohort Distributions of Level 5 Data", "images": ['ZSPC_modz_hist.png', 'ZSVC_modz_hist.png']},
-                    {"name" : "Cohort Overview of Killing Metrics", "images" : ['ZSPC_scattergram.png','ZSVC_scattergram.png',
-                                                                                          'ZSPC_stratogram.png', 'ZSVC_stratogram.png']},
-                    {"name" : "Quality Control", "images" : ['vc_pc_scatter.png']}]
 
     outfile = os.path.join(qc_dir, 'gallery.html')
     print 'here'
@@ -356,8 +360,10 @@ def main(args):
             title='Distribution of viability scores',
             outfile = outfile
         )
-
-
+    if args.dict_key == 'COP':
+        make_gallery(args.out, cop_section_list)
+    else:
+        make_gallery(args.out, pr500_section_list)
 
 
 if __name__ == "__main__":
