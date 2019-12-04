@@ -59,7 +59,7 @@ def build_parser():
     parser.add_argument("-outfile", "-out", help="location to write gct", type=str,
                         default='')
     parser.add_argument("-truncate_to_plate_map", "-trunc", help="True or false, if true truncate data to fit framework of platemap provided",
-                        action="store_true", default=False)
+                        action="store_true", default=True)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-davepool_id_csv_filepath_pairs", "-dp_csv",
                         help="space-separated list of pairs of davepool_id and corresponding csv filepath for that davepool_id",
