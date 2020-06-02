@@ -1,4 +1,4 @@
-# Merino - !! Pre-publication !!
+# Merino - Pre-publication Release
 
 Pre-publication version of data Flow for converting raw PR500 data into processed results
 
