@@ -189,8 +189,6 @@ def build_gctoo_data_df(cell_id_data_map, data_df_column_ids):
 def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects, prism_cell_list):
 
     # Build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
-
-
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
     # Put all the data in gct-able form
@@ -200,6 +198,10 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     median_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)
     write_gct.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
+
+    instinfo_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_inst_info.txt")
+    median_gctoo.col_metadata_df.to_csv(instinfo_outfile, sep='\t')
+    logger.info("Instinfo has been written to {}".format(instinfo_outfile))
 
     count_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_count_data_by_cell)
