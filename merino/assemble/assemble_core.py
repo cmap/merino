@@ -5,6 +5,9 @@ import cmapPy.pandasGEXpress.GCToo as GCToo
 import prism_metadata
 import pandas
 import cmapPy.pandasGEXpress.write_gct as write_gct
+import numpy as np
+from math import floor, log10
+
 
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
@@ -186,6 +189,41 @@ def build_gctoo_data_df(cell_id_data_map, data_df_column_ids):
     return data_df
 
 
+"""
+rounds to significant figures
+"""
+def _round_sig(x, sig=4):
+    return round(x, sig - int(floor(log10(abs(x)))) - 1)
+
+
+"""
+prints string as decimal value not scientific notation
+"""
+def _format_floats(fl, sig=4):
+    if type(fl) == str:
+        fl = float(fl)
+    if np.isnan(fl):
+        return fl
+    else:
+        return np.format_float_positional(_round_sig(fl, sig=sig), precision=6, trim='-')
+
+
+def process_pert_doses(el):
+    if type(el) == str:
+        #         print(el)
+        return '|'.join(map(_format_floats, map(float, el.split('|'))))
+    else:
+        return _format_floats(el)
+
+def process_pert_idoses(el):
+    if type(el) == str:
+        #         print(el)
+        idoses = el.split('|')
+        idoses = [i.split(" ") for i in idoses]
+        return "|".join(["{} {}".format(_format_floats(idose[0]), idose[1]) for idose in idoses])
+    else:
+        return _format_floats(el)
+
 def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects, prism_cell_list):
 
     # Build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
@@ -199,8 +237,23 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)
     write_gct.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
 
+    #Write Inst info file
     instinfo_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_inst_info.txt")
-    median_gctoo.col_metadata_df.to_csv(instinfo_outfile, sep='\t')
+    inst = median_gctoo.col_metadata_df
+
+    logger.info("Formatting instinfo pert_dose")
+    #cast pert_dose field to str
+    inst['pert_dose'] = inst['pert_dose'].apply(
+        lambda el: process_pert_doses(el)
+    )
+
+    if 'pert_idose' in inst.columns:
+        logger.info("Formatting instinfo pert_idose")
+        inst['pert_idose'] = inst['pert_idose'].apply(
+            lambda el: process_pert_idoses(el)
+        )
+
+    inst.to_csv(instinfo_outfile, sep='\t')
     logger.info("Instinfo has been written to {}".format(instinfo_outfile))
 
     count_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_COUNT.gct")
