@@ -8,7 +8,6 @@ import cmapPy.pandasGEXpress.write_gct as write_gct
 import numpy as np
 from math import floor, log10
 
-
 logger = logging.getLogger(setup_logger.LOGGER_NAME)
 
 _remove_row_annotations = ["feature_id", "ignore"]
@@ -17,10 +16,12 @@ _remove_col_annotations = ["assay_plate_barcode"]
 _null = "-666"
 _NaN = "NaN"
 
+
 class DataByCell:
     def __init__(self, cell_data_map=None, well_list=None):
         self.cell_data_map = cell_data_map
         self.well_list = well_list
+
     def __str__(self):
         return "cell_data_map:  {}  well_list:  {}".format(self.cell_data_map, self.well_list)
 
@@ -47,7 +48,7 @@ def build_data_by_cell(cells, davepool_data_obj):
     count_wells = []
 
     ld = [(cell_to_median_data_map, median_wells, davepool_data_obj.median_headers, davepool_data_obj.median_data),
-        (cell_to_count_data_map, count_wells, davepool_data_obj.count_headers, davepool_data_obj.count_data)]
+          (cell_to_count_data_map, count_wells, davepool_data_obj.count_headers, davepool_data_obj.count_data)]
 
     for (cell_data_map, wells, headers, data) in ld:
 
@@ -115,7 +116,7 @@ def process_data(davepool_data_objects, davepool_id_to_cells_map):
 
 
 def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
-    #build column metadata dataframe:
+    # build column metadata dataframe:
     def column_ID_builder(perturbagen):
         return prism_replicate_name + ":" + perturbagen.pert_well
 
@@ -131,9 +132,10 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
     col_metadata_df['provenance'] = 'assembled'
     logger.info("my_gctoo.col_metadata_df.shape:  {}".format(col_metadata_df.shape))
     logger.debug("my_gctoo.col_metadata_df:  {}".format(col_metadata_df))
+
     ########################################
 
-    #build row metadata dataframe:
+    # build row metadata dataframe:
     def row_ID_builder(prism_cell_obj):
         return prism_cell_obj.feature_id
 
@@ -149,15 +151,15 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
     logger.debug("my_gctoo.row_metadata_df:  {}".format(row_metadata_df))
     ########################################
 
-    #build data dataframe - will have the cells as columns and rows as wells, and then transpose
-    #start by building mapping between cell ID and corresponding data for that cell, to populate dataframe columns
+    # build data dataframe - will have the cells as columns and rows as wells, and then transpose
+    # start by building mapping between cell ID and corresponding data for that cell, to populate dataframe columns
     cell_id_data_map = {}
     for (c, data) in data_by_cell.cell_data_map.items():
         id = row_ID_builder(c)
         cell_id_data_map[id] = data
     logger.debug("cell_id_data_map:  {}".format(cell_id_data_map))
 
-    #build index for the rows of the dataframe using what is actually the column ID (since it will be transposed)
+    # build index for the rows of the dataframe using what is actually the column ID (since it will be transposed)
     well_perturbagen_map = {}
     for p in perturbagen_list:
         well_perturbagen_map[p.pert_well] = p
@@ -171,6 +173,7 @@ def build_gctoo(prism_replicate_name, perturbagen_list, data_by_cell):
     my_gctoo = GCToo.GCToo(data_df=data_df, row_metadata_df=row_metadata_df, col_metadata_df=col_metadata_df)
 
     return my_gctoo
+
 
 def build_gctoo_data_df(cell_id_data_map, data_df_column_ids):
     '''
@@ -190,6 +193,24 @@ def build_gctoo_data_df(cell_id_data_map, data_df_column_ids):
 
 
 """
+stringify method to write floats as numerical non-scientific notation
+"""
+def float_to_str(f):
+    float_string = repr(f)
+    if 'e' in float_string:  # detect scientific notation
+        digits, exp = float_string.split('e')
+        digits = digits.replace('.', '').replace('-', '')
+        exp = int(exp)
+        zero_padding = '0' * (abs(int(exp)) - 1)  # minus 1 for decimal point in the sci notation
+        sign = '-' if f < 0 else ''
+        if exp > 0:
+            float_string = '{}{}{}.0'.format(sign, digits, zero_padding)
+        else:
+            float_string = '{}0.{}{}'.format(sign, zero_padding, digits)
+    return float_string
+
+
+"""
 rounds to significant figures
 """
 def _round_sig(x, sig=4):
@@ -205,15 +226,15 @@ def _format_floats(fl, sig=4):
     if np.isnan(fl):
         return fl
     else:
-        return np.format_float_positional(_round_sig(fl, sig=sig), precision=6, trim='-')
+        return float_to_str(round(_round_sig(fl, sig=sig), 6))
 
 
 def process_pert_doses(el):
     if type(el) == str:
-        #         print(el)
         return '|'.join(map(_format_floats, map(float, el.split('|'))))
     else:
         return _format_floats(el)
+
 
 def process_pert_idoses(el):
     if type(el) == str:
@@ -224,25 +245,25 @@ def process_pert_idoses(el):
     else:
         return _format_floats(el)
 
-def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects, prism_cell_list):
 
+def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects, prism_cell_list):
     # Build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
     davepool_id_to_cells_map = build_davepool_id_to_cells_map(prism_cell_list)
 
     # Put all the data in gct-able form
-    (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects,davepool_id_to_cells_map)
+    (all_median_data_by_cell, all_count_data_by_cell) = process_data(davepool_data_objects, davepool_id_to_cells_map)
 
     # Create full outfile, build the gct, and write it out!
     median_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)
     write_gct.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
 
-    #Write Inst info file
+    # Write Inst info file
     instinfo_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_inst_info.txt")
     inst = median_gctoo.col_metadata_df
 
     logger.info("Formatting instinfo pert_dose")
-    #cast pert_dose field to str
+    # cast pert_dose field to str
     inst['pert_dose'] = inst['pert_dose'].apply(
         lambda el: process_pert_doses(el)
     )
