@@ -245,6 +245,18 @@ def process_pert_idoses(el):
     else:
         return _format_floats(el)
 
+def stringify_inst_doses(inst):
+    # cast pert_dose field to str
+    inst['pert_dose'] = inst['pert_dose'].apply(
+        lambda el: process_pert_doses(el)
+    )
+    if 'pert_idose' in inst.columns:
+        inst['pert_idose'] = inst['pert_idose'].apply(
+            lambda el: process_pert_idoses(el)
+        )
+
+    inst['pert_dose'] = inst['pert_dose'].astype(str)
+    return inst
 
 def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects, prism_cell_list):
     # Build one-to-many mapping between davepool ID and the multiple PRISM cell lines that are within that davepool
@@ -256,27 +268,19 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     # Create full outfile, build the gct, and write it out!
     median_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_MEDIAN.gct")
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)
+
+    # enforce doses as strings
+    inst = stringify_inst_doses(median_gctoo.col_metadata_df)
+    median_gctoo.col_metadata_df = inst
+
     write_gct.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
 
     # Write Inst info file
     instinfo_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_inst_info.txt")
-    inst = median_gctoo.col_metadata_df
-
-    logger.info("Formatting instinfo pert_dose")
-    # cast pert_dose field to str
-    inst['pert_dose'] = inst['pert_dose'].apply(
-        lambda el: process_pert_doses(el)
-    )
-
-    if 'pert_idose' in inst.columns:
-        logger.info("Formatting instinfo pert_idose")
-        inst['pert_idose'] = inst['pert_idose'].apply(
-            lambda el: process_pert_idoses(el)
-        )
-
     inst.to_csv(instinfo_outfile, sep='\t')
     logger.info("Instinfo has been written to {}".format(instinfo_outfile))
 
     count_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_count_data_by_cell)
+    count_gctoo.col_metadata_df = stringify_inst_doses(inst)
     write_gct.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
