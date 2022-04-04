@@ -213,20 +213,20 @@ def float_to_str(f):
 """
 rounds to significant figures
 """
-def _round_sig(x, sig=4):
+def _round_sig(x, sig=5):
     return round(x, sig - int(floor(log10(abs(x)))) - 1)
 
 
 """
 prints string as decimal value not scientific notation
 """
-def _format_floats(fl, sig=4):
+def _format_floats(fl, sig=4, max_precision=50):
     if type(fl) == str:
         fl = float(fl)
     if np.isnan(fl):
         return fl
     else:
-        return float_to_str(round(_round_sig(fl, sig=sig), 6))
+        return float_to_str(round(_round_sig(fl, sig=sig), max_precision))
 
 
 def process_pert_doses(el):
@@ -250,6 +250,7 @@ def stringify_inst_doses(inst):
     inst['pert_dose'] = inst['pert_dose'].apply(
         lambda el: process_pert_doses(el)
     )
+
     if 'pert_idose' in inst.columns:
         inst['pert_idose'] = inst['pert_idose'].apply(
             lambda el: process_pert_idoses(el)
