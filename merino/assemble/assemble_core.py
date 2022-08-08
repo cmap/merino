@@ -223,8 +223,8 @@ prints string as decimal value not scientific notation
 def _format_floats(fl, sig=4, max_precision=50):
     if type(fl) == str:
         fl = float(fl)
-    if np.isnan(fl):
-        return fl
+    if (fl is None) or np.isnan(fl):
+        return np.nan
     else:
         return float_to_str(round(_round_sig(fl, sig=sig), max_precision))
 
@@ -283,5 +283,5 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
 
     count_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_count_data_by_cell)
-    count_gctoo.col_metadata_df = stringify_inst_doses(inst)
+    count_gctoo.col_metadata_df = inst
     write_gct.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)

@@ -285,12 +285,12 @@ def main(args, all_perturbagens=None, assay_plates=None):
     except Exception as e:
         failure_path = os.path.join(args.outfile, "assemble", prism_replicate_name,  "failure.txt")
         with open(failure_path, "w") as file:
-            file.write("plate {} failed for reason {}".format(prism_replicate_name, e))
+            file.write("plate {} failed for reason {}\n".format(prism_replicate_name, e))
         return
 
     success_path = os.path.join(args.outfile, "assemble", prism_replicate_name, "success.txt")
     with open(success_path, "w") as file:
-        file.write("plate {} successfully assembled".format(prism_replicate_name))
+        file.write("plate {} successfully assembled\n".format(prism_replicate_name))
 
 if __name__ == "__main__":
     args = build_parser().parse_args(sys.argv[1:])
