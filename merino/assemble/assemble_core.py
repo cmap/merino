@@ -223,8 +223,8 @@ prints string as decimal value not scientific notation
 def _format_floats(fl, sig=4, max_precision=50):
     if type(fl) == str:
         fl = float(fl)
-    if np.isnan(fl):
-        return fl
+    if (fl is None) or np.isnan(fl):
+        return np.nan
     else:
         return float_to_str(round(_round_sig(fl, sig=sig), max_precision))
 
@@ -271,7 +271,14 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
     median_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_median_data_by_cell)
 
     # enforce doses as strings
-    inst = stringify_inst_doses(median_gctoo.col_metadata_df)
+    try:
+        logger.info("Attempting to convert doses to strings")
+        inst = stringify_inst_doses(median_gctoo.col_metadata_df)
+    except TypeError as e:
+        inst = median_gctoo.col_metadata_df
+        logger.warning("Could not stringify doses due to Type error")
+
+
     median_gctoo.col_metadata_df = inst
 
     write_gct.write(median_gctoo, median_outfile, data_null=_NaN, filler_null=_null)
@@ -283,5 +290,5 @@ def main(prism_replicate_name, outfile, all_perturbagens, davepool_data_objects,
 
     count_outfile = os.path.join(outfile, "assemble", prism_replicate_name, prism_replicate_name + "_COUNT.gct")
     count_gctoo = build_gctoo(prism_replicate_name, all_perturbagens, all_count_data_by_cell)
-    count_gctoo.col_metadata_df = stringify_inst_doses(inst)
+    count_gctoo.col_metadata_df = inst
     write_gct.write(count_gctoo, count_outfile, data_null=_NaN, filler_null=_null)
